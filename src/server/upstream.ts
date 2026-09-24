@@ -43,8 +43,7 @@ export async function upstreamFetch(url: URL, init: RequestInit): Promise<Upstre
     });
     const declared = Number(response.headers.get('content-length') ?? '0');
     if (declared > MAX_BODY_BYTES) throw new ApiError('UPSTREAM', { reason: 'body_too_large' });
-    const text = await response.text();
-    if (text.length > MAX_BODY_BYTES) throw new ApiError('UPSTREAM', { reason: 'body_too_large' });
+    const text = await readLimitedText(response, MAX_BODY_BYTES);
     return { status: response.status, headers: response.headers, body: parseJson(text) };
   } catch (error) {
     if (error instanceof ApiError) throw error;
@@ -52,6 +51,35 @@ export async function upstreamFetch(url: URL, init: RequestInit): Promise<Upstre
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Lê o corpo em streaming e aborta assim que passar de `limit` bytes. Sem `Content-Length`
+ * (resposta em chunks), `response.text()` guardaria tudo na memória antes de medir (S7).
+ */
+async function readLimitedText(response: Response, limit: number): Promise<string> {
+  if (!response.body) return '';
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > limit) throw new ApiError('UPSTREAM', { reason: 'body_too_large' });
+      chunks.push(value);
+    }
+  } finally {
+    reader.cancel().catch(() => undefined);
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
 }
 
 function parseJson(text: string): unknown {

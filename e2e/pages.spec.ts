@@ -9,6 +9,7 @@ test.describe('privacidade (RF-24, US-13)', () => {
     await page.goto('/pt-BR/privacy');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacidade');
     for (const title of [
+      'Quem cuida dos seus dados',
       'O que é tratado',
       'Onde os dados ficam',
       'Por quanto tempo',

@@ -6,6 +6,8 @@
  * - `buildContentSecurityPolicy`: CSP com nonce por requisição, montada no `proxy.ts`.
  * - `buildWorkerContentSecurityPolicy`: CSP dos scripts de Web Worker (`/_next/static`), aplicada
  *   em `next.config.ts`. Um worker usa a CSP da resposta do próprio script, não a da página.
+ * - `apiSecurityHeaders`: CSP e CORP das rotas `/api/*` (JSON, fora do `proxy.ts`), aplicados em
+ *   `next.config.ts`.
  *
  * Módulo sem dependências de runtime para poder ser importado por `next.config.ts`,
  * pelo `proxy.ts` e pelos testes.
@@ -60,7 +62,8 @@ export function buildContentSecurityPolicy({ nonce, isDev, isHttps }: CspOptions
     'img-src': ["'self'", 'data:', 'blob:', ...SPOTIFY_IMAGE_HOSTS],
     'connect-src': ["'self'", COVER_FETCH_HOST],
     'font-src': ["'self'"],
-    'worker-src': ["'self'", 'blob:'],
+    // Os workers (upload e cards) vêm de `/_next/static` na própria origem; nada de `blob:`.
+    'worker-src': ["'self'"],
     'object-src': ["'none'"],
     'base-uri': ["'none'"],
     'form-action': ["'self'", 'https://accounts.spotify.com'],
@@ -92,6 +95,20 @@ export function buildWorkerContentSecurityPolicy({ isDev }: Pick<CspOptions, 'is
     .map(([name, values]) => `${name} ${values.join(' ')}`)
     .join('; ');
 }
+
+/**
+ * Rotas `/api/*` (BFF, JSON): o `proxy.ts` não passa por elas, então a CSP vem daqui. Nenhum
+ * conteúdo ativo é esperado: `default-src 'none'` impede que uma resposta aberta direto no
+ * navegador execute algo, e o CORP `same-origin` impede outra origem de embutir a resposta
+ * (`<img>`, `<script>`) mesmo sem ler o corpo.
+ */
+export const apiSecurityHeaders: readonly SecurityHeader[] = [
+  {
+    key: 'Content-Security-Policy',
+    value: "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+  },
+  { key: 'Cross-Origin-Resource-Policy', value: 'same-origin' },
+];
 
 /** Nonce de 128 bits em base64, gerado com Web Crypto (funciona em Node e Edge). */
 export function generateNonce(): string {

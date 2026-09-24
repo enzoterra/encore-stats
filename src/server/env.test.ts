@@ -1,8 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_SITE_URL, EnvValidationError, parseEnv } from './env';
+import { DEFAULT_SITE_URL, EnvValidationError, parseEnv, PUBLIC_TEST_SESSION_SECRET } from './env';
 
 const SECRET = 'A'.repeat(43);
+/** O mínimo de produção além das credenciais: URL canônica e controlador/contato (LGPD). */
+const PRODUCTION = {
+  VERCEL_ENV: 'production',
+  NEXT_PUBLIC_SITE_URL: 'https://encore.example',
+  NEXT_PUBLIC_PRIVACY_CONTROLLER: 'Pessoa Autora',
+  NEXT_PUBLIC_PRIVACY_CONTACT: 'privacidade@encore.example',
+};
 const SPOTIFY = {
   SPOTIFY_CLIENT_ID: 'client-id',
   SPOTIFY_CLIENT_SECRET: 'client-secret',
@@ -74,8 +81,7 @@ describe('parseEnv', () => {
       ...SPOTIFY,
       SPOTIFY_REDIRECT_URI: 'https://encore.example/api/auth/callback',
       SESSION_SECRET: SECRET,
-      NEXT_PUBLIC_SITE_URL: 'https://encore.example',
-      VERCEL_ENV: 'production',
+      ...PRODUCTION,
     }).spotify;
     expect(prod).toMatchObject({ appOrigin: 'https://encore.example', secureCookies: true });
   });
@@ -137,9 +143,57 @@ describe('parseEnv', () => {
 
   it('exige NEXT_PUBLIC_SITE_URL em produção na Vercel', () => {
     expect(() => parseEnv({ VERCEL_ENV: 'production' })).toThrow(/NEXT_PUBLIC_SITE_URL/);
-    expect(
-      parseEnv({ VERCEL_ENV: 'production', NEXT_PUBLIC_SITE_URL: 'https://encore.example' })
-        .siteUrl,
-    ).toBe('https://encore.example');
+    expect(parseEnv(PRODUCTION).siteUrl).toBe('https://encore.example');
+  });
+
+  it('exige controlador e contato da privacidade em produção (LGPD) e os valida', () => {
+    const { NEXT_PUBLIC_PRIVACY_CONTROLLER, NEXT_PUBLIC_PRIVACY_CONTACT, ...rest } = PRODUCTION;
+    expect(NEXT_PUBLIC_PRIVACY_CONTROLLER && NEXT_PUBLIC_PRIVACY_CONTACT).toBeTruthy();
+    expect(() => parseEnv(rest)).toThrow(/NEXT_PUBLIC_PRIVACY_CONTROLLER/);
+    expect(() => parseEnv(rest)).toThrow(/NEXT_PUBLIC_PRIVACY_CONTACT/);
+    expect(parseEnv(PRODUCTION).privacy).toEqual({
+      controller: 'Pessoa Autora',
+      contact: 'privacidade@encore.example',
+    });
+    // Fora de produção são opcionais.
+    expect(parseEnv({}).privacy).toEqual({ controller: undefined, contact: undefined });
+    expect(() => parseEnv({ NEXT_PUBLIC_PRIVACY_CONTACT: 'não é e-mail' })).toThrow(
+      /NEXT_PUBLIC_PRIVACY_CONTACT/,
+    );
+    expect(() => parseEnv({ NEXT_PUBLIC_PRIVACY_CONTROLLER: '<script>' })).toThrow(
+      /NEXT_PUBLIC_PRIVACY_CONTROLLER/,
+    );
+    expect(() => parseEnv({ NEXT_PUBLIC_PRIVACY_CONTROLLER: 'x'.repeat(121) })).toThrow(
+      /NEXT_PUBLIC_PRIVACY_CONTROLLER/,
+    );
+  });
+
+  it('NEXT_PUBLIC_REPO_URL só por HTTPS (vira href)', () => {
+    expect(parseEnv({ NEXT_PUBLIC_REPO_URL: 'https://github.com/x/encore' }).repoUrl).toBe(
+      'https://github.com/x/encore',
+    );
+    for (const value of ['javascript:alert(1)', 'http://github.com/x/encore', 'data:text/html,x']) {
+      expect(() => parseEnv({ NEXT_PUBLIC_REPO_URL: value })).toThrow(/NEXT_PUBLIC_REPO_URL/);
+    }
+  });
+
+  it('proíbe o SESSION_SECRET público dos e2e em deploys da Vercel', () => {
+    const e2e = { ...SPOTIFY, SESSION_SECRET: PUBLIC_TEST_SESSION_SECRET };
+    // Local (e2e) continua valendo.
+    expect(parseEnv(e2e).connect.enabled).toBe(true);
+    const deploy = {
+      ...PRODUCTION,
+      SPOTIFY_REDIRECT_URI: 'https://encore.example/api/auth/callback',
+    };
+    expect(() => parseEnv({ ...e2e, ...deploy })).toThrow(/SESSION_SECRET: é o segredo público/);
+    expect(() =>
+      parseEnv({
+        ...e2e,
+        ...deploy,
+        VERCEL_ENV: 'preview',
+        SESSION_SECRET: SECRET,
+        SESSION_SECRET_PREVIOUS: PUBLIC_TEST_SESSION_SECRET,
+      }),
+    ).toThrow(/SESSION_SECRET_PREVIOUS/);
   });
 });

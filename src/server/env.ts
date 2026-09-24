@@ -16,6 +16,11 @@ import { z } from 'zod';
  *   `__Host-` + `Secure`. HTTP só é aceito em loopback (desenvolvimento local).
  * - `SPOTIFY_API_BASE` e `SPOTIFY_ACCOUNTS_BASE` (mocks de teste) só apontam para loopback
  *   e são proibidas em qualquer deploy da Vercel.
+ * - O `SESSION_SECRET` público dos e2e (`PUBLIC_TEST_SESSION_SECRET`) é proibido em deploys.
+ * - `NEXT_PUBLIC_REPO_URL` só por HTTPS (vira `href` em várias telas).
+ * - LGPD (art. 9º e Res. CD/ANPD 2/2022, art. 11): em produção, a página de privacidade precisa
+ *   identificar o controlador e um canal de contato (`NEXT_PUBLIC_PRIVACY_CONTROLLER` e
+ *   `NEXT_PUBLIC_PRIVACY_CONTACT`).
  */
 
 const optionalString = z
@@ -58,6 +63,27 @@ function isHttpsOrLoopback(url: URL): boolean {
   return url.protocol === 'http:' && LOOPBACK_HOSTS.has(url.hostname);
 }
 
+/**
+ * `SESSION_SECRET` dos e2e, versionado em `playwright.config.ts` e no README: público, então
+ * nunca pode valer num deploy.
+ */
+export const PUBLIC_TEST_SESSION_SECRET = 'e2e-only-not-a-secret-000000000000000000000';
+
+const httpsUrl = optionalString.refine(
+  (value) => value === undefined || z.url({ protocol: /^https$/ }).safeParse(value).success,
+  { message: 'deve ser uma URL https://' },
+);
+
+const privacyContact = optionalString.refine(
+  (value) => value === undefined || z.email().safeParse(value).success,
+  { message: 'deve ser um endereço de e-mail' },
+);
+
+const privacyController = optionalString.refine(
+  (value) => value === undefined || (value.length <= 120 && !/[\p{Cc}<>]/u.test(value)),
+  { message: 'deve ser um nome curto (até 120 caracteres), sem < > nem caracteres de controle' },
+);
+
 export const CALLBACK_PATH = '/api/auth/callback';
 export const DEFAULT_SPOTIFY_API_BASE = 'https://api.spotify.com/v1';
 export const DEFAULT_SPOTIFY_ACCOUNTS_BASE = 'https://accounts.spotify.com';
@@ -72,7 +98,9 @@ export const envSchema = z
     SESSION_SECRET: sessionSecret,
     SESSION_SECRET_PREVIOUS: sessionSecret,
     NEXT_PUBLIC_SITE_URL: optionalUrl,
-    NEXT_PUBLIC_REPO_URL: optionalUrl,
+    NEXT_PUBLIC_REPO_URL: httpsUrl,
+    NEXT_PUBLIC_PRIVACY_CONTROLLER: privacyController,
+    NEXT_PUBLIC_PRIVACY_CONTACT: privacyContact,
     SPOTIFY_API_BASE: optionalUrl,
     SPOTIFY_ACCOUNTS_BASE: optionalUrl,
     VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
@@ -136,12 +164,28 @@ export const envSchema = z
       }
     }
 
-    if (env.VERCEL_ENV === 'production' && env.NEXT_PUBLIC_SITE_URL === undefined) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['NEXT_PUBLIC_SITE_URL'],
-        message: 'obrigatória em produção',
-      });
+    if (onVercelDeploy) {
+      for (const key of ['SESSION_SECRET', 'SESSION_SECRET_PREVIOUS'] as const) {
+        if (env[key] === PUBLIC_TEST_SESSION_SECRET) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [key],
+            message: 'é o segredo público dos e2e; gere um novo para deploys',
+          });
+        }
+      }
+    }
+
+    if (env.VERCEL_ENV === 'production') {
+      for (const key of [
+        'NEXT_PUBLIC_SITE_URL',
+        'NEXT_PUBLIC_PRIVACY_CONTROLLER',
+        'NEXT_PUBLIC_PRIVACY_CONTACT',
+      ] as const) {
+        if (env[key] === undefined) {
+          ctx.addIssue({ code: 'custom', path: [key], message: 'obrigatória em produção' });
+        }
+      }
     }
   });
 
@@ -170,6 +214,8 @@ export type ServerEnv = {
   sessionSecretPrevious: string | undefined;
   siteUrl: string;
   repoUrl: string | undefined;
+  /** Controlador e contato exibidos na página de privacidade (LGPD). */
+  privacy: { controller: string | undefined; contact: string | undefined };
   vercelEnv: 'development' | 'preview' | 'production' | undefined;
   connect: ConnectStatus;
 };
@@ -217,6 +263,10 @@ export function parseEnv(source: Record<string, string | undefined>): ServerEnv 
     sessionSecretPrevious: env.SESSION_SECRET_PREVIOUS,
     siteUrl: env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL,
     repoUrl: env.NEXT_PUBLIC_REPO_URL,
+    privacy: {
+      controller: env.NEXT_PUBLIC_PRIVACY_CONTROLLER,
+      contact: env.NEXT_PUBLIC_PRIVACY_CONTACT,
+    },
     vercelEnv: env.VERCEL_ENV,
     connect:
       spotify && env.SESSION_SECRET

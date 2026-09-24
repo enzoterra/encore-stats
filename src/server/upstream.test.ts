@@ -101,6 +101,43 @@ describe('upstreamFetch', () => {
     });
   });
 
+  it('corta em streaming um corpo sem Content-Length que passa do limite (S7)', async () => {
+    const chunk = new Uint8Array(512 * 1024).fill(0x20);
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled++;
+        controller.enqueue(chunk);
+      },
+    });
+    const mock = installSpotifyMock();
+    mock.api('/me', new Response(endless, { headers: { 'content-type': 'application/json' } }));
+    await expect(caught(upstreamFetch(URL_ME, {}))).resolves.toMatchObject({
+      reason: 'body_too_large',
+    });
+    // 2 MiB de limite em pedaços de 512 KiB: para logo depois do 5º pedaço (a fila interna do
+    // stream pode puxar mais um ou dois), em vez de ler um corpo sem fim.
+    expect(pulled).toBeLessThanOrEqual(8);
+  });
+
+  it('decodifica UTF-8 dividido entre pedaços', async () => {
+    const bytes = new TextEncoder().encode(JSON.stringify({ name: 'Canção' }));
+    const mock = installSpotifyMock();
+    mock.api(
+      '/me',
+      new Response(
+        new ReadableStream<Uint8Array>({
+          start(controller) {
+            controller.enqueue(bytes.subarray(0, 14));
+            controller.enqueue(bytes.subarray(14));
+            controller.close();
+          },
+        }),
+      ),
+    );
+    await expect(upstreamFetch(URL_ME, {})).resolves.toMatchObject({ body: { name: 'Canção' } });
+  });
+
   it('não segue redirecionamentos nem usa cache', async () => {
     const mock = installSpotifyMock();
     mock.api('/me', json({}));

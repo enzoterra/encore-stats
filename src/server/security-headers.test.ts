@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  apiSecurityHeaders,
   buildContentSecurityPolicy,
   buildWorkerContentSecurityPolicy,
   generateNonce,
@@ -23,6 +24,11 @@ describe('buildContentSecurityPolicy', () => {
     expect(prod).toContain("connect-src 'self' https://i.scdn.co;");
     expect(prod).toContain("form-action 'self' https://accounts.spotify.com");
     expect(prod).toContain('upgrade-insecure-requests');
+  });
+
+  it('só aceita workers da própria origem (sem blob:)', () => {
+    expect(prod).toContain("worker-src 'self';");
+    expect(prod).not.toMatch(/worker-src[^;]*blob:/);
   });
 
   it('não usa unsafe-eval, wasm-unsafe-eval nem unsafe-inline nas páginas em produção', () => {
@@ -67,6 +73,16 @@ describe('staticSecurityHeaders', () => {
     expect(headers['Permissions-Policy']).toContain('camera=()');
     expect(headers['Permissions-Policy']).toContain('microphone=()');
     expect(headers['Permissions-Policy']).toContain('geolocation=()');
+  });
+});
+
+describe('apiSecurityHeaders', () => {
+  it('rotas /api sem conteúdo ativo e sem embutir de outra origem', () => {
+    const headers = Object.fromEntries(apiSecurityHeaders.map((h) => [h.key, h.value]));
+    expect(headers['Content-Security-Policy']).toBe(
+      "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+    );
+    expect(headers['Cross-Origin-Resource-Policy']).toBe('same-origin');
   });
 });
 

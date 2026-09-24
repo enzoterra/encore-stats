@@ -99,7 +99,9 @@ jobs:
 
   dependency-review:
     name: Revisão de dependências do PR
-    if: github.event_name == 'pull_request'
+    # Em repositório privado a action exige GitHub Code Security (paga) e falharia em todo PR;
+    # nesse caso o `audit` acima e o `security-audit.yml` semanal cobrem a SCA.
+    if: github.event_name == 'pull_request' && !github.event.repository.private
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

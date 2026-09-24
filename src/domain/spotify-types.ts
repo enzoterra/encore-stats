@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import './zod-config';
+
 /**
  * Respostas **reduzidas** do BFF (`/api/spotify/*`, 03-arquitetura). O BFF valida as
  * respostas do Spotify e devolve só estes campos; o cliente valida de novo (API10 do OWASP).

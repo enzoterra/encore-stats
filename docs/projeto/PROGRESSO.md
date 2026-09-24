@@ -3,12 +3,12 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: nenhuma. Sprint 6 ✅ concluída (dev-frontend, 2026-09-24): cards Básico/Festival × 9:16/1:1 nos 3 modos, modal de compartilhar com Web Share/download; aguarda commit do orquestrador
+- Sprint em andamento: nenhuma. Sprint 7 ✅ concluída (analista-de-seguranca, 2026-09-24): sem alta/crítica aberta no código; relatório em `docs/projeto/relatorio-seguranca.md`. Aguarda o commit do orquestrador e duas decisões do cliente (Developer Policy do Spotify; controlador e contato da privacidade)
 - Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
-- Próximo passo ao retomar: aceite das Sprints 5 e 6 pelo cliente (screenshots em `docs/projeto/screenshots/sprint5/` e `sprint6/`), depois Sprint 7 (segurança). Compartilhar um card de um iPhone real fica para a S8. Pendente com o cliente: testar o login real em 127.0.0.1 (aceite das Sprints 2 e 5; passo a passo no README)
+- Próximo passo ao retomar: aceite das Sprints 5 e 6 pelo cliente (screenshots em `docs/projeto/screenshots/sprint5/` e `sprint6/`) e as decisões da Sprint 7. Depois, a Sprint 8, que começa por atualizar para o Next 16.3.7 (sai em 30/09). Compartilhar um card de um iPhone real fica para a S8. Pendente com o cliente: testar o login real em 127.0.0.1 (aceite das Sprints 2 e 5; passo a passo no README)
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-24 por dev-frontend (fim da Sprint 6)
+- Última atualização: 2026-09-24 por analista-de-seguranca (fim da Sprint 7)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -475,13 +475,55 @@
   - Fora do MVP (10-design §15): fonte CJK/árabe nos cards; o `hb.wasm` já está no pipeline, falta só a fonte
 - Próxima sprint: Sprint 7 (analista-de-seguranca)
 
-### Sprint 7 — Segurança — ⬜ · analista-de-seguranca
-- [ ] S7.1 Revisão do modelo de ameaças
-- [ ] S7.2 Auditoria do BFF
-- [ ] S7.3 Auditoria do cliente
-- [ ] S7.4 SCA, CodeQL, segredos, CVEs
-- [ ] S7.5 Pentest leve + correções
-- [ ] S7.6 LGPD e branding
+### Sprint 7 — Segurança — ✅ concluída (2026-09-24) · analista-de-seguranca
+- [x] S7.1 Revisão do modelo de ameaças
+- [x] S7.2 Auditoria do BFF
+- [x] S7.3 Auditoria do cliente
+- [x] S7.4 SCA, CodeQL, segredos, CVEs
+- [x] S7.5 Pentest leve + correções
+- [x] S7.6 LGPD e branding
+- Entregue: `docs/projeto/relatorio-seguranca.md`, com escopo, metodologia, achados com severidade/evidência/correção/status, riscos aceitos e ações do dono. `08-seguranca.md` e `03-arquitetura.md` (tabela de configuração) atualizados
+- Resultado: **nenhuma falha alta/crítica aberta no código.** 3 médios (1 corrigido, 1 mitigado, 1 decisão do cliente), 10 baixos (7 corrigidos, 3 riscos aceitos), informativos registrados. Pendência externa: Next.js 16.3.7 (security release de 30/09, 1 crítica + 2 altas, sem detalhes ainda) é **gate do go-live**
+- Correções (todas com teste de regressão):
+  - S7-01 LGPD (médio): `/privacy` ganhou a seção "Quem cuida dos seus dados", com `NEXT_PUBLIC_PRIVACY_CONTROLLER` e `NEXT_PUBLIC_PRIVACY_CONTACT` (e-mail), **obrigatórias em produção** no `env.ts`. Textos atualizados: art. 7º V + autorização no Spotify, art. 33 IX (Vercel/Spotify fora do Brasil), art. 18 + ANPD, logs da plataforma
+  - S7-02 SCA (médio, mitigado): `dependency-review` só em repositório público (em privado exige Code Security e quebraria todo PR); novo `.github/workflows/security-audit.yml` semanal (`pnpm audit`), porque o grafo do Dependabot não lê o lockfile de dois documentos do pnpm 12 (dependabot-core#15904, aberto)
+  - S7-05: CSP `default-src 'none'…` + `Cross-Origin-Resource-Policy: same-origin` nas rotas `/api/*` (`apiSecurityHeaders`, `next.config.ts`)
+  - S7-06: corpo do Spotify lido em streaming com teto de 2 MiB (`upstream.ts`, `readLimitedText`)
+  - S7-07: Zod em modo `jitless` (`src/domain/zod-config.ts`). A sonda `new Function` gerava 3 violações de CSP silenciosas por carregamento; o coletor do e2e agora escuta `securitypolicyviolation`
+  - S7-08: `worker-src 'self'` (saiu o `blob:`)
+  - S7-09: `NEXT_PUBLIC_REPO_URL` só `https://`
+  - S7-10: o `SESSION_SECRET` público dos e2e é recusado em deploys da Vercel
+  - S7-11: lint anti-rede estendido a `src/features/{upload,dataset,dashboard,demo,onboarding,landing}`, incluindo `window|self|globalThis.fetch`; `localStorage`/`indexedDB` proibidos em todo o código de produção
+- Riscos aceitos: sessão sem estado (cookie copiado vale até 30 d; ADR 2), sem rate limiting próprio (nada anônimo chega ao Spotify), `code` do OAuth nos logs da Vercel (inútil sem o `code_verifier`)
+- Revisões sem mudança: tolerância ao refresh paralelo, 403 → `NOT_ALLOWLISTED`, cookie sem `Secure` só em HTTP loopback, `get-nonce`, aliases do Turbopack (harfbuzz/fs), override da fflate (ainda necessário), limites do zip, validação da capa, sessionStorage (só curtidas agregadas + pausa, com prazo)
+- Pesquisa (2026-09-24): nenhuma advisory para as versões exatas do lockfile. Next 16.3.6 tem todas as correções publicadas da linha 16; React 19.3.0 inclui as correções de RSC; satori 0.33.5 e fflate 0.8.3 já são as versões corrigidas. OWASP Top 10:2025 e API Top 10:2023 confirmados. Segredos: histórico git inteiro sem segredo (só o de teste dos e2e)
+- Números (Windows, Node 22.20, build de produção):
+  - `pnpm lint` 0 warnings · `format:check` ok · `typecheck` ok · `build` ok
+  - `pnpm test`: **514 testes (41 arquivos)** verdes (+8)
+  - `pnpm test:coverage`: total 92,99% statements / 88,87% ramos / 94,04% linhas; `src/server` 97,46% / 95,2% / 99,41%; limiar de `src/domain` ok
+  - `pnpm test:e2e`: **108 verdes** (Chromium + WebKit)
+  - `pnpm audit --registry=https://registry.npmjs.org/`: sem vulnerabilidades
+  - pentest: 70/70 (script Node + curl); Chromium: 0 violações de CSP em demo, card, upload e Conectar
+- Como reverificar:
+  - `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build && pnpm audit --registry=https://registry.npmjs.org/`
+  - `pnpm test:e2e`. No Windows com o pnpm local, suba os três servidores do README
+  - `curl -I http://127.0.0.1:3000/pt-BR` → `worker-src 'self'`, sem `blob:`/`wasm-unsafe-eval`
+  - `curl -I http://127.0.0.1:3100/api/spotify/me` → `default-src 'none'` + CORP `same-origin`
+- Decisões pedidas ao cliente:
+  1. Developer Policy do Spotify (S7-03): ela proíbe "métricas derivadas" com dados da API. Aceitar o risco no MVP (recomendado: app pessoal em Development Mode) ou cortar tendências, gêneros ponderados e contagem de curtidas do Conectar
+  2. Nome do controlador e e-mail de contato para `/privacy` (obrigatórios em produção)
+- Ações do dono (relatório, seção 9):
+  - repositório público (libera CodeQL default setup, dependency-review e secret scanning/push protection grátis) ou GitHub Code Security;
+  - ruleset em `main` exigindo os jobs do CI;
+  - Dependabot alerts/updates ligados;
+  - Premium na conta dona do app no Spotify;
+  - na Vercel: variáveis de privacidade, `SESSION_SECRET` novo por ambiente e, se o plano permitir, rate limit no Firewall para `/api/*`
+- Pendências para a S8:
+  - **atualizar para Next 16.3.7 em 30/09** (com `minimumReleaseAgeExclude`; passos em S7-04) antes do go-live;
+  - ZAP baseline contra o staging;
+  - `not-found` localizado (o 404 estático sai com o JS bloqueado pela CSP: falha fechada);
+  - mensagem do 403 citando o Premium do dono
+- Próxima sprint: Sprint 8 (orquestrador + analista-de-infra), depois das decisões do cliente
 
 ### Sprint 8 — Validação, UAT e deploy — ⬜ · orquestrador + analista-de-infra
 - [ ] S8.1 Validação de rotas e fluxos vs. user stories

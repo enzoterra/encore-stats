@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import '../zod-config';
+
 import type { Dataset } from '../history/dataset';
 import { FLAG_VALID } from '../history/dataset';
 import { dayToYearMonth, localIndex, localMidnightToUtc } from '../time';

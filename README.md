@@ -112,14 +112,15 @@ pnpm exec playwright install chromium webkit
 Catálogo completo e comentado em [`.env.example`](.env.example); validação com Zod em
 `src/server/env.ts`. Resumo:
 
-| Variável                                                             | Obrigatória          | Para quê                                                     |
-| -------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------ |
-| `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI` | Não (as três juntas) | Modo Conectar. Sem elas, o botão fica desabilitado           |
-| `SESSION_SECRET`                                                     | Se houver Conectar   | 32 bytes em base64url para o cookie JWE                      |
-| `SESSION_SECRET_PREVIOUS`                                            | Não                  | Rotação do segredo de sessão                                 |
-| `NEXT_PUBLIC_SITE_URL`                                               | Em produção          | URL canônica (local: `http://127.0.0.1:3000`)                |
-| `NEXT_PUBLIC_REPO_URL`                                               | Não                  | Link "veja o código" do selo de privacidade                  |
-| `SPOTIFY_API_BASE`, `SPOTIFY_ACCOUNTS_BASE`                          | Não                  | Só testes: mock do Spotify em loopback (proibidas na Vercel) |
+| Variável                                                             | Obrigatória          | Para quê                                                      |
+| -------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- |
+| `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI` | Não (as três juntas) | Modo Conectar. Sem elas, o botão fica desabilitado            |
+| `SESSION_SECRET`                                                     | Se houver Conectar   | 32 bytes em base64url para o cookie JWE                       |
+| `SESSION_SECRET_PREVIOUS`                                            | Não                  | Rotação do segredo de sessão                                  |
+| `NEXT_PUBLIC_SITE_URL`                                               | Em produção          | URL canônica (local: `http://127.0.0.1:3000`)                 |
+| `NEXT_PUBLIC_REPO_URL`                                               | Não                  | Link "veja o código" do selo de privacidade (só `https://`)   |
+| `NEXT_PUBLIC_PRIVACY_CONTROLLER`, `NEXT_PUBLIC_PRIVACY_CONTACT`      | Em produção          | Controlador e e-mail de contato exibidos em `/privacy` (LGPD) |
+| `SPOTIFY_API_BASE`, `SPOTIFY_ACCOUNTS_BASE`                          | Não                  | Só testes: mock do Spotify em loopback (proibidas na Vercel)  |
 
 Configuração parcial do Spotify (ex.: só o Client ID) **falha na inicialização** com a lista das
 variáveis que faltam. Nunca commite `.env.local` (já está no `.gitignore`).

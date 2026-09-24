@@ -120,6 +120,14 @@
       "We have no database, no accounts of our own, no analytics and no tracking cookies.",
       "In Connect mode, we only keep your Spotify access in an encrypted cookie in your browser."
     ],
+    "controller": {
+      "title": "Who looks after your data",
+      "controller": "Encore is a personal project. The data controller (Brazil's LGPD, art. 5, VI) is {name}.",
+      "controllerUnset": "Encore is a personal project, and whoever maintains it is the data controller (Brazil's LGPD, art. 5, VI).",
+      "contact": "Questions or requests about your data:",
+      "contactRepo": "Questions or requests about your data can be sent through the project's repository:",
+      "contactUnset": "Questions or requests about your data can be sent through the project's repository."
+    },
     "what": {
       "title": "What is processed",
       "uploadTitle": "Upload mode (your file)",
@@ -132,7 +140,7 @@
     },
     "where": {
       "title": "Where the data lives",
-      "body": "Your file is processed in a Web Worker in your browser. In Connect mode, the Encore server only relays requests to Spotify and returns a reduced version of the response, without storing it. The site is hosted on Vercel."
+      "body": "Your file is processed in a Web Worker in your browser. In Connect mode, the Encore server only relays requests to Spotify and returns a reduced version of the response, without storing it. The site is hosted on Vercel, and Connect mode requests go through Vercel's and Spotify's servers, which may be outside Brazil. This transfer is needed to provide the service you asked for (LGPD, art. 33, IX)."
     },
     "howLong": {
       "title": "For how long",
@@ -140,12 +148,12 @@
         "Uploaded history: only in the tab's memory, until you reload or close the page.",
         "Spotify responses (Connect): in the tab's memory or sessionStorage, for at most 12 hours, and cleared when you sign out.",
         "Session cookie (Connect): encrypted, lasts at most 30 days and is deleted when you click Sign out.",
-        "Server technical logs: only route, status and duration of requests, with no content, kept by the provider for about 1 hour."
+        "Technical logs: Encore only logs the route, status and duration of requests, with no content. Vercel, as the host, also logs technical data about each access (such as IP address and page visited) for a short time (about 1 hour on the plan in use), under its own privacy policy."
       ]
     },
     "legal": {
       "title": "Legal basis",
-      "body": "Processing is needed to provide the service you asked for (Brazil's LGPD, art. 7, V). We don't use your data for advertising or profiling, and we don't share it with third parties."
+      "body": "Processing is needed to provide the service you asked for (Brazil's LGPD, art. 7, V). In Connect mode it also relies on the authorization you give on Spotify, which you can revoke at any time. We don't use your data for advertising or profiling, and we don't share it with third parties."
     },
     "sharing": {
       "title": "Sharing",
@@ -156,10 +164,11 @@
       "items": [
         "Delete the uploaded history: close or reload the tab.",
         "End Connect mode: use the Sign out button, which deletes the cookie and this tab's cache.",
+        "Confirmation, access, correction, portability, deletion and information about sharing (LGPD, art. 18): since we don't keep your data on a server, there is no copy of ours to look up or export. You can still make any request through the contact above.",
+        "You can also file a complaint with Brazil's data protection authority (ANPD).",
         "Revoke Encore's access to your account: remove the app at"
       ],
-      "revokeLink": "spotify.com/account/apps",
-      "contact": "Questions or requests about your data can be sent through the project's repository."
+      "revokeLink": "spotify.com/account/apps"
     },
     "cookies": {
       "title": "Cookies",

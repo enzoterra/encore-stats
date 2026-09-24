@@ -133,7 +133,9 @@ Todas as stats de `src/domain/stats` recebem `(dataset, period, tz)` e são **fu
 | `SPOTIFY_REDIRECT_URI` | não* | URI exata cadastrada no Spotify |
 | `SESSION_SECRET` | sim se houver Conectar | 32 bytes em base64url; `SESSION_SECRET_PREVIOUS` opcional para rotação |
 | `NEXT_PUBLIC_SITE_URL` | sim | URL canônica |
-| `NEXT_PUBLIC_REPO_URL` | não | Link "veja o código" do selo de privacidade |
+| `NEXT_PUBLIC_REPO_URL` | não | Link "veja o código" do selo de privacidade (só `https://`) |
+| `NEXT_PUBLIC_PRIVACY_CONTROLLER` | sim em produção | Nome do controlador dos dados, exibido em `/privacy` (LGPD, art. 9º). Sprint 7 |
+| `NEXT_PUBLIC_PRIVACY_CONTACT` | sim em produção | E-mail de contato do titular, exibido em `/privacy` (Res. CD/ANPD 2/2022, art. 11). Sprint 7 |
 
 ## ADRs
 1. **BFF em vez de PKCE puro.** Contexto: sessão persistente sem expor o refresh token ao JS. Alternativa: SPA Vite + PKCE, com refresh token em localStorage e risco de XSS. Consequência: um pouco mais de código no servidor, mas tokens protegidos e respostas reduzidas. **Decidido com o usuário.**

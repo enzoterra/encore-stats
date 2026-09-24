@@ -100,7 +100,7 @@ test.describe('landing (RF-01, US-01)', () => {
       /script-src 'self' 'nonce-[^']+' 'strict-dynamic'/,
     );
     expect(headers['content-security-policy']).toContain("frame-ancestors 'none'");
-    expect(headers['content-security-policy']).toContain("worker-src 'self' blob:");
+    expect(headers['content-security-policy']).toContain("worker-src 'self';");
     expect(headers['strict-transport-security']).toContain('max-age=63072000');
     expect(headers['x-content-type-options']).toBe('nosniff');
     expect(headers['referrer-policy']).toBe('no-referrer');

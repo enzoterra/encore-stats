@@ -26,6 +26,11 @@ test.describe('Conectar desabilitado', () => {
       expect(headers['cache-control']).toBe('private, no-store');
       expect(headers['vary']).toContain('Cookie');
       expect(headers['x-content-type-options']).toBe('nosniff');
+      // S7: o BFF fica fora do `proxy.ts`; CSP e CORP próprios (next.config.ts).
+      expect(headers['content-security-policy']).toBe(
+        "default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'",
+      );
+      expect(headers['cross-origin-resource-policy']).toBe('same-origin');
     });
   }
 

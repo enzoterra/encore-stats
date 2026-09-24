@@ -27,9 +27,20 @@ export async function expectNoHorizontalScroll(page: Page): Promise<void> {
   expect(scrollWidth).toBeLessThanOrEqual(innerWidth);
 }
 
-/** Coleta violações de CSP reportadas no console (Chromium e WebKit). */
+/**
+ * Coleta violações de CSP (Chromium e WebKit): as que o navegador escreve no console e também as
+ * do evento `securitypolicyviolation`. O evento pega o que não vira mensagem de console, como um
+ * `new Function` bloqueado e capturado por uma biblioteca (Sprint 7: sonda de JIT do Zod).
+ */
 export function collectCspViolations(page: Page): string[] {
   const violations: string[] = [];
+  void page.addInitScript(() => {
+    document.addEventListener('securitypolicyviolation', (event) => {
+      console.warn(
+        `Refused to load (CSP ${event.effectiveDirective}): ${event.blockedURI || 'inline'}`,
+      );
+    });
+  });
   page.on('console', (message) => {
     if (/Content Security Policy|Refused to/i.test(message.text())) violations.push(message.text());
   });

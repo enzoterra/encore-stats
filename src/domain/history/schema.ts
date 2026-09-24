@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import '../zod-config';
+
 import { MAX_NAME_LENGTH, VALID_PLAY_MS } from './constants';
 import { normalizePlatform, type PlatformCode } from './platform';
 

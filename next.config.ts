@@ -2,6 +2,7 @@ import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
 import {
+  apiSecurityHeaders,
   buildWorkerContentSecurityPolicy,
   staticSecurityHeaders,
 } from './src/server/security-headers';
@@ -29,6 +30,11 @@ const nextConfig: NextConfig = {
         // Todas as respostas (API, assets e páginas). A CSP com nonce vem do `proxy.ts`.
         source: '/:path*',
         headers: [...staticSecurityHeaders],
+      },
+      {
+        // BFF (JSON): fora do `proxy.ts`, sem conteúdo ativo nem embutível por outra origem.
+        source: '/api/:path*',
+        headers: [...apiSecurityHeaders],
       },
       {
         // Scripts de Web Worker (upload e cards) ficam em `/_next/static`: um worker usa a CSP da

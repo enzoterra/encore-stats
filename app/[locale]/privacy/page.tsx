@@ -32,14 +32,18 @@ function Section({ id, title, children }: { id: string; title: string; children:
 const external =
   'inline-flex items-center gap-1 text-primary-fg underline decoration-1 underline-offset-[3px] hover:decoration-2';
 
-/** Página de privacidade (RF-24, US-13): o que é tratado, onde, por quanto tempo e como revogar. */
+/**
+ * Página de privacidade (RF-24, US-13): quem é o controlador e como falar com ele, o que é tratado,
+ * onde, por quanto tempo, base legal e como revogar. Controlador e contato vêm do ambiente
+ * (`NEXT_PUBLIC_PRIVACY_CONTROLLER`/`_CONTACT`, obrigatórios em produção: LGPD, art. 9º).
+ */
 export default async function PrivacyPage({ params }: PageProps<'/[locale]/privacy'>) {
   const { locale } = await params;
   const current = hasLocale(routing.locales, locale) ? locale : routing.defaultLocale;
   setRequestLocale(current);
   const t = await getTranslations('Privacy');
   const tc = await getTranslations('Common');
-  const repoUrl = getServerEnv().repoUrl;
+  const { repoUrl, privacy } = getServerEnv();
   const summary = t.raw('summary') as string[];
   const howLong = t.raw('howLong.items') as string[];
   const rights = t.raw('rights.items') as string[];
@@ -75,6 +79,33 @@ export default async function PrivacyPage({ params }: PageProps<'/[locale]/priva
               ))}
             </ul>
           </section>
+
+          <Section id="controller" title={t('controller.title')}>
+            <p>
+              {privacy.controller
+                ? t('controller.controller', { name: privacy.controller })
+                : t('controller.controllerUnset')}
+            </p>
+            {privacy.contact ? (
+              <p>
+                {t('controller.contact')}{' '}
+                <a href={`mailto:${privacy.contact}`} className={external}>
+                  {privacy.contact}
+                </a>
+              </p>
+            ) : repoUrl ? (
+              <p>
+                {t('controller.contactRepo')}{' '}
+                <a href={repoUrl} target="_blank" rel="noopener noreferrer" className={external}>
+                  {repoUrl.replace(/^https?:\/\//, '')}
+                  <ExternalLink aria-hidden="true" className="size-4" />
+                  <span className="sr-only">{tc('externalLink')}</span>
+                </a>
+              </p>
+            ) : (
+              <p>{t('controller.contactUnset')}</p>
+            )}
+          </Section>
 
           <Section id="what" title={t('what.title')}>
             <h3 className="text-h4 text-fg">{t('what.uploadTitle')}</h3>
@@ -130,19 +161,6 @@ export default async function PrivacyPage({ params }: PageProps<'/[locale]/priva
                 </li>
               ))}
             </ul>
-            <p>
-              {t('rights.contact')}
-              {repoUrl ? (
-                <>
-                  {' '}
-                  <a href={repoUrl} target="_blank" rel="noopener noreferrer" className={external}>
-                    {repoUrl.replace(/^https?:\/\//, '')}
-                    <ExternalLink aria-hidden="true" className="size-4" />
-                    <span className="sr-only">{tc('externalLink')}</span>
-                  </a>
-                </>
-              ) : null}
-            </p>
           </Section>
 
           <Section id="cookies" title={t('cookies.title')}>

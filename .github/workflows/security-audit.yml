@@ -1,0 +1,28 @@
+name: Auditoria semanal de dependências
+
+# SCA agendada (docs/projeto/08-seguranca.md, relatorio-seguranca.md): o `pnpm audit` do CI só roda
+# em push/PR, e o grafo de dependências do GitHub ainda não lê o lockfile do pnpm 12 (dois
+# documentos YAML; dependabot-core#15904), então os alertas do Dependabot podem não aparecer.
+# Uma advisory nova alta/crítica faz este job falhar e o GitHub avisa o dono por e-mail.
+on:
+  schedule:
+    - cron: '0 11 * * 1' # segunda, 08:00 em America/Sao_Paulo
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    name: pnpm audit (alta/crítica)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      - name: Relatório completo (todas as severidades)
+        run: pnpm audit || true
+      - name: Falhar em alta/crítica
+        run: pnpm audit --audit-level=high

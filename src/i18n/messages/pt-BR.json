@@ -120,6 +120,14 @@
       "Não temos banco de dados, contas próprias, analytics nem cookies de rastreamento.",
       "No modo Conectar, só guardamos o acesso ao Spotify num cookie criptografado no seu navegador."
     ],
+    "controller": {
+      "title": "Quem cuida dos seus dados",
+      "controller": "O Encore é um projeto pessoal. O controlador dos dados (LGPD, art. 5º, VI) é {name}.",
+      "controllerUnset": "O Encore é um projeto pessoal, e quem o mantém é o controlador dos dados (LGPD, art. 5º, VI).",
+      "contact": "Dúvidas ou pedidos sobre seus dados:",
+      "contactRepo": "Dúvidas ou pedidos sobre seus dados podem ser feitos pelo repositório do projeto:",
+      "contactUnset": "Dúvidas ou pedidos sobre seus dados podem ser feitos pelo repositório do projeto."
+    },
     "what": {
       "title": "O que é tratado",
       "uploadTitle": "Modo Upload (seu arquivo)",
@@ -132,7 +140,7 @@
     },
     "where": {
       "title": "Onde os dados ficam",
-      "body": "O processamento do arquivo acontece num Web Worker do seu navegador. No modo Conectar, o servidor do Encore apenas repassa as consultas ao Spotify e devolve uma versão reduzida da resposta, sem gravá-la. O site é hospedado na Vercel."
+      "body": "O processamento do arquivo acontece num Web Worker do seu navegador. No modo Conectar, o servidor do Encore apenas repassa as consultas ao Spotify e devolve uma versão reduzida da resposta, sem gravá-la. O site é hospedado na Vercel, e as consultas do modo Conectar passam pelos servidores dela e do Spotify, que podem ficar fora do Brasil. Essa transferência é necessária para prestar o serviço que você pediu (LGPD, art. 33, IX)."
     },
     "howLong": {
       "title": "Por quanto tempo",
@@ -140,12 +148,12 @@
         "Histórico enviado: só na memória da aba, até você recarregar ou fechar a página.",
         "Respostas do Spotify (Conectar): na memória ou no sessionStorage da aba, por no máximo 12 horas, e apagadas ao sair.",
         "Cookie de sessão (Conectar): criptografado, dura no máximo 30 dias e é apagado quando você clica em Sair.",
-        "Registros técnicos do servidor: só rota, status e duração das requisições, sem conteúdo, guardados pelo provedor por cerca de 1 hora."
+        "Registros técnicos: o Encore só registra rota, status e duração das requisições, sem conteúdo. A Vercel, como hospedagem, também registra dados técnicos de cada acesso (como endereço IP e página acessada) por pouco tempo (cerca de 1 hora no plano usado), conforme a política de privacidade dela."
       ]
     },
     "legal": {
       "title": "Base legal",
-      "body": "O tratamento serve para executar o serviço que você pediu (LGPD, art. 7º, V). Não usamos seus dados para publicidade, perfilamento nem os compartilhamos com terceiros."
+      "body": "O tratamento serve para prestar o serviço que você pediu (LGPD, art. 7º, V). No modo Conectar, ele também depende da autorização que você dá no Spotify, que pode ser revogada a qualquer momento. Não usamos seus dados para publicidade nem perfilamento, e não os compartilhamos com terceiros."
     },
     "sharing": {
       "title": "Compartilhamento",
@@ -156,10 +164,11 @@
       "items": [
         "Apagar o histórico enviado: feche ou recarregue a aba.",
         "Encerrar o modo Conectar: use o botão Sair, que apaga o cookie e o cache desta aba.",
+        "Confirmação, acesso, correção, portabilidade, eliminação e informação sobre compartilhamento (LGPD, art. 18): como não guardamos seus dados no servidor, não existe uma cópia nossa para consultar ou exportar. Mesmo assim, qualquer pedido pode ser feito pelo contato acima.",
+        "Você também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).",
         "Revogar o acesso do Encore à sua conta: remova o app em"
       ],
-      "revokeLink": "spotify.com/account/apps",
-      "contact": "Dúvidas ou pedidos sobre seus dados podem ser feitos pelo repositório do projeto."
+      "revokeLink": "spotify.com/account/apps"
     },
     "cookies": {
       "title": "Cookies",
