@@ -59,13 +59,31 @@ pnpm dev                     # http://127.0.0.1:3000 (redireciona para /pt-BR ou
 Use **`http://127.0.0.1:3000`**, não `localhost`: o Spotify só aceita redirect URI de loopback
 com IP literal, e o cookie de sessão depende da mesma origem.
 
-O "seed" local é o **modo Demo** (gerador determinístico, sem banco e sem rede), que chega na
-Sprint 1/4. Não há credenciais de demonstração: o Demo não exige login.
+O "seed" local é o **modo Demo** (gerador determinístico, sem banco e sem rede). Não há
+credenciais de demonstração: o Demo não exige login.
 
-Para rodar os testes E2E pela primeira vez, instale o Chromium do Playwright:
+### Telas do frontend
+
+| Rota                   | O quê                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------------------- |
+| `/{locale}`            | Landing: os 3 modos (Conectar desabilitado sem credenciais), selo de privacidade      |
+| `/{locale}/onboarding` | Como pedir o histórico estendido ao Spotify + lembrete `.ics` gerado no navegador     |
+| `/{locale}/upload`     | Envio do `.zip`/`.json` (Web Worker, nada sai do aparelho) e dashboard do histórico   |
+| `/{locale}/demo`       | Dashboard com histórico fictício (aba "Visão Conectar" preenchida na Sprint 5)        |
+| `/{locale}/privacy`    | Política de privacidade (LGPD): o que é tratado, onde, por quanto tempo, como revogar |
+| `/{locale}/connect`    | Destino do login do Spotify (provisório até a Sprint 5)                               |
+
+`{locale}` é `pt-BR` ou `en`; o idioma troca pelo menu do cabeçalho sem perder o histórico
+carregado (o Dataset fica só na memória da aba; recarregar a página exige novo envio).
+
+Para testar o upload sem o seu histórico real, use as fixtures sintéticas de `tests/fixtures/`
+(`valid-two-files.zip`, ou os maliciosos `zip-bomb.zip` e `path-traversal.zip`).
+
+Para rodar os testes E2E pela primeira vez, instale os navegadores do Playwright (Chromium e
+WebKit, este último para aproximar o Safari/iOS):
 
 ```bash
-pnpm exec playwright install chromium
+pnpm exec playwright install chromium webkit
 ```
 
 ## Scripts
@@ -79,7 +97,7 @@ pnpm exec playwright install chromium
 | `pnpm typecheck`                    | Gera os tipos de rota do Next e roda `tsc --noEmit`                     |
 | `pnpm test`                         | Vitest (unit/integração em Node e componentes em jsdom)                 |
 | `pnpm test:coverage`                | Vitest com cobertura (meta ≥ 80% em `src/domain`)                       |
-| `pnpm test:e2e`                     | Playwright + axe (faz `build` + `start` se não houver servidor rodando) |
+| `pnpm test:e2e`                     | Playwright (Chromium + WebKit) + axe; faz `build` + `start` se preciso  |
 | `pnpm fixtures`                     | Regenera `tests/fixtures/` (zips sintéticos válidos e maliciosos)       |
 | `pnpm bench`                        | Benchmark do upload: ~50 MB sintéticos (meta < 10 s) e troca de período |
 

@@ -1,18 +1,324 @@
 @import 'tailwindcss';
 
 /*
- * Tokens provisórios da fundação. O sistema de design "Palco Neon"
- * (docs/projeto/10-design.md) substitui estes valores na Sprint 4.
+ * Sistema de design "Palco Neon" (docs/projeto/10-design.md §12).
+ * O bloco @theme é o contrato do design: não recrie valores à mão nos componentes.
+ * Fontes self-hosted em /public/fonts (OFL; licenças ao lado dos arquivos).
  */
+
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('/fonts/BricolageGrotesque-VF-latin.woff2') format('woff2-variations');
+  font-weight: 500 800;
+  font-stretch: 75% 100%;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Inter';
+  src: url('/fonts/Inter-VF-latin.woff2') format('woff2-variations');
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* reset da paleta padrão do Tailwind: só os nossos tokens existem */
+  --color-*: initial;
+
+  /* paleta base */
+  --color-neon-magenta: #ff3d8b;
+  --color-neon-yellow: #ffe14d;
+  --color-neon-orange: #ff7a1a;
+  --color-neon-cyan: #3de0ff;
+  --color-stage-950: #0e0b1a;
+  --color-stage-900: #17122a;
+  --color-stage-850: #211a3a;
+  --color-stage-800: #2b2248;
+  --color-stage-700: #342a52;
+  --color-stage-500: #7d71a8;
+  --color-stage-400: #968cb8;
+  --color-stage-300: #b8aed6;
+  --color-stage-50: #f5f1ff;
+
+  /* semânticos (valores literais para funcionar em qualquer contexto) */
+  --color-background: #0e0b1a;
+  --color-surface: #17122a;
+  --color-surface-2: #211a3a;
+  --color-surface-3: #2b2248;
+  --color-fg: #f5f1ff;
+  --color-fg-muted: #b8aed6;
+  --color-fg-subtle: #968cb8;
+  --color-line: #342a52;
+  --color-line-strong: #7d71a8;
+  --color-primary: #ff3d8b;
+  --color-primary-hover: #ff62a2;
+  --color-primary-active: #e82e78;
+  --color-primary-fg: #ff7ab0;
+  --color-on-vibrant: #0e0b1a;
+  --color-accent: #ffe14d;
+  --color-accent-hover: #ffe97a;
+  --color-accent-active: #f2d12e;
+  --color-focus: #ffe14d;
+  --color-success: #52f2c8;
+  --color-warning: #ffc23d;
+  --color-danger: #ff5a5f;
+  --color-danger-hover: #ff7a7e;
+  --color-danger-active: #e84a4f;
+  --color-danger-fg: #ff8a8e;
+  --color-info: #3de0ff;
+  --color-disabled-bg: #2b2248;
+  --color-disabled-fg: #8a80aa;
+  --color-overlay: rgb(8 6 16 / 0.72);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  /* heatmap (sequencial, L* crescente, seguro para daltônicos) */
+  --color-heat-0: #211a3a;
+  --color-heat-1: #3d1f66;
+  --color-heat-2: #6e1f7e;
+  --color-heat-3: #b02a80;
+  --color-heat-4: #ec4a6e;
+  --color-heat-5: #ff8a3d;
+  --color-heat-6: #ffe14d;
+
+  /* tipografia */
+  --font-display: 'Bricolage Grotesque', 'Arial Black', system-ui, sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  --text-display: clamp(2.75rem, 1.6rem + 5vw, 4.5rem);
+  --text-display--line-height: 0.95;
+  --text-display--letter-spacing: -0.03em;
+  --text-display--font-weight: 800;
+  --text-h1: 2rem;
+  --text-h1--line-height: 1.05;
+  --text-h1--letter-spacing: -0.02em;
+  --text-h1--font-weight: 800;
+  --text-h1-lg: 2.75rem;
+  --text-h1-lg--line-height: 1.05;
+  --text-h1-lg--letter-spacing: -0.02em;
+  --text-h1-lg--font-weight: 800;
+  --text-h2: 1.5rem;
+  --text-h2--line-height: 1.15;
+  --text-h2--letter-spacing: -0.01em;
+  --text-h2--font-weight: 700;
+  --text-h2-lg: 1.875rem;
+  --text-h2-lg--line-height: 1.15;
+  --text-h2-lg--letter-spacing: -0.01em;
+  --text-h2-lg--font-weight: 700;
+  --text-h3: 1.25rem;
+  --text-h3--line-height: 1.25;
+  --text-h3--font-weight: 700;
+  --text-h4: 1.0625rem;
+  --text-h4--line-height: 1.35;
+  --text-h4--font-weight: 600;
+  --text-overline: 0.75rem;
+  --text-overline--line-height: 1.2;
+  --text-overline--letter-spacing: 0.12em;
+  --text-overline--font-weight: 700;
+  --text-caption-strong: 0.8125rem;
+  --text-caption-strong--line-height: 1.35;
+  --text-caption-strong--font-weight: 600;
+  --text-metric: 2.25rem;
+  --text-metric--line-height: 1;
+  --text-metric--letter-spacing: -0.02em;
+  --text-metric--font-weight: 800;
+  --text-metric-lg: 2.75rem;
+  --text-metric-lg--line-height: 1;
+  --text-metric-lg--letter-spacing: -0.02em;
+  --text-metric-lg--font-weight: 800;
+  --text-metric-sm: 1.5rem;
+  --text-metric-sm--line-height: 1.05;
+  --text-metric-sm--font-weight: 700;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.55;
+  --text-body: 1rem;
+  --text-body--line-height: 1.5;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.45;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-caption--letter-spacing: 0.01em;
+  --text-caption--font-weight: 500;
+
+  /* espaço (base 4 px: p-1 = 4px, p-4 = 16px) */
+  --spacing: 0.25rem;
+
+  /* breakpoints: padrões do Tailwind (sm 40rem, md 48rem, lg 64rem, xl 80rem) */
+  --container-page: 75rem; /* 1200px */
+  --container-prose: 40rem; /* texto corrido */
+
+  /* raio */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* elevação */
+  --shadow-e2: 0 8px 24px -12px rgb(0 0 0 / 0.6);
+  --shadow-e3: 0 24px 64px -16px rgb(0 0 0 / 0.7);
+  --shadow-glow: 0 0 0 1px rgb(255 61 139 / 0.35), 0 10px 32px -10px rgb(255 61 139 / 0.55);
+
+  /* movimento */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-enter: cubic-bezier(0.05, 0.7, 0.1, 1);
+  --ease-exit: cubic-bezier(0.3, 0, 0.8, 0.15);
+  --animate-shimmer: shimmer 1.4s linear infinite;
+  --animate-sheet-in: sheet-in 320ms cubic-bezier(0.05, 0.7, 0.1, 1);
+  --animate-fade-in: fade-in 200ms cubic-bezier(0.05, 0.7, 0.1, 1);
+  --animate-pop-in: pop-in 200ms cubic-bezier(0.05, 0.7, 0.1, 1);
+
+  @keyframes shimmer {
+    from {
+      background-position: -200% 0;
+    }
+    to {
+      background-position: 200% 0;
+    }
+  }
+  @keyframes sheet-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 :root {
   color-scheme: dark;
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --duration-reveal: 600ms;
+  --header-h: 56px;
+}
+html {
+  background: var(--color-background);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  background: var(--color-background);
+}
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+::selection {
+  background: var(--color-accent);
+  color: var(--color-on-vibrant);
+}
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+summary {
+  cursor: pointer;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+}
+.font-condensed {
+  font-family: var(--font-display);
+  font-stretch: 75%;
+  font-variation-settings: 'wdth' 75;
 }
 
-body {
-  background-color: #0b0b12;
-  color: #f5f5f7;
+/* Skeleton (§8.15): brilho que atravessa em 1,4 s; estático com reduced-motion. */
+.skeleton {
+  background-color: var(--color-surface-2);
+  background-image: linear-gradient(90deg, transparent, rgb(245 241 255 / 0.06), transparent);
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton {
+    animation: var(--animate-shimmer);
+  }
+}
+
+/* Listas horizontais (chips): rolam dentro do contêiner, com máscara de degradê na borda (§4). */
+.scroll-fade-x {
+  scrollbar-width: none;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 20px),
+    transparent
+  );
+  mask-image: linear-gradient(90deg, transparent 0, #000 12px, #000 calc(100% - 20px), transparent);
+}
+.scroll-fade-x::-webkit-scrollbar {
+  display: none;
+}
+
+/* Área de toque de 44 px para controles visualmente menores (§8). */
+.touch-target {
+  position: relative;
+}
+.touch-target::after {
+  content: '';
+  position: absolute;
+  inset: 50% auto auto 50%;
+  width: max(100%, 44px);
+  height: max(100%, 44px);
+  transform: translate(-50%, -50%);
+}
+
+/* Pano de fundo do palco: holofotes discretos atrás do hero. */
+.stage-glow {
+  background-image:
+    radial-gradient(60rem 30rem at 10% -10%, rgb(255 61 139 / 0.18), transparent 60%),
+    radial-gradient(40rem 24rem at 95% 0%, rgb(61 224 255 / 0.12), transparent 60%);
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(0.85);
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Com a barra de ação inferior do dashboard (mobile), o rodapé não fica escondido atrás dela. */
+@media (width < 64rem) {
+  body:has([data-bottom-bar]) {
+    padding-bottom: calc(76px + env(safe-area-inset-bottom));
+  }
 }

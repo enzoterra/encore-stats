@@ -3,11 +3,11 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: nenhuma. Sprint 2 ✅ concluída (dev-backend, 2026-09-24; aguarda commit do orquestrador)
-- Próximo passo ao retomar: Sprint 4 (dev-frontend) e, depois, Sprint 5 (UI do Conectar sobre o BFF; contrato em `docs/api.md`). Pendente com o cliente: testar o login real em 127.0.0.1 (aceite da Sprint 2; passo a passo no README)
+- Sprint em andamento: nenhuma. Sprint 4 ✅ concluída (dev-frontend, 2026-09-24): vertical slice Upload/Demo pronto para o cliente validar; aguarda commit do orquestrador
+- Próximo passo ao retomar: validação do vertical slice com o cliente (screenshots em `docs/projeto/screenshots/sprint4/`, roteiro em "Como verificar" da Sprint 4); depois, Sprint 5 (UI do Conectar sobre o BFF; contrato em `docs/api.md`). Pendente com o cliente: testar o login real em 127.0.0.1 (aceite da Sprint 2; passo a passo no README)
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-24 por dev-backend (fim da Sprint 2)
+- Última atualização: 2026-09-24 por dev-frontend (fim da Sprint 4)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -220,14 +220,88 @@
 - Pendências p/ cliente/ADR (10-design §15): aprovar direção; capas no card Conectar exigem `i.scdn.co` na CSP ou proxy (ADR); fonte CJK nos cards fora do MVP; logo oficial Spotify baixado na S5.5
 - Próximo papel: cliente aprova → dev-frontend (S4.1 lê `10-design.md` §2–§8, §12, §13; S6 lê §9 e `design/cards/templates.mjs`)
 
-### Sprint 4 — UI: landing, onboarding, upload e dashboard — ⬜ · dev-frontend → vertical slice com o cliente
-- [ ] S4.1 Tokens e componentes base; layout; idioma
-- [ ] S4.2 Landing + página de privacidade
-- [ ] S4.3 Onboarding + `.ics`
-- [ ] S4.4 Fluxo de upload
-- [ ] S4.5 Dashboard de upload e demo
-- [ ] S4.6 Modo Demo
-- [ ] S4.7 Testes + e2e (incluindo o teste de rede de privacidade) + axe
+### Sprint 4 — UI: landing, onboarding, upload e dashboard — ✅ concluída (2026-09-24) · dev-frontend → vertical slice com o cliente
+- [x] S4.1 Tokens e componentes base; layout; idioma
+- [x] S4.2 Landing + página de privacidade
+- [x] S4.3 Onboarding + `.ics`
+- [x] S4.4 Fluxo de upload
+- [x] S4.5 Dashboard de upload e demo
+- [x] S4.6 Modo Demo
+- [x] S4.7 Testes + e2e (incluindo o teste de rede de privacidade) + axe
+- Entregue:
+  - Fontes: `docs/projeto/design/fonts/woff2/*` movidas para `public/fonts/` (com as licenças OFL); os TTF ficam em `docs/…/ttf` para a S6. `app/globals.css` com o `@theme` do 10-design §12 (reset da paleta do Tailwind), skeleton, máscara de chips, `prefers-reduced-motion`; preload só do Inter
+  - Componentes base (`src/components/ui`): `Button` (5 variantes × 4 tamanhos, `asChild` com Radix Slot), `Segmented` (Radix ToggleGroup), `Badge`/`DemoTag`, `Alert`, `InfoTip` (Radix Popover), `Toast` (fila Zustand, 5 s com pausa, `status`/`alert`), `Skeleton`, `useHydrated`
+  - Layout (`src/components/layout`): cabeçalho sticky de 56 px (wordmark, badge do modo, selo compacto ≥ 640 px, idioma), rodapé com a não afiliação, `LanguageSwitcher` (Radix DropdownMenu; troca pelo roteador do cliente, preservando o histórico em memória), selo compacto/expandido com `NEXT_PUBLIC_REPO_URL`; skip link
+  - Páginas:
+    - `/{locale}`: hero + cartaz decorativo com artistas fictícios, 3 modos, "O que você descobre", privacidade;
+    - `/{locale}/privacy`: LGPD (o que, onde, quanto tempo, base legal, revogar em spotify.com/account/apps, cookies);
+    - `/{locale}/onboarding`: 4 passos, aviso de ~30 dias, `.ics` semanal × 5 gerado por Blob, atalhos Demo/Conectar;
+    - `/{locale}/upload` e `/{locale}/demo`;
+    - `/connect` provisório: só ganhou o visual novo (textos e comportamento da S2 intactos)
+  - Upload (`src/features/upload`):
+    - dropzone (`<label>` + input, arrastar/soltar, .zip/.json múltiplos, estados válido/inválido);
+    - `useHistoryUpload`: um worker por envio via Comlink (contrato da S1), progresso por etapa, cancelar = `cancel` + `terminate` imediato, queda do worker → `INTERNAL`;
+    - os 13 códigos traduzidos, com ações. `ERROR_ACTIONS` é um `Record` exaustivo: um código novo no domínio quebra o typecheck;
+    - Dataset só no Zustand (`src/features/dataset/store.ts`, sem `persist`)
+  - Dashboard (`src/features/dashboard`):
+    - seletor de período: Mês (stepper pelos meses com dados), Ano (chips), Sempre, Intervalo (obrigatório, dentro do histórico, final ≥ inicial, "Aplicar" bloqueado enquanto inválido) + resumo + `aria-live`;
+    - minutos em destaque (contagem só na 1ª exibição), totais, top artistas/músicas/álbuns (10 → 50, barra de proporção, toque expande o nome);
+    - "você por você": 5 cards com o selo "vs. você mesmo" e a explicação do cálculo; "mais pulada" exige ≥ 5 pulos;
+    - heatmap SVG próprio: vertical < 768 px e horizontal ≥ 768, escala por quantis com a legenda real, pico com anel duplo, tooltip, resumo em `aria-label` + `figcaption`, tabelas de 3 h e de 24 h;
+    - plataformas; barra inferior fixa no mobile (período + Compartilhar desabilitado até a S6); aviso de recarga (dispensável, sessionStorage); relatório com o tempo real de processamento;
+    - nenhum link "Abrir no Spotify" no Upload/Demo
+  - Demo (`src/features/demo/demo-view.tsx`): `generateDemo()` num chunk carregado sob demanda, tag DEMO no cabeçalho, abas Radix "Visão Upload | Visão Conectar" (a segunda só com o aviso; `DemoData.api` já fica no store para a S5)
+  - Testes:
+    - 12 arquivos novos de unidade/componente (Testing Library): upload com worker falso, dropzone, seletor de período, heatmap + tabela, dashboard do demo, toast, cards de modo, selo, `.ics`, escala do heatmap, utilidades de período, erros, paridade e completude das mensagens;
+    - e2e `home`, `pages`, `demo` e `upload`, em Chromium **e WebKit** (pendência da S0; CI instala os dois)
+- Versões instaladas:
+  - radix-ui 1.6.7, zustand 5.0.15;
+  - lucide-react **1.47.0**: a 1.48.0 saiu hoje e é barrada pelo `minimumReleaseAge`. O Lucide 1.x não tem mais ícones de marca, então "código" usa `code-xml`;
+  - TanStack Query não foi instalado (fica para a S5);
+  - `pnpm audit --audit-level=high`: sem vulnerabilidades
+- Números (Windows, Node 22.20, build de produção):
+  - `pnpm test`: 393 testes (30 arquivos) verdes, 46 novos na S4. Cobertura total: 93,3% statements, 90,0% ramos; `src/domain` segue acima de 95% de ramos
+  - `pnpm test:e2e`: 84 testes verdes (42 por navegador):
+    - axe sem `serious`/`critical` em landing, onboarding, privacidade, upload (com e sem erro) e dashboard (desktop e 360 px);
+    - 360 px sem scroll horizontal em todas as telas
+  - teste de rede do upload: 10 (Chromium) e 14 (WebKit) requisições depois de escolher o arquivo, todas GET same-origin de assets/prefetch, sem corpo e sem WebSocket → 0 problemas
+  - processamento real no navegador do benchmark da S1 (57,8 MiB de JSON, 72 000 registros, zip de 3,8 MiB): **0,8 s no Chromium e 1,4 s no WebKit** (0,9 s / 1,9 s até o dashboard na tela). A fixture pequena leva ~0,2 s
+  - troca de período (clique → título novo na tela): 12–30 ms no Chromium, 34–78 ms no WebKit (meta < 200 ms)
+- Decisões:
+  - **CSP e estilos inline:**
+    - a CSP de produção bloqueia `style="…"` vindo no HTML do servidor, mas não o estilo aplicado pelo React no cliente (CSSOM);
+    - por isso as larguras dinâmicas (barras, progresso, tooltip) só existem em componentes renderizados no cliente;
+    - o Radix Tabs, que gera `style` no SSR, só monta depois da hidratação (`useHydrated`);
+    - o e2e "nenhuma página viola a CSP" cobre isso
+  - **Bug de corrida achado no WebKit e corrigido:** a última mensagem de progresso do Comlink pode chegar **depois** do resultado e devolvia a tela para "processando" (zips sem nenhum histórico ficavam presos em 90%). O hook ignora progresso depois do resultado; há teste de regressão
+  - Período inicial = ano mais recente com música. O resumo limita o período às bordas do histórico ("2026" com dados até junho mostra 181 dias)
+  - O intervalo fica inline com "Aplicar", sem o bottom sheet do 10-design §8.3 no mobile: menos código e o mesmo resultado. Revisitar se o cliente preferir o sheet
+  - Um botão primário por tela: nos erros do upload as ações são secundárias, porque a dropzone logo abaixo já tem "Escolher arquivo"
+  - Compartilhar aparece desabilitado com o motivo ("chegam na próxima etapa"), no mobile e no desktop
+  - `src/domain` e `src/server` não foram alterados
+- Como verificar:
+  - `pnpm i` → `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build`
+  - `pnpm exec playwright install chromium webkit` → `pnpm test:e2e`. No Windows com o pnpm local: `pnpm build && pnpm start` num terminal e `pnpm test:e2e` em outro
+  - manual (`pnpm dev` ou `pnpm start`, `http://127.0.0.1:3000`):
+    1. landing em PT e EN (menu de idioma), Conectar desabilitado com o motivo, selo de privacidade;
+    2. onboarding → "Baixar lembrete (.ics)";
+    3. Demo → trocar Mês/Ano/Sempre/Intervalo, tops, "Ver como tabela", aba "Visão Conectar";
+    4. Upload de `tests/fixtures/valid-two-files.zip` (ou do histórico real) com o DevTools → Network aberto: nenhuma requisição leva o arquivo. Depois, `zip-bomb.zip` e `path-traversal.zip` para ver os erros;
+    5. recarregar a página no dashboard do upload: o histórico some (só memória)
+  - screenshots para o cliente em `docs/projeto/screenshots/sprint4/`:
+    - `01-landing-desktop.png`, `01b-landing-mobile.png`;
+    - `02-upload-erro-zip-malicioso-mobile.png`, `02b-upload-progresso-mobile.png`;
+    - `03-dashboard-demo-mobile.png` (+ `03b` métricas, `03c` heatmap);
+    - `04-dashboard-upload-desktop.png` (benchmark sintético), `04b-dashboard-demo-desktop-en.png`
+- Pendências:
+  - Cliente: validar o vertical slice (aceite da sprint), incluindo o intervalo inline em vez do sheet
+  - S5: visão Conectar do Demo (usa `useDatasetStore().demo.api`), TanStack Query e atribuição do Spotify; o `/connect` provisório vira a tela real
+  - S6: botão Compartilhar (hoje desabilitado) e TTF de `docs/projeto/design/fonts/ttf` → `public/fonts/ttf`
+  - S7:
+    - revisar o uso de `style` só no cliente sob a CSP;
+    - estender a regra de lint anti-rede a `src/features/upload` (hoje só vale para `src/domain` e `src/workers`; a pasta também não faz rede)
+  - S8: medir no iPhone real. O WebKit do Playwright no Windows não substitui o Safari/iOS; nas capturas dele, os pesos da fonte variável pareceram mais leves
+- Próxima sprint: Sprint 5 (dev-frontend), depois do aceite do cliente
 
 ### Sprint 5 — UI modo Conectar — ⬜ · dev-frontend
 - [ ] S5.1 Conectar, estados de login e logout

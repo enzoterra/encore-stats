@@ -6,7 +6,7 @@ const isCI = Boolean(process.env.CI);
 
 /**
  * E2E contra o build de produção (`next start`), sem credenciais do Spotify:
- * o app roda em modo Upload/Demo. WebKit entra quando houver fluxos de UI (Sprint 4).
+ * o app roda em modo Upload/Demo. Chromium e WebKit (Safari/iOS é o alvo do RNF-03/04).
  */
 export default defineConfig({
   testDir: './e2e',
@@ -19,7 +19,10 @@ export default defineConfig({
     baseURL: BASE_URL,
     trace: 'retain-on-failure',
   },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+  ],
   webServer: {
     command: 'pnpm run build && pnpm run start',
     url: `${BASE_URL}/api/health`,

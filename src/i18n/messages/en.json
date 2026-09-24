@@ -1,32 +1,480 @@
 {
   "Metadata": {
     "title": "Encore — your Spotify stats",
-    "description": "See your Spotify stats privately: your history is processed in your browser."
+    "description": "See your Spotify stats privately: your history is processed in your browser.",
+    "privacyTitle": "Privacy · Encore",
+    "onboardingTitle": "How to request your history · Encore",
+    "uploadTitle": "Upload history · Encore",
+    "demoTitle": "Demo · Encore"
   },
-  "Home": {
-    "title": "Encore",
-    "tagline": "Your Spotify stats, processed in your browser.",
-    "status": "Under construction: this is the foundation's placeholder page.",
-    "connectEnabled": "Connect with Spotify: available in this environment.",
-    "connectDisabled": "Connect with Spotify: unavailable in this environment. Upload and Demo still work.",
-    "switchLanguage": "Ler em português"
+  "Common": {
+    "skipToContent": "Skip to content",
+    "home": "Encore, home page",
+    "close": "Close",
+    "loading": "Loading…",
+    "demoTag": "DEMO",
+    "modeBadge": {
+      "upload": "Upload",
+      "demo": "DEMO",
+      "connect": "Connected"
+    },
+    "language": {
+      "label": "Language: English. Change language",
+      "menuTitle": "Language",
+      "pt-BR": "Português (Brasil)",
+      "en": "English"
+    },
+    "externalLink": "(opens in a new tab)",
+    "comingSoon": "coming soon"
+  },
+  "Footer": {
+    "notAffiliated": "Encore is not affiliated with or endorsed by Spotify.",
+    "privacy": "Privacy",
+    "howTo": "How to request your history",
+    "code": "Source code",
+    "tagline": "Your Spotify stats, processed on your device."
+  },
+  "Seal": {
+    "compact": {
+      "upload": "Processed on your device",
+      "connect": "Nothing is stored on the server",
+      "demo": "Fictional data · no network"
+    },
+    "openLabel": "{label}. See how your data is handled",
+    "title": "Your data stays with you",
+    "local": "Your file is read in your browser and never uploaded.",
+    "localConnect": "Your Spotify access lives in an encrypted cookie; the data, only in this tab.",
+    "localDemo": "The demo uses a made-up history, generated in your browser.",
+    "noDatabase": "No database, no accounts, no analytics.",
+    "offline": "Once loaded, it works offline. Try it: turn off your internet and drop the file.",
+    "openSource": "Open source:",
+    "openSourceLink": "check it yourself",
+    "openSourceSoon": "Open source: the repository link goes live at launch.",
+    "policy": "Privacy policy"
+  },
+  "Landing": {
+    "overline": "Spotify stats, your way",
+    "title": "Your year in music. Whenever you want.",
+    "lead": "Encore turns your Spotify history into tops, listening hours and fun facts for any period, without sending anything to any server.",
+    "start": "Choose how to start",
+    "posterCaption": "Example with fictional artists",
+    "posterPresents": "Encore presents",
+    "posterTitle": "Encore Fest",
+    "posterPeriod": "Your 2025",
+    "posterStats": "48,213 min · 9,214 plays · 612 artists",
+    "modesTitle": "Three ways to start",
+    "modesLead": "They all show the same kind of dashboard. What changes is where the data comes from.",
+    "upload": {
+      "badge": "Most complete",
+      "title": "Upload my history",
+      "body": "Your whole history, since your very first play: tops for any period, listening hours and the \"you vs. you\" metrics.",
+      "cta": "Upload my history",
+      "secondary": "I don't have the file yet",
+      "note": "Spotify may take up to 30 days to send the file."
+    },
+    "connect": {
+      "badge": "Live",
+      "title": "Connect with Spotify",
+      "body": "Your tops for the last 4 weeks, 6 months and 1 year, trends and likes, straight from your account.",
+      "cta": "Connect with Spotify",
+      "limited": "In test mode: invited accounts only (up to 5).",
+      "disabled": "Unavailable on this installation",
+      "disabledWhy": "The site owner hasn't set up Spotify access. Upload and Demo work as usual."
+    },
+    "demo": {
+      "badge": "No account",
+      "title": "See the demo",
+      "body": "A fictional 3-year history to explore everything right now, with no file and no login.",
+      "cta": "See the demo"
+    },
+    "featuresTitle": "What you'll find",
+    "features": {
+      "tops": {
+        "title": "Tops for any period",
+        "body": "Artists, tracks and albums for a month, a year, a custom range or all time."
+      },
+      "when": {
+        "title": "When you listen",
+        "body": "An hour × day heatmap in your time zone, with a table for those who prefer numbers."
+      },
+      "self": {
+        "title": "You vs. you",
+        "body": "Fan since when, distinct days, most skipped: honest comparisons with yourself."
+      },
+      "share": {
+        "title": "Shareable cards",
+        "body": "Festival posters and summaries ready for Stories. Coming in the next release."
+      }
+    },
+    "privacyTitle": "Privacy by architecture",
+    "privacyLead": "Not a promise in a footer: Encore was built so it doesn't need your data."
+  },
+  "Privacy": {
+    "overline": "LGPD",
+    "title": "Privacy",
+    "lead": "Encore was designed to handle as little data as possible, and almost everything happens on your own device. This page explains what is processed, where, for how long and how to revoke access.",
+    "updated": "Updated on September 24, 2026.",
+    "summaryTitle": "Summary",
+    "summary": [
+      "The history you upload never leaves your browser: nothing is uploaded to a server.",
+      "We have no database, no accounts of our own, no analytics and no tracking cookies.",
+      "In Connect mode, we only keep your Spotify access in an encrypted cookie in your browser."
+    ],
+    "what": {
+      "title": "What is processed",
+      "uploadTitle": "Upload mode (your file)",
+      "upload": "From the extended history file we only read: date and time of each play, how long it played, the track, artist and album names, the track identifier, the platform (phone, computer…) and whether it was skipped or played on shuffle.",
+      "uploadDiscarded": "IP address, connection country and the other fields in the file are discarded while reading and never used.",
+      "connectTitle": "Connect mode (your Spotify account)",
+      "connect": "With your authorization, we read your basic profile (identifier, name and photo), your tops, recently played and liked tracks. The requested permissions are read-only.",
+      "demoTitle": "Demo mode",
+      "demo": "Uses only made-up data, generated in your browser. No personal data is processed."
+    },
+    "where": {
+      "title": "Where the data lives",
+      "body": "Your file is processed in a Web Worker in your browser. In Connect mode, the Encore server only relays requests to Spotify and returns a reduced version of the response, without storing it. The site is hosted on Vercel."
+    },
+    "howLong": {
+      "title": "For how long",
+      "items": [
+        "Uploaded history: only in the tab's memory, until you reload or close the page.",
+        "Spotify responses (Connect): in the tab's memory or sessionStorage, for at most 12 hours, and cleared when you sign out.",
+        "Session cookie (Connect): encrypted, lasts at most 30 days and is deleted when you click Sign out.",
+        "Server technical logs: only route, status and duration of requests, with no content, kept by the provider for about 1 hour."
+      ]
+    },
+    "legal": {
+      "title": "Legal basis",
+      "body": "Processing is needed to provide the service you asked for (Brazil's LGPD, art. 7, V). We don't use your data for advertising or profiling, and we don't share it with third parties."
+    },
+    "sharing": {
+      "title": "Sharing",
+      "body": "We don't sell or share data. Spotify is the source of Connect mode data, and Vercel hosts the site. Cards you create stay on your device until you choose to share them."
+    },
+    "rights": {
+      "title": "Your rights and how to revoke",
+      "items": [
+        "Delete the uploaded history: close or reload the tab.",
+        "End Connect mode: use the Sign out button, which deletes the cookie and this tab's cache.",
+        "Revoke Encore's access to your account: remove the app at"
+      ],
+      "revokeLink": "spotify.com/account/apps",
+      "contact": "Questions or requests about your data can be sent through the project's repository."
+    },
+    "cookies": {
+      "title": "Cookies",
+      "body": "We only use essential cookies: the Connect mode session and a temporary 10-minute one during sign-in. Your language preference may be kept in your browser."
+    }
+  },
+  "Onboarding": {
+    "overline": "Before you start",
+    "title": "Request your history from Spotify",
+    "lead": "Encore uses the extended history, which Spotify emails you when you ask for it. It's free and covers everything since you created your account.",
+    "wait": "Spotify may take up to 30 days to send it. It usually arrives sooner.",
+    "waitTitle": "A little patience",
+    "stepsLabel": "Step by step",
+    "steps": {
+      "open": {
+        "title": "Open your Spotify account privacy page",
+        "body": "Sign in and scroll down to \"Download your data\".",
+        "link": "spotify.com/account/privacy"
+      },
+      "select": {
+        "title": "Tick the extended streaming history",
+        "bodyBefore": "Select",
+        "bodyStrong": "Extended streaming history",
+        "bodyAfter": "and untick the rest. It's the only file we need."
+      },
+      "confirm": {
+        "title": "Confirm through the email Spotify sends",
+        "body": "The request only starts after you click the confirmation link."
+      },
+      "return": {
+        "title": "When the .zip arrives, come back here",
+        "body": "Drop the file on the upload page, without unzipping it.",
+        "link": "Go to upload"
+      }
+    },
+    "reminder": {
+      "cta": "Download reminder (.ics)",
+      "help": "A weekly reminder for 5 weeks in your calendar, generated right here.",
+      "done": "Reminder downloaded — nothing was sent.",
+      "eventTitle": "Encore: has your Spotify history arrived?",
+      "eventDescription": "Check whether Spotify's email with your extended history has arrived. When it does, upload the .zip at {url}"
+    },
+    "meanwhile": {
+      "title": "Meanwhile",
+      "demoTitle": "Explore the demo",
+      "demoBody": "See the full dashboard with a fictional history.",
+      "demoCta": "See the demo",
+      "connectTitle": "Connect your account",
+      "connectBody": "Your recent tops, straight from Spotify.",
+      "connectCta": "Connect with Spotify",
+      "connectDisabled": "Unavailable on this installation."
+    }
+  },
+  "Upload": {
+    "overline": "Upload mode",
+    "title": "Upload your history",
+    "lead": "Drop the .zip Spotify emailed you. It's read right here, in your browser.",
+    "dropzone": {
+      "idle": "Drop your Spotify .zip here",
+      "or": "or",
+      "choose": "Choose file",
+      "help": "Accepts the .zip or the Streaming_History_Audio_*.json files. Nothing leaves your device.",
+      "dragValid": "Drop it",
+      "dragInvalid": "Only Spotify .zip or .json",
+      "inputLabel": "Choose your history file (.zip or .json)"
+    },
+    "noFile": "Don't have the file yet?",
+    "noFileLink": "See how to request it from Spotify",
+    "progress": {
+      "title": "Reading your history",
+      "steps": {
+        "unzip": "Unzip",
+        "parse": "Read",
+        "aggregate": "Aggregate"
+      },
+      "stepState": {
+        "done": "done",
+        "active": "in progress",
+        "pending": "pending"
+      },
+      "detail": "{files, plural, =0 {Opening the file} one {# file read} other {# files read}} · {records, plural, =0 {no tracks yet} one {# track} other {# tracks}}",
+      "percentLabel": "Overall progress",
+      "announce": "{step}: {percent}%",
+      "cancel": "Cancel",
+      "cancelled": "Cancelled. Nothing was kept."
+    },
+    "done": "Done! {music, plural, one {# track read} other {# tracks read}} in {seconds} s, without leaving your device.",
+    "reset": "Upload another file",
+    "errors": {
+      "UNSUPPORTED_FILE": {
+        "title": "This file type isn't accepted",
+        "body": "\"{file}\" is neither .zip nor .json. Upload the .zip Spotify sent you or the Streaming_History_Audio_*.json files."
+      },
+      "INVALID_ZIP": {
+        "title": "I couldn't open this file",
+        "body": "\"{file}\" doesn't look like a valid .zip. Upload the file Spotify emailed you, without unzipping it."
+      },
+      "UNSAFE_PATH": {
+        "title": "Non-standard file",
+        "body": "For safety, we reject zips with suspicious paths (like \"../\"). Spotify's original .zip doesn't have them."
+      },
+      "TOO_MANY_ENTRIES": {
+        "title": "File too large or non-standard",
+        "body": "The upload has more than {limit} files. Spotify's .zip usually has far fewer."
+      },
+      "ENTRY_TOO_LARGE": {
+        "title": "File too large or non-standard",
+        "body": "\"{entry}\" is over {limit} MB unzipped. For safety, we reject files that large."
+      },
+      "TOTAL_TOO_LARGE": {
+        "title": "File too large or non-standard",
+        "body": "For safety, we reject histories over {limit} MB unzipped."
+      },
+      "COMPRESSION_RATIO": {
+        "title": "File too large or non-standard",
+        "body": "\"{entry}\" has a suspicious compression ratio (over {limit}×). For safety, we stopped reading."
+      },
+      "NO_HISTORY_FILES": {
+        "title": "This zip doesn't have the extended history",
+        "body": "We looked for Streaming_History_Audio_*.json and found none. Check that it's the extended history file."
+      },
+      "WRONG_EXPORT": {
+        "title": "This is the \"Account data\" package",
+        "body": "It only covers the last year, in a reduced format. Request the \"Extended streaming history\" to see everything."
+      },
+      "INVALID_JSON": {
+        "title": "One of the files is corrupted",
+        "body": "\"{entry}\" isn't valid JSON. Download the .zip again from the link in Spotify's email."
+      },
+      "UNEXPECTED_FORMAT": {
+        "title": "The format changed or this isn't a Spotify file",
+        "body": "\"{entry}\" doesn't have the fields we expect in a Spotify history."
+      },
+      "INVALID_RECORDS": {
+        "title": "The format changed or the file is corrupted",
+        "body": "More than 5% of the records in \"{entry}\" ({invalid} of {total}) aren't in the expected format."
+      },
+      "INTERNAL": {
+        "title": "The browser couldn't cope",
+        "body": "Something failed while reading the file, possibly low memory. Try on a computer or close other tabs."
+      }
+    },
+    "actions": {
+      "tryAnother": "Try another file",
+      "tryAgain": "Try again",
+      "howTo": "How to request the extended history",
+      "report": "Report on GitHub"
+    }
+  },
+  "Dashboard": {
+    "overline": {
+      "upload": "Your history",
+      "demo": "Fictional history"
+    },
+    "title": {
+      "year": "Your {year}",
+      "month": "Your {month}",
+      "all": "You, all time",
+      "range": "Your custom range"
+    },
+    "reloadBanner": "Your data lives only in this tab. If you reload, you'll need to upload the file again.",
+    "reloadBannerClose": "Dismiss notice",
+    "demoBanner": "Everything here is made up: artists, tracks and habits. Change the period and explore freely.",
+    "tabs": {
+      "label": "Demo views",
+      "upload": "Upload view",
+      "connect": "Connect view",
+      "connectSoon": "The demo's Connect view (live tops, trends and likes) arrives in the next release."
+    },
+    "period": {
+      "heading": "Period",
+      "modeLabel": "Period type",
+      "modes": {
+        "month": "Month",
+        "year": "Year",
+        "all": "All time",
+        "range": "Range"
+      },
+      "yearGroup": "Year",
+      "prevMonth": "Previous month",
+      "nextMonth": "Next month",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply",
+      "errors": {
+        "required": "Enter a date.",
+        "order": "The end date must come after the start date.",
+        "outOfRange": "Pick a date between {min} and {max}."
+      },
+      "summary": "{range} · {days, plural, one {# day} other {# days}} · {plays, plural, one {# play} other {# plays}}",
+      "live": "Showing {label}",
+      "allLabel": "all time",
+      "rangeLabel": "{from} – {to}",
+      "barLabel": "Period: {label}. Change period"
+    },
+    "totals": {
+      "heading": "Period totals",
+      "minutes": "Minutes of music",
+      "minutesContextDays": "≈ {days, plural, one {# full day} other {# full days}} of sound",
+      "minutesContextHours": "≈ {hours, plural, one {# hour} other {# hours}} of sound",
+      "plays": "plays",
+      "artists": "artists",
+      "tracks": "tracks",
+      "ruleLabel": "How we count",
+      "rule": "A play counts once you've listened for 30 seconds. Minutes add up all music time, and podcasts, audiobooks and local files are left out."
+    },
+    "self": {
+      "title": "You vs. you",
+      "lead": "Comparisons with your own history, not with other listeners.",
+      "badge": "vs. yourself",
+      "howLabel": "How we calculate",
+      "fewData": "Not enough data for this period",
+      "fanSince": {
+        "label": "Fan since",
+        "context": "Your first play of <b>{artist}</b>, your #1 of the period.",
+        "how": "Date of the first play (30 s or more) of your #1 artist of the period, across your whole history."
+      },
+      "share": {
+        "label": "Of your plays",
+        "context": "were <b>{artist}</b>",
+        "how": "Plays of your #1 artist divided by all your plays in the period."
+      },
+      "days": {
+        "label": "Distinct days",
+        "context": "with <b>{artist}</b> in your ears",
+        "how": "How many days in the period had at least one play of your #1 artist, in your time zone."
+      },
+      "skipped": {
+        "label": "Most skipped",
+        "context": "{artist} · skipped {skips, plural, one {# time} other {# times}}",
+        "empty": "We need at least 5 skips in the period.",
+        "how": "The track you skipped the most in the period. A skip is when Spotify marks the track as skipped or when you jumped to the next one."
+      },
+      "day": {
+        "label": "Most musical day",
+        "context": "{duration} of music in a single day",
+        "how": "The day in the period with the most music time, in your time zone."
+      }
+    },
+    "top": {
+      "title": "Your top",
+      "kindLabel": "Ranking type",
+      "kinds": {
+        "artists": "Artists",
+        "tracks": "Tracks",
+        "albums": "Albums"
+      },
+      "listLabel": "Top {count} {kind}",
+      "plays": "{count, plural, one {# play} other {# plays}}",
+      "more": "See top 50",
+      "less": "Show only top 10",
+      "empty": "No plays in this period."
+    },
+    "heatmap": {
+      "title": "When you listen",
+      "summary": "Your peak: {day}, from {from} to {to} ({plays, plural, one {# play} other {# plays}}). Quietest time: from {quietFrom} to {quietTo}.",
+      "empty": "No plays in this period.",
+      "less": "less",
+      "more": "more",
+      "legendLabel": "Legend: from fewer to more plays",
+      "tooltip": "{day}, {from}–{to}: {plays, plural, one {# play} other {# plays}}",
+      "showTable": "Show as table",
+      "hideTable": "Hide table",
+      "tableCaption": "Plays by day and 3-hour block · {period}",
+      "fullCaption": "Plays by day and hour · {period}",
+      "fullLabel": "Full table by hour; scroll sideways",
+      "dayHeader": "Day",
+      "hour": "{hour}:00",
+      "hourRange": "{from}–{to}"
+    },
+    "platforms": {
+      "title": "Where you listen",
+      "mostUsed": "Most used: {platform}, with {share} of the time.",
+      "names": {
+        "android": "Android",
+        "ios": "iPhone and iPad",
+        "desktop": "Computer",
+        "web": "Web browser",
+        "tv": "TV",
+        "other": "Other"
+      }
+    },
+    "duration": {
+      "hm": "{h} h {m} min",
+      "m": "{m} min"
+    },
+    "empty": {
+      "title": "No music in this period",
+      "body": "Try another period: your history goes from {from} to {to}."
+    },
+    "share": "Share",
+    "shareSoon": "Shareable cards arrive in the next release.",
+    "footer": {
+      "upload": "From your Spotify extended history, processed on your device.",
+      "demo": "Demo mode · fictional artists and tracks.",
+      "report": "{music, plural, one {# music record} other {# music records}} from {files, plural, one {# file} other {# files}}, read in {seconds} s. {nonMusic, plural, =0 {No podcasts or audiobooks} one {# podcast, audiobook or local file skipped} other {# podcasts, audiobooks and local files skipped}}."
+    },
+    "demoLoading": "Building the fictional history…"
   },
   "Connect": {
     "title": "Connect with Spotify",
-    "intro": "Placeholder page for Connect mode.",
-    "login": "Log in with Spotify",
-    "logout": "Log out",
-    "connected": "You are connected to Spotify.",
-    "disconnected": "You are not connected.",
+    "intro": "Provisional page for Connect mode.",
+    "login": "Sign in with Spotify",
+    "logout": "Sign out",
+    "connected": "You're connected to Spotify.",
+    "disconnected": "You're not connected.",
     "disabled": "Connect mode is unavailable in this environment. Upload and Demo still work.",
     "back": "Back to home",
     "errors": {
       "denied": "You cancelled the authorization on Spotify.",
-      "state": "The login attempt expired or is not valid. Please try again.",
-      "oauth": "Spotify did not complete the login. Please try again.",
-      "scope": "Spotify did not grant the required permissions. Please try again.",
-      "not_allowlisted": "This Spotify account is not on Encore's access list. Ask the app owner to add it.",
-      "upstream": "Spotify did not respond. Please try again in a moment."
+      "state": "The sign-in attempt expired or isn't valid. Try again.",
+      "oauth": "Spotify didn't complete the sign-in. Try again.",
+      "scope": "Spotify didn't grant the required permissions. Try again.",
+      "not_allowlisted": "This Spotify account isn't on Encore's access list. Ask the app owner to add it.",
+      "upstream": "Spotify didn't respond. Try again in a moment."
     }
   }
 }

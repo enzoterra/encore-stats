@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { ToastViewport } from '@/components/ui/toast';
 import { routing } from '@/i18n/routing';
 import { getServerEnv } from '@/server/env';
 
@@ -24,13 +25,16 @@ export async function generateMetadata({ params }: LayoutProps<'/[locale]'>): Pr
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
-  themeColor: '#0b0b12',
+  viewportFit: 'cover',
+  themeColor: '#0e0b1a',
+  colorScheme: 'dark',
 };
 
 export default async function LocaleLayout({ children, params }: LayoutProps<'/[locale]'>) {
   const { locale } = await params;
   if (!hasLocale(routing.locales, locale)) notFound();
   setRequestLocale(locale);
+  const t = await getTranslations({ locale, namespace: 'Common' });
 
   // Ler o cabeçalho torna a rota dinâmica: a CSP com nonce exige render por requisição,
   // para que o Next aplique o nonce aos próprios scripts.
@@ -38,8 +42,27 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
 
   return (
     <html lang={locale}>
-      <body className="min-h-dvh font-sans antialiased">
-        <NextIntlClientProvider>{children}</NextIntlClientProvider>
+      <head>
+        {/* 10-design.md §13: preload só do Inter; a Bricolage entra com font-display: swap. */}
+        <link
+          rel="preload"
+          href="/fonts/Inter-VF-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+      </head>
+      <body className="min-h-dvh bg-background font-sans text-body text-fg">
+        <NextIntlClientProvider>
+          <a
+            href="#main"
+            className="sr-only z-50 rounded-full bg-accent px-4 py-2 font-semibold text-on-vibrant focus:not-sr-only focus:fixed focus:top-2 focus:left-2"
+          >
+            {t('skipToContent')}
+          </a>
+          {children}
+          <ToastViewport />
+        </NextIntlClientProvider>
       </body>
     </html>
   );

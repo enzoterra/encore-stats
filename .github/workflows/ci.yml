@@ -64,7 +64,7 @@ jobs:
       - run: pnpm build
 
   e2e:
-    name: E2E + acessibilidade (Chromium, sem credenciais)
+    name: E2E + acessibilidade (Chromium e WebKit, sem credenciais)
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -72,8 +72,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup
-      - name: Instalar Chromium do Playwright
-        run: pnpm exec playwright install --with-deps chromium
+      - name: Instalar Chromium e WebKit do Playwright
+        run: pnpm exec playwright install --with-deps chromium webkit
       - name: Rodar e2e (o webServer faz build + start)
         run: pnpm test:e2e
       - name: Publicar relatório em caso de falha
