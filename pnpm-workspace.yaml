@@ -1,0 +1,16 @@
+# Configurações do pnpm 12 (projeto único, sem workspaces).
+
+# Defesa de supply chain: só instala versões publicadas há pelo menos 1 dia.
+# Com o valor explícito, o pnpm 12 liga `minimumReleaseAgeStrict` e falha em vez
+# de aceitar uma versão imatura. Para um patch de segurança urgente, adicione a
+# versão em `minimumReleaseAgeExclude` (ex.: `- next@16.3.7`) e remova depois.
+minimumReleaseAge: 1440
+
+# Scripts de install são bloqueados por padrão; só liberamos o que for necessário.
+# @parcel/watcher e @swc/core (dependências do next-intl) usam binários pré-compilados
+# via optionalDependencies; o script de build deles não é necessário.
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
+  # unrs-resolver (eslint-import-resolver-typescript): binário nativo pré-compilado.
+  unrs-resolver: false

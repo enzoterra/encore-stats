@@ -1,0 +1,37 @@
+# Dependências
+node_modules/
+.pnpm-store/
+
+# Next.js
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# Testes
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+
+# Variáveis de ambiente: nunca versionar segredos (exceto o catálogo de exemplo)
+.env
+.env*
+!.env.example
+
+# Vercel
+.vercel/
+
+# Logs e sistema
+npm-debug.log*
+pnpm-debug.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# Editores
+.idea/
+.vscode/*
+!.vscode/extensions.json

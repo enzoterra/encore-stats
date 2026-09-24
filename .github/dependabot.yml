@@ -1,0 +1,38 @@
+# Atualizações semanais e agrupadas (docs/projeto/08-seguranca.md: supply chain).
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Campo_Grande
+    # Espera a versão "amadurecer", alinhado ao `minimumReleaseAge` do pnpm.
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 5
+    groups:
+      producao:
+        dependency-type: production
+        update-types: [minor, patch]
+      desenvolvimento:
+        dependency-type: development
+        update-types: [minor, patch]
+    ignore:
+      # TS 7 exige ADR (typescript-eslint só suporta < 6.1; 03-arquitetura.md, ADR 6).
+      - dependency-name: typescript
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      # Node 24 LTS é o alvo; @types/node segue a major do runtime.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    # Inclui a action composta local, que também fixa actions por SHA.
+    directories: [/, /.github/actions/setup]
+    schedule:
+      interval: weekly
+      day: monday
+      timezone: America/Campo_Grande
+    groups:
+      actions:
+        patterns: ['*']

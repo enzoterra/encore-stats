@@ -1,0 +1,14 @@
+{
+  "Metadata": {
+    "title": "Encore — suas estatísticas do Spotify",
+    "description": "Veja suas estatísticas do Spotify com privacidade: o histórico é processado no seu navegador."
+  },
+  "Home": {
+    "title": "Encore",
+    "tagline": "Suas estatísticas do Spotify, processadas no seu navegador.",
+    "status": "Em construção: esta é a página provisória da fundação.",
+    "connectEnabled": "Conectar com o Spotify: disponível neste ambiente.",
+    "connectDisabled": "Conectar com o Spotify: indisponível neste ambiente. Upload e Demo continuam funcionando.",
+    "switchLanguage": "Read in English"
+  }
+}

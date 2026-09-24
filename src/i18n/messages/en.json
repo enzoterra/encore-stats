@@ -1,0 +1,14 @@
+{
+  "Metadata": {
+    "title": "Encore — your Spotify stats",
+    "description": "See your Spotify stats privately: your history is processed in your browser."
+  },
+  "Home": {
+    "title": "Encore",
+    "tagline": "Your Spotify stats, processed in your browser.",
+    "status": "Under construction: this is the foundation's placeholder page.",
+    "connectEnabled": "Connect with Spotify: available in this environment.",
+    "connectDisabled": "Connect with Spotify: unavailable in this environment. Upload and Demo still work.",
+    "switchLanguage": "Ler em português"
+  }
+}
