@@ -67,10 +67,11 @@ nem mensagem do Spotify.
 - Se o access token foi renovado durante a chamada, a resposta traz `Set-Cookie` com a sessão
   resselada (inclusive nas respostas de erro, quando o refresh deu certo e a falha foi depois).
 
-### Recomendação para o cliente (Sprint 5)
+### Recomendação para o cliente (implementada na Sprint 5)
 
 Faça a **primeira** chamada da sessão sozinha (ex.: `me`) e só depois dispare as demais em
-paralelo. Se o access token estiver vencido, requisições paralelas renovariam ao mesmo tempo; o
+paralelo (em `src/features/connect/queries.ts`, toda query além de `me` só é habilitada depois
+que `me` respondeu). Se o access token estiver vencido, requisições paralelas renovariam ao mesmo tempo; o
 BFF tolera `invalid_grant` enquanto o access token atual ainda vale (> 5 s), mas com o token já
 vencido a requisição perdedora devolve `401` e apaga o cookie.
 
@@ -100,9 +101,9 @@ sequenceDiagram
 | `/api/auth/callback`        | GET    | Sempre apaga o cookie temporário e responde 302 para `/{locale}/connect`, com `?error=` quando dá errado (tabela abaixo). A query nunca é logada |
 | `/api/auth/logout?locale=`  | POST   | Checa a origem (abaixo), apaga os cookies e manda `Clear-Site-Data: "cache"` (descarta o cache HTTP com as respostas `private`). `fetch` → 204; formulário (navegação) → 303 para `/{locale}/connect`. `GET` → 405 |
 
-Destino do callback: **`/{locale}/connect`** (hoje uma página provisória com o estado da
-conexão e o botão de sair; a Sprint 5 faz a tela de verdade nessa rota ou redireciona dali para o
-dashboard). Códigos de `?error=`:
+Destino do callback: **`/{locale}/connect`**, que mostra a entrada do Conectar (sem sessão, com o
+erro traduzido quando houver `?error=`) ou o dashboard (com sessão). Depois do logout via `fetch`,
+a UI recarrega `/{locale}/connect?status=logged_out`. Códigos de `?error=`:
 
 | `error`           | Causa                                                                                  |
 | ----------------- | -------------------------------------------------------------------------------------- |
@@ -154,6 +155,16 @@ Veja `.env.example` e `src/server/env.ts`. Além das credenciais e do `SESSION_S
   `production`** (a app nem sobe). Fora da Vercel funcionam também com `pnpm build && pnpm start`
   (`NODE_ENV=production`), para os e2e locais e do CI. Sem elas, as bases são
   `https://api.spotify.com/v1` e `https://accounts.spotify.com`.
+
+## Cliente (Sprint 5)
+
+`src/features/connect/`: TanStack Query com `staleTime` = `max-age` de cada rota (tabela acima),
+sem retry em 4xx, `QUOTA` e 429; 1 retry em 5xx/rede. `RATE_LIMITED` mostra a contagem de
+`retryAfter` na seção e tenta de novo no zero; `QUOTA` pausa todas as queries por `retryAfter`
+(900 s) com banner global; 401/403 viram estados da página inteira e apagam o cache. A varredura
+de curtidas lê `saved` com `cache: 'no-cache'` e guarda só o resultado agregado (12 h, no
+sessionStorage). O cliente valida de novo cada resposta com os schemas de
+`src/domain/spotify-types.ts`.
 
 ## Testar
 

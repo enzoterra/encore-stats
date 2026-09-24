@@ -35,3 +35,24 @@ export function collectCspViolations(page: Page): string[] {
   });
   return violations;
 }
+
+/** App com o Conectar ligado contra o mock do Spotify (3º `webServer` do Playwright). */
+export const CONNECT_URL = 'http://127.0.0.1:3100';
+
+const COVER_COLORS = ['#FF3D8B', '#3DE0FF', '#FFE14D', '#FF7A1A', '#52F2C8', '#7D71A8'];
+
+/**
+ * O mock devolve capas em `https://i.scdn.co/image/mock…`, que não existem. Sem sair para a
+ * internet, o teste responde com um SVG quadrado gerado a partir da URL.
+ */
+export async function routeFakeCovers(page: Page): Promise<void> {
+  await page.context().route('https://i.scdn.co/**', (route) => {
+    const url = route.request().url();
+    let hash = 0;
+    for (const char of url) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+    const a = COVER_COLORS[hash % COVER_COLORS.length];
+    const b = COVER_COLORS[(hash >>> 3) % COVER_COLORS.length];
+    const body = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${a}"/><stop offset="1" stop-color="${b}"/></linearGradient></defs><rect width="300" height="300" fill="url(#g)"/><circle cx="150" cy="150" r="64" fill="#0E0B1A" opacity=".35"/></svg>`;
+    return route.fulfill({ status: 200, contentType: 'image/svg+xml', body });
+  });
+}

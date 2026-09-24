@@ -24,8 +24,10 @@
     "bench": "vitest run --config vitest.bench.config.ts"
   },
   "dependencies": {
+    "@tanstack/react-query": "5.103.2",
     "comlink": "^4.4.2",
     "fflate": "^0.8.3",
+    "get-nonce": "1.0.1",
     "jose": "^6.2.12",
     "lucide-react": "1.47.0",
     "next": "^16.3.6",

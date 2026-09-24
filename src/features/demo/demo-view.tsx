@@ -1,25 +1,34 @@
 'use client';
 
-import { Radio } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { Tabs } from 'radix-ui';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useHydrated } from '@/components/ui/use-hydrated';
+import { createConnectBundle } from '@/features/connect/connect-client';
+import { ConnectDashboard } from '@/features/connect/connect-dashboard';
+import { ConnectProvider } from '@/features/connect/connect-provider';
+import { createDemoSource } from '@/features/connect/demo-source';
 import { Dashboard } from '@/features/dashboard/dashboard';
 import { useDatasetStore } from '@/features/dataset/store';
 
 /**
  * Modo Demo (RF-12, US-07): `generateDemo()` é carregado sob demanda (chunk próprio) e roda no
- * navegador, sem rede. As abas já separam as visões Upload e Conectar; a visão Conectar do demo
- * usa `api` de `DemoData` na Sprint 5.
+ * navegador, sem rede. As abas separam as visões Upload e Conectar; a visão Conectar reaproveita
+ * o dashboard do modo Conectar sobre `generateDemo().api` (+ `demoSavedPage`/`demoArtist`), com
+ * um cliente de queries próprio e sem nenhum link ou marca do Spotify (`api.demo === true`).
  */
 export function DemoView({ repoUrl }: { repoUrl?: string }) {
   const t = useTranslations('Dashboard');
   const demo = useDatasetStore((state) => state.demo);
   const setDemo = useDatasetStore((state) => state.setDemo);
   const hydrated = useHydrated();
+  // Um cliente de queries por Demo carregado: trocar de aba e voltar reaproveita o cache.
+  const connectBundle = useMemo(
+    () => (demo ? createConnectBundle(createDemoSource(demo.api)) : null),
+    [demo],
+  );
 
   useEffect(() => {
     if (demo) return;
@@ -66,10 +75,13 @@ export function DemoView({ repoUrl }: { repoUrl?: string }) {
         )}
       </Tabs.Content>
       <Tabs.Content value="connect" className="outline-none">
-        <div className="mx-auto flex max-w-page flex-col items-start gap-3 px-4 py-12 sm:px-6 lg:px-8">
-          <Radio aria-hidden="true" className="size-10 text-fg-muted" />
-          <p className="max-w-prose text-body-lg text-fg-muted">{t('tabs.connectSoon')}</p>
-        </div>
+        {connectBundle ? (
+          <ConnectProvider bundle={connectBundle}>
+            <ConnectDashboard repoUrl={repoUrl} />
+          </ConnectProvider>
+        ) : (
+          <DemoSkeleton />
+        )}
       </Tabs.Content>
     </Tabs.Root>
   );

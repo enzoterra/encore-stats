@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import { hasLocale, NextIntlClientProvider } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
 
+import { StyleNonce } from '@/components/ui/style-nonce';
 import { ToastViewport } from '@/components/ui/toast';
 import { routing } from '@/i18n/routing';
 import { getServerEnv } from '@/server/env';
@@ -54,6 +55,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<'/[
       </head>
       <body className="min-h-dvh bg-background font-sans text-body text-fg">
         <NextIntlClientProvider>
+          <StyleNonce />
           <a
             href="#main"
             className="sr-only z-50 rounded-full bg-accent px-4 py-2 font-semibold text-on-vibrant focus:not-sr-only focus:fixed focus:top-2 focus:left-2"

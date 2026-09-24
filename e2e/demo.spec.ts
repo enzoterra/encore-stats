@@ -82,11 +82,11 @@ test.describe('modo Demo (RF-12, US-07)', () => {
     expect(Math.max(...timings)).toBeLessThan(200);
   });
 
-  test('a aba Visão Conectar já existe (preenchida na Sprint 5)', async ({ page }) => {
+  test('as abas alternam entre as visões Upload e Conectar (EN)', async ({ page }) => {
     await page.goto('/en/demo');
     await expect(page.getByTestId('dashboard')).toBeVisible();
     await page.getByRole('tab', { name: 'Connect view' }).click();
-    await expect(page.getByRole('tabpanel')).toContainText('arrives in the next release');
+    await expect(page.getByTestId('connect-title')).toHaveText('Hi, Demo');
     await page.getByRole('tab', { name: 'Upload view' }).click();
     await expect(page.getByTestId('dashboard')).toBeVisible();
   });
@@ -111,5 +111,27 @@ test.describe('modo Demo (RF-12, US-07)', () => {
     await page.getByRole('menuitemradio', { name: 'English' }).click();
     await expect(page).toHaveURL(/\/en\/demo$/);
     await expect(page.getByTestId('dashboard-title')).toHaveText(/^Your \d{4}$/);
+  });
+
+  test('aba "Visão Conectar": o dashboard do Conectar com dados fictícios, sem marca do Spotify', async ({
+    page,
+  }) => {
+    const external: string[] = [];
+    page.on('request', (request) => {
+      if (!request.url().startsWith('http://127.0.0.1:3000')) external.push(request.url());
+    });
+    await page.goto('/pt-BR/demo');
+    await page.getByRole('tab', { name: 'Visão Conectar' }).click();
+    const dashboard = page.getByTestId('connect-dashboard');
+    await expect(dashboard).toHaveAttribute('data-mode', 'demo');
+    await expect(page.getByTestId('connect-title')).toHaveText('Oi, Demo');
+    await expect(page.getByTestId('connect-top-artists').getByRole('listitem')).toHaveCount(10);
+    await expect(page.getByTestId('trends-up')).toBeVisible();
+    await page.getByRole('button', { name: 'Descobrir' }).click();
+    await expect(page.getByTestId('liked-winner')).toContainText(/músicas curtidas/);
+    await expect(page.locator('a[href*="spotify.com"]')).toHaveCount(0);
+    await expect(page.getByTestId('spotify-logo')).toHaveCount(0);
+    expect(external).toEqual([]);
+    await expectNoSeriousA11y(page);
   });
 });

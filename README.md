@@ -69,9 +69,9 @@ credenciais de demonstração: o Demo não exige login.
 | `/{locale}`            | Landing: os 3 modos (Conectar desabilitado sem credenciais), selo de privacidade      |
 | `/{locale}/onboarding` | Como pedir o histórico estendido ao Spotify + lembrete `.ics` gerado no navegador     |
 | `/{locale}/upload`     | Envio do `.zip`/`.json` (Web Worker, nada sai do aparelho) e dashboard do histórico   |
-| `/{locale}/demo`       | Dashboard com histórico fictício (aba "Visão Conectar" preenchida na Sprint 5)        |
+| `/{locale}/demo`       | Dashboard com histórico fictício, com as abas "Visão Upload" e "Visão Conectar"       |
 | `/{locale}/privacy`    | Política de privacidade (LGPD): o que é tratado, onde, por quanto tempo, como revogar |
-| `/{locale}/connect`    | Destino do login do Spotify (provisório até a Sprint 5)                               |
+| `/{locale}/connect`    | Modo Conectar: entrada/login, erros do OAuth e dashboard ao vivo (tops, tendências…)  |
 
 `{locale}` é `pt-BR` ou `en`; o idioma troca pelo menu do cabeçalho sem perder o histórico
 carregado (o Dataset fica só na memória da aba; recarregar a página exige novo envio).
@@ -157,8 +157,9 @@ Escopos pedidos (mínimos): `user-top-read`, `user-read-recently-played`, `user-
 2. `pnpm dev` e abra **`http://127.0.0.1:3000/pt-BR/connect`** (use `127.0.0.1`, não
    `localhost`: os cookies vivem na origem da redirect URI; se abrir `localhost`, o login te leva
    para `127.0.0.1`).
-3. Clique em **Entrar com o Spotify**, autorize e volte para a mesma página, que passa a dizer
-   "Você está conectado ao Spotify".
+3. Clique em **Entrar com o Spotify**, autorize e volte para a mesma página, que passa a mostrar
+   o dashboard do Conectar ("Oi, …"): janelas de 4 semanas / 6 meses / 1 ano, top artistas e
+   músicas, tendências, tocadas recentemente, gêneros e a varredura de curtidas ("Descobrir").
 4. Na mesma aba, abra as rotas do BFF para ver os dados reduzidos (JSON):
    `/api/spotify/me`, `/api/spotify/top?type=artists&range=short_term`,
    `/api/spotify/top?type=tracks&range=long_term`, `/api/spotify/recent`,
@@ -167,11 +168,13 @@ Escopos pedidos (mínimos): `user-top-read`, `user-read-recently-played`, `user-
    com validade de 30 dias. Localmente ele sai **sem** `Secure` e sem o prefixo `__Host-`, porque
    o Safari descarta cookies `Secure` em HTTP e o Chrome rejeita `__Host-` fora de HTTPS; em
    produção (HTTPS) o nome é `__Host-encore_session`, com `Secure` (detalhes em `docs/api.md`).
-6. Clique em **Sair**: o cookie some e `/api/spotify/me` passa a responder
+6. No avatar do cabeçalho, **Sair** (com confirmação): o cookie some, o cache da aba
+   (TanStack Query + sessionStorage) é apagado e `/api/spotify/me` passa a responder
    `401 {"error":{"code":"UNAUTHENTICATED"}}`.
 
-Casos para conferir: cancelar no Spotify volta com "Você cancelou a autorização"; uma conta fora
-do User Management volta com a mensagem da lista de acesso (`?error=not_allowlisted`).
+Casos para conferir: cancelar no Spotify volta com "Autorização cancelada"; uma conta fora do User
+Management volta com a tela "Este app ainda está em modo de teste" (`?error=not_allowlisted`),
+que explica o limite de 5 contas e oferece Upload e Demo.
 
 ### Testar o fluxo sem conta do Spotify (mock local)
 
@@ -197,7 +200,33 @@ Depois `pnpm dev` (ou `pnpm build && pnpm start`) e siga os passos 2–6 acima. 
 linhas `SPOTIFY_*_BASE` para voltar ao Spotify real.
 
 Variáveis do mock: `MOCK_SPOTIFY_DENY=1` (simula "cancelar"), `MOCK_SPOTIFY_FORBIDDEN=1` (conta
-fora da allowlist), `MOCK_SPOTIFY_EXPIRES_IN=30` (força refresh a cada chamada).
+fora da allowlist), `MOCK_SPOTIFY_EXPIRES_IN=30` (força refresh a cada chamada),
+`MOCK_SPOTIFY_SAVED_TOTAL=1200` (biblioteca maior) e `MOCK_SPOTIFY_SAVED_DELAY_MS=300` (atraso por
+página de curtidas, para ver o progresso da varredura). As capas do mock (`i.scdn.co/image/mock…`)
+não existem de verdade; o dashboard mostra a inicial no lugar.
+
+### E2E do Conectar
+
+O `pnpm test:e2e` sobe três servidores, em ordem (`playwright.config.ts`): o app em `:3000` sem
+credenciais (faz o build), o mock do Spotify em `:4010` e o mesmo build em `:3100` com o Conectar
+ligado contra o mock (`SESSION_SECRET` descartável, só de teste). `e2e/connect-live.spec.ts` faz
+login → dashboard → trocar janela → varredura → logout (cache limpo), mais axe, 360 px, `QUOTA` e 401. No Windows com o pnpm local (nota da Sprint 1), suba os três à mão e rode `pnpm test:e2e`
+(os servidores já de pé são reaproveitados):
+
+```bash
+pnpm build
+pnpm start                                   # :3000
+node scripts/spotify-mock-server.ts          # :4010
+SPOTIFY_CLIENT_ID=mock-client SPOTIFY_CLIENT_SECRET=mock-secret   SPOTIFY_REDIRECT_URI=http://127.0.0.1:3100/api/auth/callback   SESSION_SECRET=e2e-only-not-a-secret-000000000000000000000   SPOTIFY_ACCOUNTS_BASE=http://127.0.0.1:4010 SPOTIFY_API_BASE=http://127.0.0.1:4010/v1   NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3100   node node_modules/next/dist/bin/next start --hostname 127.0.0.1 --port 3100
+```
+
+### Marca do Spotify
+
+Os logos em `public/brand/` são os arquivos oficiais, sem alteração, das Spotify Design
+Guidelines (developer.spotify.com/documentation/design): `Full_Logo_White_RGB.svg` do pacote
+`2024-spotify-full-logo.zip` (→ `spotify-full-logo-white.svg`) e `Primary_Logo_White_RGB.svg` do
+pacote `2024-spotify-logo-icon.zip` (→ `spotify-icon-white.svg`), baixados em 2026-09-24. Só
+aparecem junto de dados vindos da API do Spotify (modo Conectar), nunca no Upload nem no Demo.
 
 ## Estrutura
 
@@ -225,8 +254,9 @@ Alias de import: `@/…` aponta para `src/…`.
   `frame-ancestors 'none'`).
   Confira com `curl -I http://127.0.0.1:3000/pt-BR`.
 - GitHub Actions (`.github/workflows/ci.yml`), com `permissions: contents: read` e actions
-  fixadas por SHA: lint + formatação, tipos, testes com cobertura, build, e2e + axe (Chromium,
-  sem credenciais), `pnpm audit --audit-level=high` e dependency-review nos PRs.
+  fixadas por SHA: lint + formatação, tipos, testes com cobertura, build, e2e + axe (Chromium e
+  WebKit; Conectar contra o mock local), `pnpm audit --audit-level=high` e dependency-review nos
+  PRs.
 - Dependabot semanal e agrupado (npm e GitHub Actions), com espera de 3 dias.
 - pnpm: scripts de install bloqueados (`allowBuilds`) e `minimumReleaseAge` de 1 dia em
   `pnpm-workspace.yaml`.

@@ -326,8 +326,7 @@
     "tabs": {
       "label": "Demo views",
       "upload": "Upload view",
-      "connect": "Connect view",
-      "connectSoon": "The demo's Connect view (live tops, trends and likes) arrives in the next release."
+      "connect": "Connect view"
     },
     "period": {
       "heading": "Period",
@@ -461,20 +460,191 @@
   },
   "Connect": {
     "title": "Connect with Spotify",
-    "intro": "Provisional page for Connect mode.",
-    "login": "Sign in with Spotify",
-    "logout": "Sign out",
-    "connected": "You're connected to Spotify.",
-    "disconnected": "You're not connected.",
+    "landing": {
+      "overline": "Connect mode",
+      "lead": "Your live top, straight from your account: artists and tracks over the last 4 weeks, 6 months and 1 year, with trends, recently played, genres and the artist you have the most liked songs from.",
+      "login": "Log in with Spotify",
+      "loginHint": "You will authorize on Spotify and come right back here.",
+      "scopesTitle": "What we ask Spotify for",
+      "scopes": {
+        "top": "Your top artists and tracks",
+        "recent": "The last songs you played",
+        "library": "Your liked songs, only to count them by artist"
+      },
+      "scopesNote": "Read-only: nothing is posted or changed in your account. To revoke, go to spotify.com/account/apps.",
+      "limitedTitle": "Invite only",
+      "limitedBody": "While the app is in test mode, Spotify only allows 5 invited accounts. Without an invite, history Upload and the Demo work for everyone.",
+      "alternatives": "No invite? See your stats another way:",
+      "upload": "Upload my history",
+      "demo": "See the demo"
+    },
+    "disabledTitle": "Unavailable on this installation",
     "disabled": "Connect mode is unavailable in this environment. Upload and Demo still work.",
+    "disabledWhy": "The site owner has not set up Spotify access.",
     "back": "Back to home",
+    "loggedOut": "You are logged out. This tab's session and cache were erased.",
     "errors": {
-      "denied": "You cancelled the authorization on Spotify.",
-      "state": "The sign-in attempt expired or isn't valid. Try again.",
-      "oauth": "Spotify didn't complete the sign-in. Try again.",
-      "scope": "Spotify didn't grant the required permissions. Try again.",
-      "not_allowlisted": "This Spotify account isn't on Encore's access list. Ask the app owner to add it.",
-      "upstream": "Spotify didn't respond. Try again in a moment."
+      "denied": {
+        "title": "Authorization cancelled",
+        "body": "You cancelled the authorization on Spotify. Nothing was stored; log in again whenever you like."
+      },
+      "state": {
+        "title": "The login expired",
+        "body": "The attempt took too long or was opened in another tab. Please try again."
+      },
+      "oauth": {
+        "title": "Spotify did not complete the login",
+        "body": "Something went wrong while talking to Spotify. Please try again."
+      },
+      "scope": {
+        "title": "Missing permissions",
+        "body": "Spotify did not grant the read permissions Encore needs. Try again and accept all of them."
+      },
+      "upstream": {
+        "title": "Spotify did not respond",
+        "body": "The service is unstable right now. Try again in a moment."
+      }
+    },
+    "forbidden": {
+      "title": "This app is still in test mode",
+      "body": "Spotify only lets 5 invited accounts use Connect mode on a new app, and yours is not on the list yet. Your history works without an invite.",
+      "upload": "Upload my history",
+      "demo": "See the demo",
+      "otherAccount": "I have been invited: try again"
+    },
+    "expired": {
+      "title": "Your session expired",
+      "body": "For security, the connection to Spotify is short-lived. Connect again to continue.",
+      "action": "Connect again"
+    },
+    "quota": {
+      "title": "The app hit its request limit",
+      "body": "Encore shares one quota with all users. Come back in ~{minutes} min. Upload and Demo still work.",
+      "upload": "Upload my history",
+      "demo": "See the demo",
+      "sectionPaused": "Requests paused for a few minutes."
+    },
+    "rateLimited": {
+      "title": "Spotify asked for a break",
+      "body": "Trying again in <b>{seconds} s</b>.",
+      "announce": "Spotify asked for a break. Trying again in {seconds} seconds.",
+      "retrying": "Trying again…",
+      "now": "Try now"
+    },
+    "sectionError": {
+      "title": "Could not load this section",
+      "retry": "Try again"
+    },
+    "meError": {
+      "title": "Could not reach Spotify",
+      "body": "You are connected, but Spotify did not respond. Try again in a moment."
+    },
+    "dashboard": {
+      "overline": "Connect mode · live",
+      "overlineDemo": "Demo · Connect view",
+      "greeting": "Hi, {name}",
+      "greetingAnon": "Your live top",
+      "lead": "Read just now from your Spotify account and kept only in this tab.",
+      "leadDemo": "Made-up artists and tracks in Connect mode format. Nothing here comes from Spotify.",
+      "demoBanner": "Demo Connect view: fictional data, no connection to Spotify.",
+      "windowHeading": "Time window",
+      "windowLabel": "Spotify time window",
+      "windows": {
+        "short_term": "4 weeks",
+        "medium_term": "6 months",
+        "long_term": "1 year"
+      },
+      "windowSummary": {
+        "short_term": "Last ~4 weeks, as Spotify calculates it",
+        "medium_term": "Last ~6 months, as Spotify calculates it",
+        "long_term": "Last ~1 year, as Spotify calculates it"
+      },
+      "windowLive": "Showing: {label}",
+      "barLabel": "Window: {label}. Change window",
+      "footer": "Spotify data read through your account. The server stores nothing; the cache lives only in this tab.",
+      "footerDemo": "Demo: made-up artists and tracks, generated in your browser. No connection to Spotify."
+    },
+    "top": {
+      "title": "Your top",
+      "kindLabel": "Ranking type",
+      "kinds": {
+        "artists": "Artists",
+        "tracks": "Tracks"
+      },
+      "listLabel": "Top {count} {kind}",
+      "more": "See top 50",
+      "less": "See less",
+      "empty": "Spotify does not have enough data for this window yet.",
+      "open": "Open Spotify",
+      "play": "Play on Spotify"
+    },
+    "trends": {
+      "title": "Trends",
+      "subtitle": "Last 4 weeks compared with the last 6 months",
+      "subtitleLong": "Last 4 weeks compared with the last year",
+      "kindLabel": "Trends for",
+      "up": "Rising",
+      "down": "Falling",
+      "entered": "new",
+      "rising": "up {n}",
+      "falling": "down {n}",
+      "left": "gone",
+      "emptyUp": "Nothing new climbing: your top is steady.",
+      "emptyDown": "Nothing dropping: your top is steady."
+    },
+    "recent": {
+      "title": "Recently played",
+      "listLabel": "Last {count} tracks played",
+      "more": "See all {count}",
+      "less": "See less",
+      "empty": "Nothing played recently on this account."
+    },
+    "genres": {
+      "title": "Your genres",
+      "unstable": "unstable",
+      "unstableTip": "Spotify may stop providing this data. If it goes away, this section goes too.",
+      "unstableLabel": "Why unstable",
+      "note": "Calculated from your top artists in this window.",
+      "listLabel": "Most played genres"
+    },
+    "liked": {
+      "title": "Who do you have the most liked songs from?",
+      "body": "We read your library page by page. It can take ~1 min.",
+      "start": "Find out",
+      "cancel": "Cancel",
+      "progress": "Page {done} of {total}",
+      "progressStarting": "Starting to read…",
+      "progressLabel": "Reading your liked songs",
+      "waiting": "Spotify asked for a break. Resuming in {seconds} s.",
+      "checking": "Checking whether your liked songs changed…",
+      "count": "{count, plural, one {# liked song} other {# liked songs}}",
+      "updated": "updated {when}",
+      "refresh": "Refresh",
+      "changed": "Your liked songs changed since the last read.",
+      "unchanged": "Nothing changed in your liked songs since the last read.",
+      "cancelled": "Reading cancelled. Nothing was kept.",
+      "finished": "Reading finished.",
+      "othersTitle": "The rest of your liked top",
+      "othersLabel": "Artists with the most liked songs",
+      "empty": "You do not have any liked songs on Spotify yet.",
+      "error": "Could not finish reading your liked songs.",
+      "retry": "Try again",
+      "winner": "Artist with the most likes"
+    },
+    "account": {
+      "menu": "Account: {name}. Open menu",
+      "fallbackName": "Your account",
+      "connectedAs": "Connected as",
+      "logout": "Log out",
+      "confirmTitle": "Log out of Connect?",
+      "confirmBody": "Logging out erases this tab's session and cache. To come back, just log in again.",
+      "confirm": "Log out",
+      "cancel": "Cancel",
+      "loggingOut": "Logging out…",
+      "logoutError": "Could not log out. Please try again."
+    },
+    "time": {
+      "justNow": "just now"
     }
   }
 }

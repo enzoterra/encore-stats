@@ -326,8 +326,7 @@
     "tabs": {
       "label": "Visões do demo",
       "upload": "Visão Upload",
-      "connect": "Visão Conectar",
-      "connectSoon": "A visão Conectar do demo (tops ao vivo, tendências e curtidas) chega na próxima etapa."
+      "connect": "Visão Conectar"
     },
     "period": {
       "heading": "Período",
@@ -461,20 +460,191 @@
   },
   "Connect": {
     "title": "Conectar com o Spotify",
-    "intro": "Página provisória do modo Conectar.",
-    "login": "Entrar com o Spotify",
-    "logout": "Sair",
-    "connected": "Você está conectado ao Spotify.",
-    "disconnected": "Você não está conectado.",
+    "landing": {
+      "overline": "Modo Conectar",
+      "lead": "Seu top ao vivo, direto da sua conta: artistas e músicas nas últimas 4 semanas, 6 meses e 1 ano, com tendências, tocadas recentemente, gêneros e de quem você tem mais músicas curtidas.",
+      "login": "Entrar com o Spotify",
+      "loginHint": "Você vai ao Spotify autorizar e volta direto para cá.",
+      "scopesTitle": "O que pedimos ao Spotify",
+      "scopes": {
+        "top": "Seus top artistas e músicas",
+        "recent": "As últimas músicas que você ouviu",
+        "library": "Suas músicas curtidas, só para contar por artista"
+      },
+      "scopesNote": "Só leitura: nada é publicado nem alterado na sua conta. Para revogar, acesse spotify.com/account/apps.",
+      "limitedTitle": "Acesso por convite",
+      "limitedBody": "Enquanto o app está em modo de teste, o Spotify só libera 5 contas convidadas. Sem convite, o Upload do histórico e o Demo funcionam para todo mundo.",
+      "alternatives": "Sem convite? Veja suas stats de outro jeito:",
+      "upload": "Enviar meu histórico",
+      "demo": "Ver demo"
+    },
+    "disabledTitle": "Indisponível nesta instalação",
     "disabled": "O modo Conectar está indisponível neste ambiente. Upload e Demo continuam funcionando.",
+    "disabledWhy": "O dono do site não configurou o acesso ao Spotify.",
     "back": "Voltar ao início",
+    "loggedOut": "Você saiu. A sessão e o cache desta aba foram apagados.",
     "errors": {
-      "denied": "Você cancelou a autorização no Spotify.",
-      "state": "A tentativa de login expirou ou não é válida. Tente de novo.",
-      "oauth": "O Spotify não concluiu o login. Tente de novo.",
-      "scope": "O Spotify não concedeu as permissões necessárias. Tente de novo.",
-      "not_allowlisted": "Esta conta do Spotify não está na lista de acesso do Encore. Peça ao dono do app para incluí-la.",
-      "upstream": "O Spotify não respondeu. Tente de novo em instantes."
+      "denied": {
+        "title": "Autorização cancelada",
+        "body": "Você cancelou a autorização no Spotify. Nada foi guardado; entre de novo quando quiser."
+      },
+      "state": {
+        "title": "O login expirou",
+        "body": "A tentativa demorou demais ou foi aberta em outra aba. Tente de novo."
+      },
+      "oauth": {
+        "title": "O Spotify não concluiu o login",
+        "body": "Algo deu errado na troca com o Spotify. Tente de novo."
+      },
+      "scope": {
+        "title": "Faltaram permissões",
+        "body": "O Spotify não concedeu as permissões de leitura que o Encore precisa. Tente de novo e aceite todas."
+      },
+      "upstream": {
+        "title": "O Spotify não respondeu",
+        "body": "O serviço está instável agora. Tente de novo em instantes."
+      }
+    },
+    "forbidden": {
+      "title": "Este app ainda está em modo de teste",
+      "body": "O Spotify só deixa 5 contas convidadas usarem o modo Conectar de um app novo, e a sua ainda não está na lista. O seu histórico funciona sem convite.",
+      "upload": "Enviar meu histórico",
+      "demo": "Ver demo",
+      "otherAccount": "Já recebi o convite: tentar de novo"
+    },
+    "expired": {
+      "title": "Sua sessão expirou",
+      "body": "Por segurança, a conexão com o Spotify dura pouco. Conecte de novo para continuar.",
+      "action": "Conectar de novo"
+    },
+    "quota": {
+      "title": "Limite de consultas do app atingido",
+      "body": "O Encore divide uma cota com todos os usuários. Volte em ~{minutes} min. Upload e Demo continuam funcionando.",
+      "upload": "Enviar meu histórico",
+      "demo": "Ver demo",
+      "sectionPaused": "Consultas pausadas por alguns minutos."
+    },
+    "rateLimited": {
+      "title": "O Spotify pediu uma pausa",
+      "body": "Tentando de novo em <b>{seconds} s</b>.",
+      "announce": "O Spotify pediu uma pausa. Tentando de novo em {seconds} segundos.",
+      "retrying": "Tentando de novo…",
+      "now": "Tentar agora"
+    },
+    "sectionError": {
+      "title": "Não deu para carregar esta seção",
+      "retry": "Tentar de novo"
+    },
+    "meError": {
+      "title": "Não deu para falar com o Spotify",
+      "body": "A conexão está ativa, mas o Spotify não respondeu. Tente de novo em instantes."
+    },
+    "dashboard": {
+      "overline": "Modo Conectar · ao vivo",
+      "overlineDemo": "Demo · visão Conectar",
+      "greeting": "Oi, {name}",
+      "greetingAnon": "Seu top ao vivo",
+      "lead": "Lido agora da sua conta do Spotify e guardado só nesta aba.",
+      "leadDemo": "Artistas e músicas inventados, no formato do modo Conectar. Nada aqui vem do Spotify.",
+      "demoBanner": "Visão Conectar do demo: dados fictícios, sem conexão com o Spotify.",
+      "windowHeading": "Janela de tempo",
+      "windowLabel": "Janela do Spotify",
+      "windows": {
+        "short_term": "4 semanas",
+        "medium_term": "6 meses",
+        "long_term": "1 ano"
+      },
+      "windowSummary": {
+        "short_term": "Últimas ~4 semanas, pelo cálculo do Spotify",
+        "medium_term": "Últimos ~6 meses, pelo cálculo do Spotify",
+        "long_term": "Último ~1 ano, pelo cálculo do Spotify"
+      },
+      "windowLive": "Mostrando: {label}",
+      "barLabel": "Janela: {label}. Trocar janela",
+      "footer": "Dados do Spotify lidos pela sua conta. O servidor não guarda nada; o cache fica só nesta aba.",
+      "footerDemo": "Demo: artistas e músicas inventados, gerados no seu navegador. Nenhuma conexão com o Spotify."
+    },
+    "top": {
+      "title": "Seu top",
+      "kindLabel": "Tipo de ranking",
+      "kinds": {
+        "artists": "Artistas",
+        "tracks": "Músicas"
+      },
+      "listLabel": "Top {count} {kind}",
+      "more": "Ver top 50",
+      "less": "Ver menos",
+      "empty": "O Spotify ainda não tem dados suficientes nessa janela.",
+      "open": "Abrir no Spotify",
+      "play": "Ouvir no Spotify"
+    },
+    "trends": {
+      "title": "Tendências",
+      "subtitle": "Últimas 4 semanas comparadas com os últimos 6 meses",
+      "subtitleLong": "Últimas 4 semanas comparadas com o último ano",
+      "kindLabel": "Tendências de",
+      "up": "Em alta",
+      "down": "Em queda",
+      "entered": "novo",
+      "rising": "subiu {n}",
+      "falling": "caiu {n}",
+      "left": "saiu",
+      "emptyUp": "Nada novo subindo: seu top está estável.",
+      "emptyDown": "Nada caindo: seu top está estável."
+    },
+    "recent": {
+      "title": "Tocadas recentemente",
+      "listLabel": "Últimas {count} músicas tocadas",
+      "more": "Ver as {count}",
+      "less": "Ver menos",
+      "empty": "Nada tocado recentemente nesta conta."
+    },
+    "genres": {
+      "title": "Seus gêneros",
+      "unstable": "instável",
+      "unstableTip": "O Spotify pode deixar de fornecer este dado. Se ele sumir, a seção some junto.",
+      "unstableLabel": "Por que instável",
+      "note": "Calculado a partir dos seus top artistas nesta janela.",
+      "listLabel": "Gêneros mais ouvidos"
+    },
+    "liked": {
+      "title": "De quem você tem mais músicas curtidas?",
+      "body": "Lemos sua biblioteca página por página. Pode levar ~1 min.",
+      "start": "Descobrir",
+      "cancel": "Cancelar",
+      "progress": "Página {done} de {total}",
+      "progressStarting": "Começando a leitura…",
+      "progressLabel": "Leitura das curtidas",
+      "waiting": "O Spotify pediu uma pausa. Seguindo em {seconds} s.",
+      "checking": "Conferindo se suas curtidas mudaram…",
+      "count": "{count, plural, one {# música curtida} other {# músicas curtidas}}",
+      "updated": "atualizado {when}",
+      "refresh": "Atualizar",
+      "changed": "Suas curtidas mudaram desde a última leitura.",
+      "unchanged": "Nada mudou nas suas curtidas desde a última leitura.",
+      "cancelled": "Leitura cancelada. Nada foi guardado.",
+      "finished": "Leitura concluída.",
+      "othersTitle": "Os outros do seu top de curtidas",
+      "othersLabel": "Artistas com mais músicas curtidas",
+      "empty": "Você ainda não tem músicas curtidas no Spotify.",
+      "error": "Não deu para terminar a leitura das curtidas.",
+      "retry": "Tentar de novo",
+      "winner": "Artista com mais curtidas"
+    },
+    "account": {
+      "menu": "Conta: {name}. Abrir menu",
+      "fallbackName": "Sua conta",
+      "connectedAs": "Conectado como",
+      "logout": "Sair",
+      "confirmTitle": "Sair do Conectar?",
+      "confirmBody": "Sair apaga a sessão e o cache desta aba. Para voltar, é só entrar de novo.",
+      "confirm": "Sair",
+      "cancel": "Cancelar",
+      "loggingOut": "Saindo…",
+      "logoutError": "Não deu para sair. Tente de novo."
+    },
+    "time": {
+      "justNow": "agora"
     }
   }
 }

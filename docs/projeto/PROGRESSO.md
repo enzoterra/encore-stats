@@ -3,11 +3,12 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: nenhuma. Sprint 4 ✅ concluída (dev-frontend, 2026-09-24): vertical slice Upload/Demo pronto para o cliente validar; aguarda commit do orquestrador
-- Próximo passo ao retomar: validação do vertical slice com o cliente (screenshots em `docs/projeto/screenshots/sprint4/`, roteiro em "Como verificar" da Sprint 4); depois, Sprint 5 (UI do Conectar sobre o BFF; contrato em `docs/api.md`). Pendente com o cliente: testar o login real em 127.0.0.1 (aceite da Sprint 2; passo a passo no README)
+- Sprint em andamento: nenhuma. Sprint 5 ✅ concluída (dev-frontend, 2026-09-24): modo Conectar completo (entrada, dashboard, varredura, logout) e visão Conectar do Demo; aguarda commit do orquestrador
+- Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
+- Próximo passo ao retomar: aceite da Sprint 5 pelo cliente (com os próprios dados reais; screenshots em `docs/projeto/screenshots/sprint5/`), depois Sprint 6 (cards). Pendente com o cliente: testar o login real em 127.0.0.1 (aceite das Sprints 2 e 5; passo a passo no README)
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-24 por dev-frontend (fim da Sprint 4)
+- Última atualização: 2026-09-24 por dev-frontend (fim da Sprint 5)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -303,13 +304,65 @@
   - S8: medir no iPhone real. O WebKit do Playwright no Windows não substitui o Safari/iOS; nas capturas dele, os pesos da fonte variável pareceram mais leves
 - Próxima sprint: Sprint 5 (dev-frontend), depois do aceite do cliente
 
-### Sprint 5 — UI modo Conectar — ⬜ · dev-frontend
-- [ ] S5.1 Conectar, estados de login e logout
-- [ ] S5.2 TanStack Query com TTLs, quota e limpeza
-- [ ] S5.3 Dashboard Conectar (janelas, tops, tendências, recentes, gêneros)
-- [ ] S5.4 Varredura de curtidas
-- [ ] S5.5 Atribuição Spotify
-- [ ] S5.6 Testes
+### Sprint 5 — UI modo Conectar — ✅ concluída (2026-09-24) · dev-frontend
+- [x] S5.1 Conectar, estados de login e logout
+- [x] S5.2 TanStack Query com TTLs, quota e limpeza
+- [x] S5.3 Dashboard Conectar (janelas, tops, tendências, recentes, gêneros)
+- [x] S5.4 Varredura de curtidas
+- [x] S5.5 Atribuição Spotify
+- [x] S5.6 Testes
+- Entregue:
+  - `/{locale}/connect` (substitui a página provisória da S2):
+    - sem credenciais: entrada com "Entrar com o Spotify" desabilitado e o motivo;
+    - sem sessão: entrada (o que o modo mostra, os 3 escopos de leitura, "acesso por convite" com Upload/Demo, selo de privacidade) e o erro do callback como alerta com título e explicação (`denied`, `state`, `oauth`, `scope`, `upstream`);
+    - `?error=not_allowlisted`: tela própria (limite de 5 contas do Spotify, [Enviar meu histórico] [Ver demo], "Já recebi o convite: tentar de novo");
+    - `?status=logged_out`: confirmação de que sessão e cache foram apagados;
+    - com sessão: cabeçalho com badge "Conectado" e avatar → menu → "Sair" com confirmação (Radix AlertDialog) → `fetch` POST same-origin → `queryClient.clear()` + `sessionStorage.clear()` + recarga da rota
+  - `src/features/connect/`:
+    - `bff-client.ts`: `getJson` same-origin, erro tipado `BffError` (códigos do BFF + `NETWORK`/`INVALID_RESPONSE`), `retryAfter` do corpo ou do cabeçalho (com teto), revalidação Zod de toda resposta com os schemas de `src/domain/spotify-types.ts`; `ConnectSource` com as fontes `live` (BFF) e `demo` (`demo-source.ts`, sem rede);
+    - `connect-client.ts` + `connect-provider.tsx`: um `QueryClient` por aba no modo real (sobrevive à troca de idioma), status global em Zustand vanilla (sessão ativa/expirada/bloqueada, pausa por `QUOTA`); `QueryCache.onError` trata 401/403/`QUOTA`;
+    - `queries.ts`: `me` sozinho primeiro e o resto só depois que ele responde; `staleTime`/`gcTime` = TTLs do 03 (me 24 h, top 6 h, recent 60 s com refetch ao focar, artist 7 d); sem retry em 4xx/429/`QUOTA`, 1 retry em 5xx/rede; dedupe pela chave; `/artist/:id` com concorrência 2;
+    - seções: `top-section`, `trends-section` (entrou/subiu em "Em alta", caiu/saiu em "Em queda", via `computeWindowTrends`), `recent-section`, `genres-section` (`computeGenres`; some com < 3 gêneros, erro ou pausa), `liked-section` + `use-liked-scan.ts`; cada seção com skeleton, erro próprio (UPSTREAM com "Tentar de novo"; 429 com contagem regressiva e nova tentativa no zero) e pausa;
+    - `quota-banner.tsx` (banner global, "Volte em ~N min", Upload/Demo), `account-states.tsx` (401 e 403 de página inteira), `account-menu.tsx`, `logout.ts`, `session-cache.ts`, `limiter.ts`, `cover.tsx`, `media-row.tsx`, `spotify-brand.tsx`
+  - Varredura de curtidas: "Descobrir" → página 1 dá o `total` → demais páginas com concorrência 3 (`runPool`) → `LikedArtistsCounter` + `savedPageOffsets`; progresso "Página X de Y" + barra (`role=progressbar`, anúncio a cada 25%); cancelar = `AbortController` (sem resultado parcial, toast); 429 por página espera o `retryAfter` e repete a página (até 3 vezes); resultado (top 10 por conta) 12 h no sessionStorage; 2ª visita mostra o resultado na hora e confere com `limit=1` (`total` + 1º `addedAt`); "Atualizar" também confere antes e só revarre se mudou; fotos dos 10 mais curtidos vêm do cache dos tops ou de `/artist/:id` (concorrência 2)
+  - Atribuição (10-design §10): logos oficiais em `public/brand/` (origem no README, "Marca do Spotify"): logo completo branco de 21 px (≈ 77 px de largura) no cabeçalho de toda seção com dado da API; cada linha é link para o `url` da resposta (`target=_blank`, `rel=noopener noreferrer`) com o ícone oficial de 21 px e "Abrir/Ouvir no Spotify" (visível em ≥ 1280 px no top e nos recentes; sempre no leitor de tela); capas `aspect-ratio: 1` + `object-fit: contain`, raio 4 px (≤ 64 px) e 8 px (96 px), nada por cima; no Demo, nenhum link nem logo
+  - Demo: aba "Visão Conectar" do `/demo` = o mesmo `ConnectDashboard` sobre `generateDemo().api` (+ `demoSavedPage`/`demoArtist`, 90 ms por página para o progresso aparecer), com `QueryClient` próprio e banner "dados fictícios"
+  - `scripts/spotify-mock-server.ts`: `/health`, tops que mudam por `time_range` (há tendências e troca de janela), vencedor claro nas curtidas, `MOCK_SPOTIFY_SAVED_TOTAL` e `MOCK_SPOTIFY_SAVED_DELAY_MS`
+  - `playwright.config.ts`: 3 `webServer` em ordem (`:3000` sem credenciais, mock `:4010`, `:3100` com o Conectar contra o mock)
+  - Docs: README (telas, login real, mock, e2e do Conectar, marca do Spotify) e `docs/api.md` (cliente da S5)
+- Versões instaladas: @tanstack/react-query **5.103.2** (a mais recente, publicada em 2026-09-21; passa no `minimumReleaseAge`); get-nonce **1.0.1** (já vinha do Radix, agora direta: ver decisões). Sem persister do TanStack: a persistência opcional é própria e mínima. `pnpm audit --audit-level=high --registry=https://registry.npmjs.org/`: sem vulnerabilidades
+- Números (Windows, Node 22.20, build de produção):
+  - `pnpm test`: 430 testes (34 arquivos) verdes, 37 novos no Conectar (sucesso, janela com cache, top de músicas, 401, 403, 429 com contagem, UPSTREAM, QUOTA com pausa persistida, gêneros < 3, varredura com concorrência ≤ 3, cancelamento, 429 por página, 2ª visita com `limit=1`, biblioteca mudou, logout ok/recusado, entrada/erros, Demo sem rede) + unidades de cliente, cache, limiter e fonte do Demo
+  - `pnpm test:coverage`: total 93,9% statements / 89,3% ramos / 94,8% linhas; `src/features/connect` 92,5% / 86,2% / 94,5%; `src/domain` segue ≥ 95% de ramos (limiar de 80% aplicado)
+  - `pnpm test:e2e`: **96 testes verdes** (48 por navegador, Chromium + WebKit), 12 novos: fluxo completo contra o mock (login → dashboard → trocar janela → varredura → logout com sessionStorage vazio, cookie apagado e `me` → 401, zero violação de CSP), axe + 360 px na entrada e no dashboard, `QUOTA` e 401 via `page.route`, allowlist (axe + 360 px), aba "Visão Conectar" do Demo sem requisição externa e sem marca do Spotify
+  - lint (0 warnings), format:check, typecheck e build verdes
+- Decisões:
+  - **Varredura sem cache HTTP:** as páginas de `saved` saem com `cache: 'no-cache'` (inclusive a validação `limit=1`); o TTL de 12 h fica no resultado agregado (sessionStorage). Sem isso, o `max-age=43200` do navegador faria a validação comparar uma resposta velha
+  - **Persistência opcional = só o resultado das curtidas e a pausa de `QUOTA`**, no sessionStorage (prefixo `encore.connect.`, com `expiresAt`); o resto fica em memória + no cache HTTP `private` do navegador (que o `Clear-Site-Data` do logout apaga). 401/403 apagam o prefixo; o logout apaga o sessionStorage inteiro. Nada em localStorage/IndexedDB (há teste)
+  - **Sem barra de proporção nos tops do Conectar:** a API não informa plays nem minutos; uma barra decrescente inventaria um dado (princípio "honestidade de dado")
+  - **Dashboard só depois da hidratação** (`useHydrated`): o Radix ToggleGroup gera `style="outline:none"` no SSR, que a CSP bloqueia (3 violações encontradas no teste real); o servidor manda só o skeleton, e os dados vêm todos do navegador de qualquer forma
+  - **Bug de CSP pré-existente corrigido (afeta também o menu de idioma da S4):** menus e diálogos modais do Radix travam o scroll injetando um `<style>` (`react-remove-scroll` → `react-style-singleton`), bloqueado pela CSP. `src/components/ui/style-nonce.tsx` passa ao `get-nonce` o nonce que o Next já aplicou aos próprios scripts (propriedade `.nonce`, legível só por script da página). Por isso `get-nonce` virou dependência direta (mesma versão do Radix, instância única no pnpm)
+  - `?error=not_allowlisted` com uma sessão antiga ainda válida: vale a sessão (mostra o dashboard)
+  - "Entrar com outra conta" virou "Já recebi o convite: tentar de novo": o Spotify reaproveita a conta logada no navegador, então o link só ajuda quem acabou de ser convidado
+  - `src/domain` e `src/server` não foram alterados
+- Como verificar:
+  - `pnpm i` → `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build`
+  - `pnpm exec playwright install chromium webkit` → `pnpm test:e2e` (sobe `:3000`, o mock em `:4010` e `:3100` com o Conectar). No Windows com o pnpm local, suba os três à mão como no README ("E2E do Conectar") e rode `pnpm test:e2e`
+  - `pnpm audit --audit-level=high --registry=https://registry.npmjs.org/`
+  - manual sem conta do Spotify: README, "Testar o fluxo sem conta do Spotify" (com `MOCK_SPOTIFY_SAVED_TOTAL=1200 MOCK_SPOTIFY_SAVED_DELAY_MS=300` para ver o progresso) → `http://127.0.0.1:3000/pt-BR/connect` → Entrar → trocar janela → Descobrir → Cancelar/Descobrir → recarregar (resultado imediato) → Sair
+  - Demo: `/pt-BR/demo` → aba "Visão Conectar" → Descobrir
+  - screenshots para o cliente em `docs/projeto/screenshots/sprint5/`:
+    - `01-connect-deslogado-mobile.png`;
+    - `02-dashboard-conectar-mobile.png` (dados do mock; as capas do mock são geradas no teste);
+    - `03-varredura-progresso-mobile.png`, `03b-varredura-resultado-mobile.png`;
+    - `04-erro-not-allowlisted-mobile.png`;
+    - `05-dashboard-conectar-desktop-en.png`
+- Pendências:
+  - Cliente: aceite da sprint com os próprios dados reais (US-08..US-10; README, "Testar o login real"), incluindo a conta fora da allowlist e o logout
+  - S6: Compartilhar do Conectar (hoje desabilitado, como no Upload); o card Conectar usa a capa via `i.scdn.co` (ADR 9) e o logo de `public/brand/`
+  - S7: revisar o nonce entregue ao `get-nonce`, a revalidação das respostas no cliente, a persistência no sessionStorage (resultado das curtidas + pausa) e os links montados a partir do ID no top de curtidas
+  - S8: medir no iPhone real a varredura de uma biblioteca grande (milhares de curtidas) e o tempo até o dashboard
+- Próxima sprint: Sprint 6 (dev-frontend), cards e compartilhamento
 
 ### Sprint 6 — Cards e compartilhamento — ⬜ · dev-frontend
 - [ ] S6.1 Pipeline satori → resvg → PNG (lazy)

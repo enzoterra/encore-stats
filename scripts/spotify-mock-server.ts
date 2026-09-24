@@ -16,6 +16,9 @@
  * - `POST /api/token` confere Basic auth, `redirect_uri` e o PKCE (S256) e emite tokens de
  *   1 h (`MOCK_SPOTIFY_EXPIRES_IN` troca a validade); o refresh devolve um refresh token novo.
  * - `MOCK_SPOTIFY_FORBIDDEN=1` responde 403 em toda a Web API (conta fora da allowlist).
+ * - Os tops mudam de ordem conforme `time_range` (para haver tendências e troca de janela).
+ * - `MOCK_SPOTIFY_SAVED_TOTAL` (padrão 120) define o tamanho da biblioteca de curtidas e
+ *   `MOCK_SPOTIFY_SAVED_DELAY_MS` (padrão 0) atrasa cada página de `/me/tracks` (progresso visível).
  */
 import { createHash, randomBytes } from 'node:crypto';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
@@ -24,6 +27,8 @@ const PORT = Number(process.env.MOCK_SPOTIFY_PORT ?? 4010);
 const EXPIRES_IN = Number(process.env.MOCK_SPOTIFY_EXPIRES_IN ?? 3600);
 const DENY = process.env.MOCK_SPOTIFY_DENY === '1';
 const FORBIDDEN = process.env.MOCK_SPOTIFY_FORBIDDEN === '1';
+const SAVED_TOTAL = Number(process.env.MOCK_SPOTIFY_SAVED_TOTAL ?? 120);
+const SAVED_DELAY_MS = Number(process.env.MOCK_SPOTIFY_SAVED_DELAY_MS ?? 0);
 
 const pendingCodes = new Map<string, { challenge: string; redirectUri: string }>();
 const accessTokens = new Set<string>();
@@ -39,16 +44,26 @@ const artist = (n: number) => ({
   genres: ['indie fictício', n % 2 ? 'rock imaginário' : 'pop de mentira'],
   images: image(`a${n}`),
 });
+// Um em cada três é da Banda Fictícia 1: a varredura de curtidas tem um vencedor claro.
+const trackArtist = (n: number) => (n % 3 === 0 ? 1 : (n % 10) + 1);
 const track = (n: number) => ({
   id: id('mocktrack', n),
   name: `Faixa Inventada ${n}`,
-  artists: [{ id: id('mockartist', (n % 10) + 1), name: `Banda Fictícia ${(n % 10) + 1}` }],
+  artists: [{ id: id('mockartist', trackArtist(n)), name: `Banda Fictícia ${trackArtist(n)}` }],
   album: { id: id('mockalbum', n), name: `Disco ${n}`, images: image(`al${n}`) },
 });
 const range = (count: number, offset = 0) =>
   Array.from({ length: count }, (_, i) => offset + i + 1);
 
-const SAVED_TOTAL = 120;
+/** Ordem do top por janela: a de 4 semanas embaralha a de 6 meses e traz novos nomes. */
+function topOrder(timeRange: string | null): number[] {
+  if (timeRange === 'short_term')
+    return [21, 3, 1, 22, 2, 9, 5, 4, 23, 6, 7, 8, 10, 11, 12, 13, 14, 24, 15, 16];
+  if (timeRange === 'long_term') return range(20, 4);
+  return range(20);
+}
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function send(res: ServerResponse, status: number, body?: unknown, headers = {}) {
   res.writeHead(status, {
@@ -80,6 +95,8 @@ function issueTokens() {
 
 async function handle(req: IncomingMessage, res: ServerResponse) {
   const url = new URL(req.url ?? '/', `http://127.0.0.1:${PORT}`);
+
+  if (req.method === 'GET' && url.pathname === '/health') return send(res, 200, { status: 'ok' });
 
   if (req.method === 'GET' && url.pathname === '/authorize') {
     const redirect = new URL(url.searchParams.get('redirect_uri') ?? '');
@@ -138,8 +155,9 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
     if (path === '/me') {
       return send(res, 200, { id: 'mock-user', display_name: 'Pessoa Fictícia', images: [] });
     }
-    if (path === '/me/top/artists') return send(res, 200, { items: range(20).map(artist) });
-    if (path === '/me/top/tracks') return send(res, 200, { items: range(20).map(track) });
+    const order = topOrder(url.searchParams.get('time_range'));
+    if (path === '/me/top/artists') return send(res, 200, { items: order.map(artist) });
+    if (path === '/me/top/tracks') return send(res, 200, { items: order.map(track) });
     if (path === '/me/player/recently-played') {
       return send(res, 200, {
         items: range(10).map((n) => ({
@@ -149,6 +167,7 @@ async function handle(req: IncomingMessage, res: ServerResponse) {
       });
     }
     if (path === '/me/tracks') {
+      if (SAVED_DELAY_MS > 0) await sleep(SAVED_DELAY_MS);
       const offset = Number(url.searchParams.get('offset') ?? 0);
       const limit = Number(url.searchParams.get('limit') ?? 20);
       const count = Math.max(0, Math.min(limit, SAVED_TOTAL - offset));
