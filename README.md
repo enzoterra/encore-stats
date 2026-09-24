@@ -75,6 +75,8 @@ pnpm exec playwright install chromium
 | `pnpm test`                         | Vitest (unit/integração em Node e componentes em jsdom)                 |
 | `pnpm test:coverage`                | Vitest com cobertura (meta ≥ 80% em `src/domain`)                       |
 | `pnpm test:e2e`                     | Playwright + axe (faz `build` + `start` se não houver servidor rodando) |
+| `pnpm fixtures`                     | Regenera `tests/fixtures/` (zips sintéticos válidos e maliciosos)       |
+| `pnpm bench`                        | Benchmark do upload: ~50 MB sintéticos (meta < 10 s) e troca de período |
 
 ## Variáveis de ambiente
 
@@ -129,7 +131,8 @@ src/features/        UI por área
 src/workers/         Web Workers (processamento do upload)
 src/i18n/            rotas e mensagens do next-intl
 e2e/                 testes Playwright + axe
-tests/               setup e stubs dos testes
+scripts/             geração das fixtures (`pnpm fixtures`)
+tests/               setup, stubs, fixtures e benchmark (`tests/perf`)
 ```
 
 Alias de import: `@/…` aponta para `src/…`.

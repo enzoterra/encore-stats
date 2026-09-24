@@ -10,3 +10,6 @@ pnpm-lock.yaml
 
 # Documentação do plano (mantida pelos papéis de planejamento/design)
 docs/
+
+# Fixtures binárias/geradas (scripts/make-fixtures.ts)
+tests/fixtures/

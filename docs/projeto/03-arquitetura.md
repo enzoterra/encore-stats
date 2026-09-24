@@ -143,4 +143,9 @@ Todas as stats de `src/domain/stats` recebem `(dataset, period, tz)` e são **fu
 5. **Gráficos em SVG próprio.** Só dois tipos simples; Recharts pesaria ~140 kB.
 6. **TypeScript 6.0 em vez de 7.0.** Compatibilidade com typescript-eslint e com o `next build` sem flag experimental.
 7. **Gêneros só do `/me/top/artists`.** O batch `/artists?ids` foi removido; N chamadas custariam quota. O campo é deprecated, então a UI degrada.
+9. **Capa no card do modo Conectar** (aprovado pelo cliente em 2026-09-24).
+   - O satori precisa dos bytes da imagem.
+   - **Primeira opção:** `fetch` direto de `https://i.scdn.co`. Exige `connect-src https://i.scdn.co` na CSP, só se o CDN responder com CORS.
+   - **Fallback:** rota `GET /api/spotify/image?id=<hash>`, restrita a `i.scdn.co` (allowlist de host, sem URL arbitrária, contra SSRF), com `Cache-Control: private`.
+   - A Sprint 6 decide testando o CORS. Fonte CJK/árabe nos cards fica fora do MVP (fallback: caixas vazias).
 8. **Dados do modo Demo com artistas e músicas fictícios.** Evita exibir metadados do Spotify sem atribuição e não depende de rede.

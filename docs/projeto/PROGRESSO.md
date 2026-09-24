@@ -3,11 +3,11 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: Sprint 0 ✅ concluída (analista-de-infra, 2026-09-24; aguarda commit do orquestrador); Sprint 3 (designer) em paralelo
-- Próximo passo ao retomar: Sprint 1 (dev-backend) a partir de S1.1; e a aprovação do design pelo cliente antes da Sprint 4
-- Sprint 3 (designer): todos os passos entregues em 2026-09-24; 🔄 aguardando aprovação do cliente (`10-design.md`, `design/mockup.html`)
+- Sprint em andamento: nenhuma. Sprint 1 ✅ concluída (dev-backend, 2026-09-24; aguarda commit do orquestrador)
+- Próximo passo ao retomar: Sprint 2 (dev-backend, BFF) e/ou Sprint 4 (dev-frontend), que já pode consumir `src/domain` e o worker
+- Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-24 por orquestrador
+- Última atualização: 2026-09-24 por dev-backend (fim da Sprint 1)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -46,17 +46,71 @@
 - Pendências para os próximos papéis: dev-backend (S1) cria `src/domain/**` (o limiar de 80% já está no `vitest.config.ts`) e o script `pnpm fixtures`; S2 adiciona `jose`, `logger.ts` e, se quiser mock da API nos e2e, `SPOTIFY_API_BASE` no `env.ts` (bloqueada em produção); S4 adiciona WebKit ao Playwright e move as fontes para `public/fonts`; S7 valida `'wasm-unsafe-eval'` só na rota de cards, liga CodeQL (default setup) e confirma se o Dependabot lê o lockfile do pnpm 12 (tem 2 documentos YAML por causa de `packageManagerDependencies`); branch protection exigindo os jobs do CI (config do GitHub, a fazer pelo dono)
 - Próxima sprint: Sprint 1 (dev-backend)
 
-### Sprint 1 — Domínio, motor de upload e demo — ⬜ · dev-backend
-- [ ] S1.1 Schemas Zod do histórico e predicado "é música"
-- [ ] S1.2 Leitura do zip (fflate, streaming, limites)
-- [ ] S1.3 Dataset colunar
-- [ ] S1.4 Worker Comlink (progresso, cancelamento)
-- [ ] S1.5 Stats puras (período, tops, totais, heatmap, plataforma)
-- [ ] S1.6 Métricas "você por você"
-- [ ] S1.7 Stats de API (tendências, gêneros, curtidas por artista)
-- [ ] S1.8 Gerador demo determinístico
-- [ ] S1.9 Fixtures (válidas e maliciosas)
-- [ ] S1.10 Testes ≥ 80% + benchmark
+### Sprint 1 — Domínio, motor de upload e demo — ✅ concluída (2026-09-24) · dev-backend
+- [x] S1.1 Schemas Zod do histórico e predicado "é música"
+- [x] S1.2 Leitura do zip (fflate, streaming, limites)
+- [x] S1.3 Dataset colunar
+- [x] S1.4 Worker Comlink (progresso, cancelamento)
+- [x] S1.5 Stats puras (período, tops, totais, heatmap, plataforma)
+- [x] S1.6 Métricas "você por você"
+- [x] S1.7 Stats de API (tendências, gêneros, curtidas por artista)
+- [x] S1.8 Gerador demo determinístico
+- [x] S1.9 Fixtures (válidas e maliciosas)
+- [x] S1.10 Testes ≥ 80% + benchmark
+- Entregue:
+  - `src/domain/history/*`: schema Zod (strip), `isMusic`, `isSkip`, unzip em streaming (`readZipEntries`), `DatasetBuilder`, `processHistory`
+  - `src/domain/stats/*` (`computeStats`, `periodSchema`, `availableMonths`); `src/domain/time.ts`
+  - `src/domain/api-stats/*` (`computeWindowTrends`, `computeGenres`, `LikedArtistsCounter`, `savedPageOffsets`, `missingArtistIds`); `src/domain/spotify-types.ts`
+  - `src/domain/demo/*` (`generateDemo`, `demoSavedPage`, `demoArtist`)
+  - `src/workers/history.worker.ts` + `history-worker-api.ts`
+  - `scripts/make-fixtures.ts` + 9 fixtures em `tests/fixtures/`; `tests/perf/history.perf.ts`
+- Versões instaladas: fflate 0.8.3, comlink 4.4.2 (`pnpm audit --audit-level=high`: sem vulnerabilidades)
+- Números (Node 22.20, Windows):
+  - 213 testes (15 arquivos) verdes
+  - cobertura de `src/domain`: 100% linhas, 97,7% ramos, 98,8% funções
+  - benchmark com 57,8 MiB de JSON (4 arquivos, 72 000 registros; zip de 3,8 MiB): zip em 0,99 s, JSONs soltos em 0,50 s
+  - memória amostrada: RSS +73 MiB sobre a linha de base (pico de ~250 MiB no processo do Vitest, que já inclui os 58 MiB gerados em memória)
+  - troca de período: ≤ 40 ms; 1ª chamada ~78 ms, que monta o índice local por fuso
+  - demo: ~110 ms para ~34 mil registros e 3 anos
+- Contratos para o frontend (S4/S5):
+  - Worker: `Comlink.wrap<HistoryWorkerApi>(new Worker(new URL('../workers/history.worker.ts', import.meta.url), { type: 'module' }))`
+    - `processHistory(files, Comlink.proxy(onProgress))` → `{ ok: true, dataset, report } | { ok: false, error: { code, … } }`
+    - `cancel()` → `CANCELLED`
+    - progresso: `{ stage: 'unzip'|'parse'|'aggregate'|'done', bytesRead, bytesTotal, filesDone, records }`
+  - Códigos de erro para traduzir: `UNSUPPORTED_FILE`, `INVALID_ZIP`, `UNSAFE_PATH`, `TOO_MANY_ENTRIES`, `ENTRY_TOO_LARGE`, `TOTAL_TOO_LARGE`, `COMPRESSION_RATIO`, `NO_HISTORY_FILES`, `WRONG_EXPORT` (zip "Dados da conta"), `INVALID_JSON`, `UNEXPECTED_FORMAT`, `INVALID_RECORDS`, `CANCELLED`, `INTERNAL`
+  - `computeStats(dataset, period, tz, { limit })` → `{ range, totals, top: { artists, tracks, albums }, heatmap, platforms, self }`
+    - `tz` = `Intl.DateTimeFormat().resolvedOptions().timeZone`, validado com `resolveTimeZone`
+    - `heatmap[weekday*24+hour]`, com weekday ISO: 0 = segunda
+    - valores em `ms`; a UI converte para minutos
+  - Demo: `generateDemo()` → `{ dataset, api, timeZone }`
+    - `api.demo === true`: a UI não mostra "Abrir no Spotify"
+    - `api.top.{artists,tracks}[range]`, `api.recent`, `demoSavedPage(api, offset)`, `demoArtist(api, id)`
+- Decisões:
+  - `dict.albums` virou `{ name, artist }[]` em vez de `string[]` (álbuns homônimos de artistas diferentes não se misturam, e o top de álbuns mostra o artista)
+  - `SavedPage` ganhou `offset`, usado pela varredura concorrente
+  - "Pulada" = `skipped === true` ou, sem `skipped`, `reason_end === 'fwdbtn'`
+  - Os distintos (artistas/músicas/álbuns/dias) contam só plays ≥ 30 s; os minutos somam toda música
+  - Arquivo com > 5% de inválidos → `INVALID_RECORDS`; 100% inválido → `UNEXPECTED_FORMAT` (ou `WRONG_EXPORT` se for do export "Dados da conta")
+  - Zip com qualquer entrada insegura (`..`, absoluta, letra de unidade, NUL) é rejeitado por inteiro
+  - Limites checados no cabeçalho e durante o streaming, com pushes de 16 KiB ao fflate (saída máx. ~16 MiB por push). A razão é medida por entrada e acumulada, só depois de 1 MiB descompactado
+  - Tendências: `short_term` contra `medium_term` (ou `long_term` se `medium` vier vazio); subiu/caiu com ≥ 3 posições; "saiu" = estava no top 20 da referência
+  - Gêneros: peso N − i por artista; seção visível com ≥ 3 gêneros
+  - Curtidas: cada faixa conta uma vez por artista creditado, com dedupe por ID de faixa e offsets repetidos ignorados
+  - Demo: tops com 25 itens (com 36 artistas fictícios, 50 cobriria todos e "entrou" nunca apareceria); fuso `America/Sao_Paulo`; URLs genéricas `https://open.spotify.com/`
+  - ESLint: `fetch`/XHR/WebSocket/EventSource/`sendBeacon`/storage proibidos em `src/domain` e `src/workers`
+  - Scripts TS rodam direto no Node (type stripping, Node ≥ 22.18); `scripts/package.json` marca ESM
+- Como verificar:
+  - `pnpm i` → `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test`
+  - `pnpm test:coverage`: o limiar de 80% em `src/domain` é aplicado
+  - `pnpm bench`: imprime `[bench]` com tempo e memória; falha se passar de 10 s ou se a troca de período passar de 200 ms
+  - `pnpm fixtures`: regenera `tests/fixtures/` byte a byte; `tests/fixtures.test.ts` falha se as fixtures estiverem desatualizadas
+  - `pnpm build` e `pnpm test:e2e` (7 testes) seguem verdes
+- Nota de ambiente local: o pnpm 12 do scratchpad (`env.sh` da Sprint 0) é um shim `sh` que o `cmd` não executa. Com ele, o `webServer` do Playwright falha. Solução local: `pnpm build && pnpm start` num terminal e `pnpm test:e2e` em outro (reusa o servidor). Com o pnpm instalado normalmente, ou no CI, não acontece
+- Pendências:
+  - S4: ligar o worker à UI, traduzir os códigos de erro e esconder links do Spotify no Demo
+  - S7: revisar os limites do zip e a regra de lint anti-rede
+  - S8: medir no iPhone real (RNF-03/04). No Node a folga é grande, mas o Safari/iOS precisa de medição
+- Próxima sprint: Sprint 2 (dev-backend) — `jose`, sessão, rotas `/api/spotify/*` usando os schemas de `src/domain/spotify-types.ts` para reduzir e validar as respostas
 
 ### Sprint 2 — BFF e integração Spotify — ⬜ · dev-backend
 - [ ] S2.1 Sessão JWE (jose)
@@ -67,7 +121,11 @@
 - [ ] S2.6 Testes de integração (100% dos caminhos de segurança)
 - [ ] S2.7 `docs/api.md`
 
-### Sprint 3 — Sistema de design — 🔄 aguardando aprovação do cliente · designer → aprovação do cliente
+### Sprint 3 — Sistema de design — ✅ concluída e aprovada pelo cliente (2026-09-24) · designer
+- Decisões do cliente (2026-09-24):
+  - direção Palco Neon aprovada;
+  - capa da música nº 1 no card do Conectar **liberada** (ADR 9 em 03);
+  - fonte CJK/árabe nos cards **fora do MVP**.
 - [x] S3.1 `10-design.md`: tokens Palco Neon (contrastes calculados, bloco `@theme` do Tailwind 4 em §12)
 - [x] S3.2 Componentes e estados (§8)
 - [x] S3.3 Templates de card (Básico/Festival × 9:16/1:1) — §9 + protótipo `design/cards/templates.mjs` validado no satori 0.33.5; prévias em `design/cards/preview/`

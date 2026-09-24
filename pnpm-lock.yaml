@@ -166,6 +166,12 @@ importers:
 
   .:
     dependencies:
+      comlink:
+        specifier: ^4.4.2
+        version: 4.4.2
+      fflate:
+        specifier: ^0.8.3
+        version: 0.8.3
       next:
         specifier: ^16.3.6
         version: 16.3.6(@babel/core@7.29.7)(@playwright/test@1.63.0)(@types/node@24.13.6)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -1579,6 +1585,9 @@ packages:
   client-only@0.0.1:
     resolution: {integrity: sha512-IV3Ou0jSMzZrd3pZ48nLkT9DA7Ag1pnPzaiQhpW7c3RbcqqzvzzVu+L8gfqMp/8IM2MQtSiqaCxrrcfu8I8rMA==}
 
+  comlink@4.4.2:
+    resolution: {integrity: sha512-OxGdvBmJuNKSCMO4NTl1L47VRp6xn2wG4F/2hYzB6tiCb709otOxtEYCSvK80PtjODfXXZu8ds+Nw5kVCjqd2g==}
+
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
 
@@ -1889,6 +1898,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  fflate@0.8.3:
+    resolution: {integrity: sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==}
 
   file-entry-cache@11.1.5:
     resolution: {integrity: sha512-+PFTHITI08JIGhnNpGNI8T8inUpgZfk3GNEqfT9R2zZV2iFXg3CvqzSl/uEhs7TSGujYRELEANyDvS8Fj7+S7Q==}
@@ -4276,6 +4288,8 @@ snapshots:
 
   client-only@0.0.1: {}
 
+  comlink@4.4.2: {}
+
   concat-map@0.0.1: {}
 
   content-type@2.1.0: {}
@@ -4726,6 +4740,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.7):
     optionalDependencies:
       picomatch: 4.0.7
+
+  fflate@0.8.3: {}
 
   file-entry-cache@11.1.5:
     dependencies:

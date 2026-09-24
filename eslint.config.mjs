@@ -35,6 +35,28 @@ export default defineConfig([
     files: ['app/api/**/*.{ts,tsx}', 'src/server/**/*.{ts,tsx}'],
     rules: { 'no-console': 'error' },
   },
+  {
+    // PADROES §1 / RNF-01: o domínio e o worker do upload nunca fazem rede nem persistem dados
+    // de escuta. (Esta regra substitui a lista global para estes arquivos, por isso repete o IndexedDB.)
+    files: ['src/domain/**/*.ts', 'src/workers/**/*.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        ...['fetch', 'XMLHttpRequest', 'WebSocket', 'EventSource', 'importScripts'].map((name) => ({
+          name,
+          message: 'Sem rede no domínio/worker: o upload nunca sai do dispositivo (RNF-01).',
+        })),
+        ...['localStorage', 'sessionStorage', 'indexedDB'].map((name) => ({
+          name,
+          message: 'O domínio é puro: armazenamento fica na UI (PADROES §1).',
+        })),
+      ],
+      'no-restricted-properties': [
+        'error',
+        { object: 'navigator', property: 'sendBeacon', message: 'Sem rede no domínio/worker.' },
+      ],
+    },
+  },
   globalIgnores([
     '.next/**',
     'out/**',
