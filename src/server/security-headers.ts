@@ -4,6 +4,8 @@
  * - `staticSecurityHeaders`: valem para toda resposta (páginas, API e assets);
  *   aplicados em `next.config.ts` e também pelo `proxy.ts`.
  * - `buildContentSecurityPolicy`: CSP com nonce por requisição, montada no `proxy.ts`.
+ * - `buildWorkerContentSecurityPolicy`: CSP dos scripts de Web Worker (`/_next/static`), aplicada
+ *   em `next.config.ts`. Um worker usa a CSP da resposta do próprio script, não a da página.
  *
  * Módulo sem dependências de runtime para poder ser importado por `next.config.ts`,
  * pelo `proxy.ts` e pelos testes.
@@ -36,6 +38,12 @@ export type CspOptions = {
 /** Hosts de imagem do Spotify (capas e fotos de artista). */
 const SPOTIFY_IMAGE_HOSTS = ['https://i.scdn.co', 'https://*.spotifycdn.com'];
 
+/**
+ * ADR 9: a capa da música nº 1 entra no card do Conectar como bytes, buscados direto do CDN do
+ * Spotify (responde com `Access-Control-Allow-Origin: *`). Só esse host, só leitura de imagem.
+ */
+const COVER_FETCH_HOST = 'https://i.scdn.co';
+
 export function buildContentSecurityPolicy({ nonce, isDev, isHttps }: CspOptions): string {
   const directives: Record<string, string[]> = {
     'default-src': ["'self'"],
@@ -43,13 +51,14 @@ export function buildContentSecurityPolicy({ nonce, isDev, isHttps }: CspOptions
       "'self'",
       `'nonce-${nonce}'`,
       "'strict-dynamic'",
-      "'wasm-unsafe-eval'",
+      // Sem `'wasm-unsafe-eval'`: o WASM dos cards (satori/resvg) roda só no worker, que tem a
+      // própria CSP (`buildWorkerContentSecurityPolicy`).
       ...(isDev ? ["'unsafe-eval'"] : []),
     ],
     // Em dev, o overlay de erros do Next injeta estilos inline sem nonce.
     'style-src': ["'self'", ...(isDev ? ["'unsafe-inline'"] : [`'nonce-${nonce}'`])],
     'img-src': ["'self'", 'data:', 'blob:', ...SPOTIFY_IMAGE_HOSTS],
-    'connect-src': ["'self'"],
+    'connect-src': ["'self'", COVER_FETCH_HOST],
     'font-src': ["'self'"],
     'worker-src': ["'self'", 'blob:'],
     'object-src': ["'none'"],
@@ -61,6 +70,27 @@ export function buildContentSecurityPolicy({ nonce, isDev, isHttps }: CspOptions
   const policy = Object.entries(directives).map(([name, values]) => `${name} ${values.join(' ')}`);
   if (isHttps) policy.push('upgrade-insecure-requests');
   return policy.join('; ');
+}
+
+/**
+ * CSP dos Web Workers (upload e cards), entregue na resposta do script do worker:
+ * - `'wasm-unsafe-eval'` só aqui: compila o WASM do satori (Yoga, HarfBuzz) e do resvg;
+ * - `connect-src data:`: o worker não faz nenhuma requisição de rede (o upload e os dados do card
+ *   nunca saem do aparelho); fontes e WASM chegam da thread principal por `postMessage`. `data:`
+ *   é local: o satori lê assim o WASM do Yoga, que vem embutido em base64;
+ * - `script-src 'self'`: só os chunks do próprio site (`importScripts` do bootstrap do Turbopack).
+ * Nos demais arquivos estáticos (JS carregado por `<script>`, CSS, fontes) o cabeçalho é ignorado.
+ */
+export function buildWorkerContentSecurityPolicy({ isDev }: Pick<CspOptions, 'isDev'>): string {
+  const directives: Record<string, string[]> = {
+    'default-src': ["'none'"],
+    'script-src': ["'self'", "'wasm-unsafe-eval'", ...(isDev ? ["'unsafe-eval'"] : [])],
+    'connect-src': isDev ? ["'self'", 'data:'] : ['data:'],
+    'base-uri': ["'none'"],
+  };
+  return Object.entries(directives)
+    .map(([name, values]) => `${name} ${values.join(' ')}`)
+    .join('; ');
 }
 
 /** Nonce de 128 bits em base64, gerado com Web Crypto (funciona em Node e Edge). */

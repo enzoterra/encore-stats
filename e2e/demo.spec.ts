@@ -98,7 +98,7 @@ test.describe('modo Demo (RF-12, US-07)', () => {
     await expectNoHorizontalScroll(page);
     const bar = page.locator('[data-bottom-bar]');
     await expect(bar).toBeVisible();
-    await expect(bar.getByRole('button', { name: 'Compartilhar' })).toBeDisabled();
+    await expect(bar.getByRole('button', { name: 'Compartilhar' })).toBeEnabled();
     await page.getByRole('button', { name: 'Ver como tabela' }).click();
     await expectNoHorizontalScroll(page);
     await expectNoSeriousA11y(page);

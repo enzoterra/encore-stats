@@ -36,9 +36,14 @@ export default defineConfig([
     rules: { 'no-console': 'error' },
   },
   {
-    // PADROES §1 / RNF-01: o domínio e o worker do upload nunca fazem rede nem persistem dados
-    // de escuta. (Esta regra substitui a lista global para estes arquivos, por isso repete o IndexedDB.)
-    files: ['src/domain/**/*.ts', 'src/workers/**/*.ts'],
+    // PADROES §1 / RNF-01: o domínio, os workers (upload e cards) e o pipeline dos cards nunca
+    // fazem rede nem persistem dados de escuta. (Esta regra substitui a lista global para estes
+    // arquivos, por isso repete o IndexedDB.) A busca de fontes/WASM/capa fica em `card-client.ts`.
+    files: [
+      'src/domain/**/*.ts',
+      'src/workers/**/*.ts',
+      'src/features/cards/{model,text,templates,render,assets,share-input,harfbuzz-browser}.ts',
+    ],
     rules: {
       'no-restricted-globals': [
         'error',

@@ -10,7 +10,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url)).replace(/[\\/]$/, '')
 const OUT = process.argv[2] || `${ROOT}/cards/preview`;
 await mkdir(OUT, { recursive: true });
 await initWasm(await readFile(new URL(import.meta.resolve('@resvg/resvg-wasm/index_bg.wasm'))));
-const fonts = await Promise.all(FONT_FILES.map(async (f) => ({ name: f.name, weight: f.weight, style: 'normal', data: await readFile(`${ROOT}/fonts/ttf/${f.file}`) })));
+const fonts = await Promise.all(FONT_FILES.map(async (f) => ({ name: f.name, weight: f.weight, style: 'normal', data: await readFile(`${ROOT}/../../../public/fonts/ttf/${f.file}`) })));
 
 const t = {
   dataFrom: 'DADOS DE', uploadFooter: 'Do seu histórico do Spotify · processado no seu aparelho',

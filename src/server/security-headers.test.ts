@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildContentSecurityPolicy,
+  buildWorkerContentSecurityPolicy,
   generateNonce,
   staticSecurityHeaders,
 } from './security-headers';
@@ -10,7 +11,7 @@ describe('buildContentSecurityPolicy', () => {
   const prod = buildContentSecurityPolicy({ nonce: 'abc123', isDev: false, isHttps: true });
 
   it('aplica o nonce e strict-dynamic em script-src e style-src', () => {
-    expect(prod).toContain("script-src 'self' 'nonce-abc123' 'strict-dynamic' 'wasm-unsafe-eval'");
+    expect(prod).toContain("script-src 'self' 'nonce-abc123' 'strict-dynamic';");
     expect(prod).toContain("style-src 'self' 'nonce-abc123'");
   });
 
@@ -18,14 +19,15 @@ describe('buildContentSecurityPolicy', () => {
     expect(prod).toContain("frame-ancestors 'none'");
     expect(prod).toContain("object-src 'none'");
     expect(prod).toContain("base-uri 'none'");
-    expect(prod).toContain("connect-src 'self';");
+    // ADR 9: além da origem, só o CDN de capas do Spotify (bytes da capa do card do Conectar).
+    expect(prod).toContain("connect-src 'self' https://i.scdn.co;");
     expect(prod).toContain("form-action 'self' https://accounts.spotify.com");
     expect(prod).toContain('upgrade-insecure-requests');
   });
 
-  it('não usa unsafe-eval nem unsafe-inline em produção', () => {
-    // `'wasm-unsafe-eval'` (resvg-wasm) é permitido; `'unsafe-eval'` não.
-    expect(prod).not.toContain("'unsafe-eval'");
+  it('não usa unsafe-eval, wasm-unsafe-eval nem unsafe-inline nas páginas em produção', () => {
+    // O WASM dos cards roda só no worker, que tem a própria CSP.
+    expect(prod).not.toContain('unsafe-eval');
     expect(prod).not.toContain("'unsafe-inline'");
   });
 
@@ -33,6 +35,23 @@ describe('buildContentSecurityPolicy', () => {
     const dev = buildContentSecurityPolicy({ nonce: 'n', isDev: true, isHttps: false });
     expect(dev).toContain("'unsafe-eval'");
     expect(dev).not.toContain('upgrade-insecure-requests');
+  });
+});
+
+describe('buildWorkerContentSecurityPolicy', () => {
+  it('libera WASM só no worker e proíbe rede (só data: local)', () => {
+    const worker = buildWorkerContentSecurityPolicy({ isDev: false });
+    expect(worker).toBe(
+      "default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src data:; base-uri 'none'",
+    );
+    expect(worker).not.toContain("'unsafe-eval'");
+    expect(worker).not.toContain('https:');
+  });
+
+  it('em dev aceita o eval do bundler e a origem (HMR)', () => {
+    const dev = buildWorkerContentSecurityPolicy({ isDev: true });
+    expect(dev).toContain("'unsafe-eval'");
+    expect(dev).toContain("connect-src 'self' data:");
   });
 });
 

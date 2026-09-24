@@ -165,3 +165,20 @@ export function useNow(intervalMs = 1000, active = true): number {
   }, [intervalMs, active]);
   return now;
 }
+
+/**
+ * Top de uma janela para o card de compartilhar: vem do cache e só é buscado agora se faltar
+ * (nunca durante a pausa por `QUOTA` nem com a sessão encerrada).
+ */
+export async function readTop<T extends Artist | Track>(
+  bundle: ReturnType<typeof useConnectBundle>,
+  type: TopKind,
+  range: TimeRange,
+): Promise<T[] | undefined> {
+  const options = topOptions(bundle.source, type, range, true);
+  const { pausedUntil, session } = bundle.status.getState();
+  if (pausedUntil !== null || session !== 'active') {
+    return bundle.queryClient.getQueryData(options.queryKey) as T[] | undefined;
+  }
+  return (await bundle.queryClient.ensureQueryData(options)) as T[];
+}

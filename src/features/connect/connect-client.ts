@@ -1,6 +1,7 @@
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
+import type { LikedArtistCount } from '@/domain/api-stats';
 import type { TimeRange } from '@/domain/spotify-types';
 
 import { isBffError, liveSource, QUOTA_PAUSE_SECONDS, type ConnectSource } from './bff-client';
@@ -83,6 +84,8 @@ export type ConnectBundle = {
   status: StoreApi<ConnectStatus>;
   /** Trata erros que valem para a página toda (401, 403, `QUOTA`). */
   report: (error: unknown) => void;
+  /** Último resultado da varredura de curtidas (top por artista), para o card de compartilhar. */
+  likedRef: { current: LikedArtistCount[] | null };
 };
 
 export function createConnectBundle(source: ConnectSource): ConnectBundle {
@@ -109,7 +112,7 @@ export function createConnectBundle(source: ConnectSource): ConnectBundle {
       },
     },
   });
-  return { source, queryClient, status, report };
+  return { source, queryClient, status, report, likedRef: { current: null } };
 }
 
 let live: ConnectBundle | undefined;
@@ -127,6 +130,7 @@ export function getLiveBundle(): ConnectBundle {
 export function wipeConnectData(bundle: ConnectBundle): void {
   bundle.queryClient.cancelQueries().catch(() => undefined);
   bundle.queryClient.clear();
+  bundle.likedRef.current = null;
   if (bundle.source.kind === 'live') clearConnectSession();
 }
 

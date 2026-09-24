@@ -3,12 +3,12 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: nenhuma. Sprint 5 ✅ concluída (dev-frontend, 2026-09-24): modo Conectar completo (entrada, dashboard, varredura, logout) e visão Conectar do Demo; aguarda commit do orquestrador
+- Sprint em andamento: nenhuma. Sprint 6 ✅ concluída (dev-frontend, 2026-09-24): cards Básico/Festival × 9:16/1:1 nos 3 modos, modal de compartilhar com Web Share/download; aguarda commit do orquestrador
 - Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
-- Próximo passo ao retomar: aceite da Sprint 5 pelo cliente (com os próprios dados reais; screenshots em `docs/projeto/screenshots/sprint5/`), depois Sprint 6 (cards). Pendente com o cliente: testar o login real em 127.0.0.1 (aceite das Sprints 2 e 5; passo a passo no README)
+- Próximo passo ao retomar: aceite das Sprints 5 e 6 pelo cliente (screenshots em `docs/projeto/screenshots/sprint5/` e `sprint6/`), depois Sprint 7 (segurança). Compartilhar um card de um iPhone real fica para a S8. Pendente com o cliente: testar o login real em 127.0.0.1 (aceite das Sprints 2 e 5; passo a passo no README)
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-24 por dev-frontend (fim da Sprint 5)
+- Última atualização: 2026-09-24 por dev-frontend (fim da Sprint 6)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -364,11 +364,116 @@
   - S8: medir no iPhone real a varredura de uma biblioteca grande (milhares de curtidas) e o tempo até o dashboard
 - Próxima sprint: Sprint 6 (dev-frontend), cards e compartilhamento
 
-### Sprint 6 — Cards e compartilhamento — ⬜ · dev-frontend
-- [ ] S6.1 Pipeline satori → resvg → PNG (lazy)
-- [ ] S6.2 Templates × formatos × modos
-- [ ] S6.3 Prévia + Web Share / download
-- [ ] S6.4 Testes + iPhone real
+### Sprint 6 — Cards e compartilhamento — ✅ concluída (2026-09-24) · dev-frontend
+- [x] S6.1 Pipeline satori → resvg → PNG (lazy)
+- [x] S6.2 Templates × formatos × modos
+- [x] S6.3 Prévia + Web Share / download
+- [x] S6.4 Testes (unitários, snapshot visual, e2e Chromium + WebKit, axe). O iPhone real fica com o cliente na S8
+- Entregue:
+  - Pipeline (`src/features/cards/`):
+    - `templates.ts`: Básico e Festival × 9:16/1:1 × Upload/Demo/Conectar, porte em TS do protótipo `design/cards/templates.mjs` (mesmas medidas, degraus e tokens);
+    - `text.ts`: grafemas (`Intl.Segmenter`), degraus e truncamento, espaço inquebrável no line-up, limpeza de controle/bidi, nome do arquivo, validação do "Nome no cartaz";
+    - `render.ts`: satori → SVG → resvg-wasm → PNG de 1080 px;
+    - `card-client.ts`: worker, fontes, WASM, logo e capa;
+    - `share-input.ts`: recorte do período/janela atual;
+    - `share-dialog.tsx` + `share-launcher.tsx`: modal e botão.
+  - Worker: `src/workers/card.worker.ts` + `card-worker-api.ts` (Comlink, sem rede). Um worker por aba, criado no 1º toque em "Compartilhar" e mantido na sessão: WASM inicializado e fontes ficam na memória dele
+  - Carregamento sob demanda: o modal é `React.lazy`, e satori/resvg só existem no chunk do worker. Fontes TTF em `public/fonts/ttf/` (movidas de `docs/…/fonts/ttf`; o `render-preview.mjs` do protótipo aponta para o caminho novo); os dois `.wasm` são emitidos pelo bundler em `/_next/static/media` (site próprio, sem CDN)
+  - HarfBuzz no navegador: o satori 0.33 faz shaping com o `harfbuzzjs`, que buscaria o `hb.wasm` ao lado do script. Um alias do Turbopack, só no browser (`next.config.ts`), troca o pacote por `harfbuzz-browser.ts`, que recebe os bytes do worker; `fs` vira módulo vazio no browser. Dependência direta `harfbuzzjs` 0.10.0 (a mesma versão do satori)
+  - Fundos: o `background-image` do satori vira `<pattern>` com máscara, e o resvg levava ~2,5 s para pintar um Stories. O fundo agora é SVG direto (`backgroundSvg`, com os mesmos gradientes) injetado antes do conteúdo: ~0,3 s
+  - Modal (10-design §8.14):
+    - bottom sheet no mobile, 880 px em duas colunas no desktop;
+    - abre já gerando Festival 9:16; segmented Template/Formato; "Nome no cartaz" (Festival; ≤ 20 grafemas, só letras/números/espaço e `. - ' & !`, erro inline, entra no card 450 ms depois da última tecla);
+    - prévia `<img>` do blob com `alt` gerado; estados gerando (skeleton "Montando seu cartaz…"), pronto, erro com "Tentar de novo";
+    - nota por modo e tempo de geração;
+    - cache por combinação e object URLs revogados ao fechar.
+  - Compartilhar/baixar:
+    - com `navigator.canShare({files})`: primário "Compartilhar" (`navigator.share` com o `File` gerado **antes** do toque) + secundário "Baixar";
+    - sem: primário "Baixar PNG" (`<a download>`, object URL revogado 30 s depois);
+    - cancelar a folha não é erro; outra falha baixa o PNG;
+    - retorno "PNG baixado"/"Card compartilhado" dentro do modal (o toast ficaria atrás do overlay).
+  - Botão "Compartilhar" habilitado nos dashboards Upload, Demo (as duas visões) e Conectar, na barra inferior do mobile e no cabeçalho do desktop:
+    - no toque, o recorte é congelado;
+    - sem dados, avisa e não abre;
+    - o foco volta ao botão ao fechar.
+  - Dados por modo:
+    - Upload/Demo: `computeStats` do período selecionado (tops 25/5, minutos, plays, artistas, "fã desde"), tipográficos;
+    - Conectar: tops da janela selecionada (do cache; se faltarem, uma chamada);
+      - sub-herói = tendência do nº 1 (4 semanas × 6 meses) ou os gêneros dele;
+      - destaque = curtidas do nº 1 (se a varredura rodou; o resultado fica em `bundle.likedRef`), senão o gênero nº 1 (≥ 3), senão nada;
+      - capa da música nº 1 só no Básico; logo oficial do Spotify (`public/brand/`) sozinho no rodapé;
+    - visão Conectar do Demo: modo `demo`, com tag DEMO, sem capa e sem Spotify.
+  - Rodapé do card: o domínio vem de `NEXT_PUBLIC_SITE_URL` sem protocolo; em loopback, sai só a marca (sem o "encore.app" provisório)
+  - Lint: a regra "sem rede" agora também cobre os arquivos puros do pipeline (`model`, `text`, `templates`, `render`, `assets`, `share-input`, `harfbuzz-browser`). A rede fica só em `card-client.ts`
+- Versões instaladas: satori **0.33.5** e @resvg/resvg-wasm **2.6.2** (as mais recentes; passam no `minimumReleaseAge`), harfbuzzjs 0.10.0.
+  - `pnpm audit` apontou 1 moderada: fflate 0.7.3 fixada pelo satori (GHSA-px8p-9vwx-vf98, em `unzipSync`, que o satori não usa);
+  - corrigida com `overrides: 'fflate@<0.7.5': 0.8.3` no `pnpm-workspace.yaml`, a mesma fflate do projeto, sem mudança visual (snapshots iguais);
+  - `pnpm audit --registry=https://registry.npmjs.org/`: **sem vulnerabilidades**.
+- Decisões:
+  - **ADR 9 (capa): `fetch` direto do `i.scdn.co`, sem a rota `/api/spotify/image`.** Testado de verdade no Chromium e no WebKit, de `http://127.0.0.1` com a CSP: `type: "cors"`, `image/jpeg`. O CDN manda `Access-Control-Allow-Origin: *`. Detalhes e salvaguardas registrados no 03 (ADR 9)
+  - **CSP e WASM:**
+    - `'wasm-unsafe-eval'` **saiu das páginas**; só a CSP dos scripts de worker (`/_next/static/*`, via `next.config.ts`) tem esse valor: `default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src data:; base-uri 'none'`;
+    - um worker usa a CSP da resposta do próprio script (conferido nos dois navegadores);
+    - restringir por página não funcionaria: a navegação do App Router é feita no cliente e mantém a CSP do 1º documento;
+    - efeito colateral bom: os workers (upload e cards) ficaram **sem rede nenhuma** pela CSP; o `data:` é o WASM do Yoga embutido no satori;
+    - páginas: `connect-src 'self' https://i.scdn.co`.
+  - **`src/server` alterado só em `security-headers.ts`** (CSP), necessário para a regra acima, e no teste dele. `src/domain` não foi alterado. No Conectar mudaram `connect-client.ts` (`likedRef`), `use-liked-scan.ts` (publica o resultado) e `queries.ts` (`readTop`)
+  - Mensagens `Dashboard.share`/`shareSoon` removidas; tudo novo no namespace `Cards` (PT-BR e EN)
+  - Bug achado e corrigido: no desktop o `sticky` da barra de ações era calculado antes do `translate(-50%)` do modal e cobria a prévia. O e2e agora confere que a barra não sobrepõe a prévia
+- Números (Windows, Node 22.20, build de produção):
+  - `pnpm test`: **506 testes (40 arquivos)** verdes, 76 novos:
+    - texto e truncamento;
+    - templates: 12 combinações só-flexbox, área segura, atribuição por modo, line-up, título, degraus;
+    - recorte por modo;
+    - snapshot visual em Node contra `tests/snapshots/cards/`, com tolerância de 0,5% dos pixels e controle negativo;
+    - API do worker; cliente (allowlist da capa, limites, formato, CORS, cache, worker único e recriado);
+    - modal e botão (jsdom).
+  - Snapshot: Node em vez de Vitest Browser Mode. Menos infraestrutura e o mesmo resvg-wasm; o navegador de verdade é coberto pelos e2e
+  - `pnpm test:coverage`: total 93,0% statements / 88,8% ramos / 94,0% linhas; `src/features/cards` 94,7% / 93,1% / 96,0%; `src/domain` segue ≥ 95% de ramos
+  - `pnpm test:e2e`: **108 testes verdes** (54 por navegador), 12 novos em `e2e/cards.spec.ts`:
+    - demo: nada do pipeline antes do toque; 2 `.wasm` + 6 TTF só depois; PNG 1080×1920 e 1080×1080; troca de template; foco; axe; zero violação de CSP;
+    - mobile 360 px: ≤ 3 toques, primário ≥ 44 px visível, sem scroll horizontal, axe;
+    - nome no cartaz;
+    - upload sem requisição externa;
+    - Conectar contra o mock: capa buscada do `i.scdn.co` e presente nos pixels do PNG, zero violação de CSP;
+    - sem CORS: sai tipográfico.
+  - Tempo de geração no navegador:
+    - Chromium isolado: 1º card (toque → prévia, incluindo baixar fontes e WASM) **1,45 s**, worker 0,5 s;
+    - cards seguintes com o worker quente: **0,24–0,31 s** (Chromium e WebKit);
+    - com 4 workers de e2e em paralelo: 1º card 2,7 s (WebKit) a 4,6 s (Chromium);
+    - Node: 0,2–0,4 s por card.
+  - PNG: 118–428 kB
+  - Chunks:
+    - worker (satori + Yoga + resvg JS + HarfBuzz) **562 kB (189 kB gzip)**;
+    - modal 28–33 kB (10–12 kB gzip, uma variante por rota);
+    - WASM: resvg 2,48 MB (951 kB gzip) e HarfBuzz 382 kB (154 kB gzip);
+    - TTF: 925 kB;
+    - **nada disso entra no carregamento inicial**: o HTML de `/pt-BR/demo` referencia 15 chunks (1,28 MB, 369 kB gzip), sem satori/resvg/modal. O e2e confere que não há `.wasm` nem TTF antes do toque.
+  - Lighthouse não rodou aqui (fica para a S8.2)
+- Como verificar:
+  - `pnpm i` → `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm test:coverage && pnpm build`
+  - `pnpm test:e2e`. No Windows com o pnpm local, suba os três servidores à mão como no README ("E2E do Conectar")
+  - `pnpm audit --registry=https://registry.npmjs.org/`
+  - manual (`pnpm build && pnpm start`, `http://127.0.0.1:3000`):
+    1. `/pt-BR/demo` → Compartilhar: abre gerando o Festival 9:16. Troque Básico/Quadrado, digite um nome no cartaz (tente um emoji para ver o erro), Baixar PNG;
+    2. no celular (Safari/Chrome), o primário vira "Compartilhar" e abre a folha do sistema;
+    3. `/pt-BR/upload` com `tests/fixtures/valid-two-files.zip` → Compartilhar;
+    4. Conectar com o mock (README) → Compartilhar → Básico: capa + logo do Spotify;
+    5. `curl -I http://127.0.0.1:3000/pt-BR` (sem `wasm-unsafe-eval`) e `curl -I` num `/_next/static/chunks/turbopack-worker-*.js` (CSP do worker)
+  - `UPDATE_CARD_SNAPSHOTS=1 pnpm test` regrava as referências visuais depois de uma mudança intencional nos templates
+  - screenshots para o cliente em `docs/projeto/screenshots/sprint6/`:
+    - `01-modal-compartilhar-mobile.png` (Festival 9:16, demo), `01b-modal-basico-quadrado-mobile.png`;
+    - `05-modal-compartilhar-desktop.png` (upload, Básico 1:1);
+    - PNGs gerados pelo app: `02-card-festival-stories-demo.png`, `03-card-basico-quadrado-demo.png`, `04-card-basico-quadrado-upload.png`, `06-card-basico-stories-conectar-mock.png` (capa fictícia do mock + logo oficial)
+- Pendências:
+  - Cliente (S8): compartilhar de um **iPhone real** (Safari: Web Share com arquivo, gesto preservado, tempo do 1º card, memória) e de um Android; conferir o card do Conectar com a própria conta (capa real do `i.scdn.co`)
+  - S7:
+    - atualizar a tabela de CSP de `08-seguranca.md`: páginas sem `'wasm-unsafe-eval'` e com `connect-src 'self' https://i.scdn.co`; CSP própria dos workers;
+    - revisar os aliases do Turbopack (`harfbuzzjs`, `fs`) e o override da fflate;
+    - revisar a validação da capa (allowlist, 1 MiB, bytes JPEG/PNG).
+  - S8: Lighthouse do dashboard (meta ≥ 90), com o modal fora do bundle inicial
+  - Fora do MVP (10-design §15): fonte CJK/árabe nos cards; o `hb.wasm` já está no pipeline, falta só a fonte
+- Próxima sprint: Sprint 7 (analista-de-seguranca)
 
 ### Sprint 7 — Segurança — ⬜ · analista-de-seguranca
 - [ ] S7.1 Revisão do modelo de ameaças

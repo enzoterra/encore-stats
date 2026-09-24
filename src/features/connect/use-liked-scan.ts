@@ -60,7 +60,7 @@ export type ScanEvents = {
  *   compara `total` e o 1º `addedAt`: se forem iguais, reaproveita o resultado.
  */
 export function useLikedScan(userId: string, events: ScanEvents = {}) {
-  const { source, report } = useConnectBundle();
+  const { source, report, likedRef } = useConnectBundle();
   const persist = source.kind === 'live';
   // Segunda visita (< 12 h): o resultado guardado aparece já na primeira renderização.
   const [state, setState] = useState<ScanState>(() => {
@@ -69,6 +69,11 @@ export function useLikedScan(userId: string, events: ScanEvents = {}) {
   });
   const controller = useRef<AbortController | null>(null);
   const eventsRef = useRef(events);
+  // O card de compartilhar usa o resultado mais recente (curtidas do artista nº 1).
+  const summary = state.status === 'done' || state.status === 'checking' ? state.summary : null;
+  useEffect(() => {
+    if (summary) likedRef.current = summary.top;
+  }, [likedRef, summary]);
   useEffect(() => {
     eventsRef.current = events;
   });

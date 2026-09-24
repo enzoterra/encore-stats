@@ -73,6 +73,11 @@ credenciais de demonstração: o Demo não exige login.
 | `/{locale}/privacy`    | Política de privacidade (LGPD): o que é tratado, onde, por quanto tempo, como revogar |
 | `/{locale}/connect`    | Modo Conectar: entrada/login, erros do OAuth e dashboard ao vivo (tops, tendências…)  |
 
+O botão **Compartilhar** (Upload, Demo e Conectar) abre o modal de cards: Festival ou Básico,
+Stories 9:16 ou Quadrado 1:1, com o período/janela selecionado no dashboard. O PNG é gerado no
+navegador (Web Worker com satori + resvg-wasm, carregados só nesse toque) e compartilhado pela Web
+Share API quando o navegador aceita arquivos; senão, é baixado.
+
 `{locale}` é `pt-BR` ou `en`; o idioma troca pelo menu do cabeçalho sem perder o histórico
 carregado (o Dataset fica só na memória da aba; recarregar a página exige novo envio).
 
@@ -99,6 +104,7 @@ pnpm exec playwright install chromium webkit
 | `pnpm test:coverage`                | Vitest com cobertura (meta ≥ 80% em `src/domain`)                       |
 | `pnpm test:e2e`                     | Playwright (Chromium + WebKit) + axe; faz `build` + `start` se preciso  |
 | `pnpm fixtures`                     | Regenera `tests/fixtures/` (zips sintéticos válidos e maliciosos)       |
+| `UPDATE_CARD_SNAPSHOTS=1 pnpm test` | Regrava as referências visuais dos cards em `tests/snapshots/cards/`    |
 | `pnpm bench`                        | Benchmark do upload: ~50 MB sintéticos (meta < 10 s) e troca de período |
 
 ## Variáveis de ambiente
@@ -237,7 +243,7 @@ proxy.ts             nonce de CSP, cabeçalhos de segurança e negociação de i
 src/domain/          lógica pura (histórico, Dataset, stats, demo), testável em Node
 src/server/          env validado, cabeçalhos de segurança, sessão JWE, cliente Spotify, logger
 src/features/        UI por área
-src/workers/         Web Workers (processamento do upload)
+src/workers/         Web Workers (processamento do upload e geração dos cards), sem rede
 src/i18n/            rotas e mensagens do next-intl
 e2e/                 testes Playwright + axe
 scripts/             fixtures (`pnpm fixtures`) e mock local do Spotify
@@ -253,6 +259,10 @@ Alias de import: `@/…` aponta para `src/…`.
   `Permissions-Policy`, COOP) e, nas páginas, CSP com nonce por requisição (`strict-dynamic`,
   `frame-ancestors 'none'`).
   Confira com `curl -I http://127.0.0.1:3000/pt-BR`.
+- `'wasm-unsafe-eval'` só na CSP dos scripts de Web Worker (`/_next/static`, via `next.config.ts`),
+  com `connect-src data:`: o WASM dos cards roda no worker e nenhum worker faz requisição. As
+  páginas não liberam WASM; o `connect-src` delas é `'self'` + `https://i.scdn.co` (capa do card
+  do Conectar, ADR 9).
 - GitHub Actions (`.github/workflows/ci.yml`), com `permissions: contents: read` e actions
   fixadas por SHA: lint + formatação, tipos, testes com cobertura, build, e2e + axe (Chromium e
   WebKit; Conectar contra o mock local), `pnpm audit --audit-level=high` e dependency-review nos

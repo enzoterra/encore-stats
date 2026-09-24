@@ -24,10 +24,12 @@
     "bench": "vitest run --config vitest.bench.config.ts"
   },
   "dependencies": {
+    "@resvg/resvg-wasm": "2.6.2",
     "@tanstack/react-query": "5.103.2",
     "comlink": "^4.4.2",
     "fflate": "^0.8.3",
     "get-nonce": "1.0.1",
+    "harfbuzzjs": "0.10.0",
     "jose": "^6.2.12",
     "lucide-react": "1.47.0",
     "next": "^16.3.6",
@@ -35,6 +37,7 @@
     "radix-ui": "1.6.7",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "satori": "0.33.5",
     "server-only": "^0.0.1",
     "zod": "^4.6.5",
     "zustand": "5.0.15"

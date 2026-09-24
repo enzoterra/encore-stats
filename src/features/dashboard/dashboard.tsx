@@ -1,14 +1,16 @@
 'use client';
 
-import { Info, RotateCcw, Share2, X } from 'lucide-react';
+import { Info, RotateCcw, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { PrivacySealCompact } from '@/components/layout/privacy-seal';
 import { Button } from '@/components/ui/button';
 import { useToasts } from '@/components/ui/toast';
 import type { Dataset, ProcessReport } from '@/domain/history';
 import { availableMonths, computeStats, type Period } from '@/domain/stats';
+import { uploadShareInput } from '@/features/cards/share-input';
+import { ShareButton, useShareLauncher } from '@/features/cards/share-launcher';
 
 import { HeatmapSection } from './heatmap';
 import { PeriodSelector } from './period-selector';
@@ -77,6 +79,7 @@ export function Dashboard({
 }) {
   const t = useTranslations('Dashboard');
   const tUpload = useTranslations('Upload');
+  const tCards = useTranslations('Cards');
   const format = useFormat(timeZone);
   const months = useMemo(() => availableMonths(dataset, timeZone), [dataset, timeZone]);
   const bounds = useMemo(() => datasetBounds(dataset, timeZone), [dataset, timeZone]);
@@ -116,6 +119,22 @@ export function Dashboard({
         ? t('title.month', { month: format.monthYearLong(period.year, period.month) })
         : t(`title.${period.kind}`);
   const empty = stats.totals.streams === 0;
+  const shareable = stats.totals.plays > 0 && stats.top.artists.length > 0;
+
+  // O card usa exatamente o período selecionado agora (US-11).
+  const buildShare = useCallback(
+    () =>
+      uploadShareInput({
+        stats,
+        period,
+        periodLabel: format.cap(label),
+        mode,
+        format,
+        t: (key, values) => tCards(key as never, values as never),
+      }),
+    [stats, period, label, mode, format, tCards],
+  );
+  const share = useShareLauncher(buildShare);
 
   const changePeriod = (next: Period) => {
     if (samePeriod(next, period)) return;
@@ -187,10 +206,11 @@ export function Dashboard({
           </div>
         </div>
         <div className="hidden lg:block">
-          <Button variant="primary" disabled title={t('shareSoon')} aria-describedby="share-soon">
-            <Share2 aria-hidden="true" />
-            {t('share')}
-          </Button>
+          <ShareButton
+            onOpen={(from) => void share.open(from)}
+            pending={share.pending}
+            disabled={!shareable}
+          />
         </div>
       </div>
 
@@ -277,14 +297,13 @@ export function Dashboard({
             {`${format.minutes(stats.totals.ms)} min · ${format.number(stats.totals.plays)} plays`}
           </span>
         </button>
-        <Button variant="primary" disabled title={t('shareSoon')} aria-describedby="share-soon">
-          <Share2 aria-hidden="true" />
-          {t('share')}
-        </Button>
+        <ShareButton
+          onOpen={(from) => void share.open(from)}
+          pending={share.pending}
+          disabled={!shareable}
+        />
       </div>
-      <p id="share-soon" className="sr-only">
-        {t('shareSoon')}
-      </p>
+      {share.dialog}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleAlert, Info, RotateCcw, Share2 } from 'lucide-react';
+import { CircleAlert, Info, RotateCcw } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { useEffect, useRef, useState } from 'react';
 
@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToasts } from '@/components/ui/toast';
 import { useHydrated } from '@/components/ui/use-hydrated';
 import { TIME_RANGES, type TimeRange } from '@/domain/spotify-types';
+import { ShareButton, useShareLauncher } from '@/features/cards/share-launcher';
 
 import { NotAllowlisted, SessionExpired } from './account-states';
 import { isBffError } from './bff-client';
@@ -22,6 +23,7 @@ import { QuotaBanner } from './quota-banner';
 import { RecentSection } from './recent-section';
 import { TopSection } from './top-section';
 import { TrendsSection } from './trends-section';
+import { useConnectShare } from './use-connect-share';
 
 const PAGE_ERRORS = new Set(['UNAUTHENTICATED', 'NOT_ALLOWLISTED', 'QUOTA']);
 
@@ -35,7 +37,6 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
   const t = useTranslations('Connect.dashboard');
   const tMe = useTranslations('Connect.meError');
   const tSection = useTranslations('Connect.sectionError');
-  const tShare = useTranslations('Dashboard');
   const { source } = useConnectBundle();
   const demo = source.kind === 'demo';
   const session = useConnectStatus((state) => state.session);
@@ -45,6 +46,7 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
   const windowBox = useRef<HTMLDivElement>(null);
   const setRaised = useToasts((state) => state.setRaised);
   const hydrated = useHydrated();
+  const share = useShareLauncher(useConnectShare(range));
 
   useEffect(() => {
     setRaised(true);
@@ -88,20 +90,29 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
       ) : null}
       <QuotaBanner />
 
-      <div className="flex flex-col gap-3">
-        <p className="text-overline text-info uppercase">
-          {demo ? t('overlineDemo') : t('overline')}
-        </p>
-        <h1
-          className="font-display text-h1 [overflow-wrap:anywhere] lg:text-h1-lg"
-          data-testid="connect-title"
-        >
-          {name ? t('greeting', { name }) : t('greetingAnon')}
-        </h1>
-        <p className="max-w-prose text-body text-fg-muted">{demo ? t('leadDemo') : t('lead')}</p>
-        <span className="sm:hidden">
-          <PrivacySealCompact mode={demo ? 'demo' : 'connect'} repoUrl={repoUrl} />
-        </span>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-3">
+          <p className="text-overline text-info uppercase">
+            {demo ? t('overlineDemo') : t('overline')}
+          </p>
+          <h1
+            className="font-display text-h1 [overflow-wrap:anywhere] lg:text-h1-lg"
+            data-testid="connect-title"
+          >
+            {name ? t('greeting', { name }) : t('greetingAnon')}
+          </h1>
+          <p className="max-w-prose text-body text-fg-muted">{demo ? t('leadDemo') : t('lead')}</p>
+          <span className="sm:hidden">
+            <PrivacySealCompact mode={demo ? 'demo' : 'connect'} repoUrl={repoUrl} />
+          </span>
+        </div>
+        <div className="hidden shrink-0 lg:block">
+          <ShareButton
+            onOpen={(from) => void share.open(from)}
+            pending={share.pending}
+            disabled={meFailed}
+          />
+        </div>
       </div>
 
       {meFailed ? (
@@ -182,19 +193,13 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
             {t(`windowSummary.${range}`)}
           </span>
         </button>
-        <Button
-          variant="primary"
-          disabled
-          title={tShare('shareSoon')}
-          aria-describedby="connect-share-soon"
-        >
-          <Share2 aria-hidden="true" />
-          {tShare('share')}
-        </Button>
+        <ShareButton
+          onOpen={(from) => void share.open(from)}
+          pending={share.pending}
+          disabled={meFailed}
+        />
       </div>
-      <p id="connect-share-soon" className="sr-only">
-        {tShare('shareSoon')}
-      </p>
+      {share.dialog}
     </div>
   );
 }

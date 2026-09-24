@@ -449,8 +449,6 @@
       "title": "Nenhuma música nesse período",
       "body": "Tente outro período: o seu histórico vai de {from} a {to}."
     },
-    "share": "Compartilhar",
-    "shareSoon": "Os cards para compartilhar chegam na próxima etapa.",
     "footer": {
       "upload": "Do seu histórico estendido do Spotify, processado no seu aparelho.",
       "demo": "Modo demo · artistas e músicas fictícios.",
@@ -646,5 +644,83 @@
     "time": {
       "justNow": "agora"
     }
+  },
+  "Cards": {
+    "strings": {
+      "topArtist": "Artista nº 1",
+      "artists": "Top artistas",
+      "tracks": "Top músicas",
+      "presents": "Encore apresenta",
+      "festOf": "Festival",
+      "festDefault": "Encore Fest",
+      "demoTag": "DEMO",
+      "uploadFooter": "Do seu histórico do Spotify · processado no seu aparelho",
+      "demoFooter": "Modo demo · artistas e músicas fictícios"
+    },
+    "heroSub": {
+      "upload": "{plays, plural, one {# play} other {# plays}} · fã desde {since}",
+      "uploadPlays": "{plays, plural, one {# play} other {# plays}} no período",
+      "rising": "em alta: subiu {delta, plural, one {# posição} other {# posições}}",
+      "entered": "novidade no seu top das últimas 4 semanas",
+      "genres": "{genres}"
+    },
+    "stat": {
+      "minutesIn": "minutos de música em {label}",
+      "minutesAll": "minutos de música, desde sempre",
+      "minutesRange": "minutos de música no período",
+      "liked": "músicas curtidas de {artist}",
+      "genre": "seu gênero nº 1"
+    },
+    "stats": {
+      "minutes": "{value} min",
+      "plays": "{count, plural, one {# play} other {# plays}}",
+      "artists": "{count, plural, one {# artista} other {# artistas}}",
+      "topArtists": "Top {count} artistas"
+    },
+    "window": {
+      "short_term": "Últimas 4 semanas",
+      "medium_term": "Últimos 6 meses",
+      "long_term": "Último ano"
+    },
+    "dialog": {
+      "title": "Compartilhar",
+      "lead": "Um cartaz com o seu top, pronto para Stories, feed ou WhatsApp.",
+      "close": "Fechar",
+      "templateLabel": "Template",
+      "templates": {
+        "festival": "Festival",
+        "basic": "Básico"
+      },
+      "formatLabel": "Formato",
+      "formats": {
+        "story": "Stories 9:16",
+        "square": "Quadrado 1:1"
+      },
+      "posterLabel": "Nome no cartaz",
+      "posterPlaceholder": "Encore Fest",
+      "posterHelp": "Opcional. Fica só na imagem, não é enviado a lugar nenhum.",
+      "posterTooLong": "Use até {max} caracteres.",
+      "posterInvalid": "Use só letras, números, espaços e . - ' & !",
+      "previewLabel": "Prévia do card",
+      "generating": "Montando seu cartaz…",
+      "alt": "Card {template}: {names}",
+      "noteConnect": "Inclui a atribuição ao Spotify.",
+      "noteDemo": "Card marcado como DEMO.",
+      "noteUpload": "Gerado no seu aparelho, sem enviar nada.",
+      "share": "Compartilhar",
+      "sharing": "Abrindo…",
+      "download": "Baixar PNG",
+      "downloadSecondary": "Baixar",
+      "busy": "Gerando…",
+      "errorTitle": "Não consegui gerar a imagem",
+      "errorBody": "Pode ter faltado memória ou a conexão caiu ao baixar as fontes.",
+      "retry": "Tentar de novo",
+      "shared": "Card compartilhado",
+      "downloaded": "PNG baixado",
+      "shareFallback": "O compartilhamento não abriu, então baixamos o PNG.",
+      "ready": "Card pronto: {template}, {format}.",
+      "timing": "Gerado em {seconds} s"
+    },
+    "unavailable": "Sem dados no período para montar um card."
   }
 }

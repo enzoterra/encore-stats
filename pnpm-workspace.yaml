@@ -14,3 +14,8 @@ allowBuilds:
   '@swc/core': false
   # unrs-resolver (eslint-import-resolver-typescript): binário nativo pré-compilado.
   unrs-resolver: false
+
+# satori 0.33.5 fixa fflate 0.7.3 (GHSA-px8p-9vwx-vf98, moderada, em `unzipSync` com ZIP64; o
+# satori só usa `inflateSync` nas fontes). Forçamos a mesma fflate do projeto, já corrigida.
+overrides:
+  'fflate@<0.7.5': 0.8.3

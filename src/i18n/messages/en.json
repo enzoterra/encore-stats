@@ -449,8 +449,6 @@
       "title": "No music in this period",
       "body": "Try another period: your history goes from {from} to {to}."
     },
-    "share": "Share",
-    "shareSoon": "Shareable cards arrive in the next release.",
     "footer": {
       "upload": "From your Spotify extended history, processed on your device.",
       "demo": "Demo mode · fictional artists and tracks.",
@@ -646,5 +644,83 @@
     "time": {
       "justNow": "just now"
     }
+  },
+  "Cards": {
+    "strings": {
+      "topArtist": "No. 1 artist",
+      "artists": "Top artists",
+      "tracks": "Top tracks",
+      "presents": "Encore presents",
+      "festOf": "Festival",
+      "festDefault": "Encore Fest",
+      "demoTag": "DEMO",
+      "uploadFooter": "From your Spotify history · processed on your device",
+      "demoFooter": "Demo mode · made-up artists and tracks"
+    },
+    "heroSub": {
+      "upload": "{plays, plural, one {# play} other {# plays}} · fan since {since}",
+      "uploadPlays": "{plays, plural, one {# play} other {# plays}} in this period",
+      "rising": "trending: up {delta, plural, one {# spot} other {# spots}}",
+      "entered": "new in your last-4-weeks top",
+      "genres": "{genres}"
+    },
+    "stat": {
+      "minutesIn": "minutes of music in {label}",
+      "minutesAll": "minutes of music, all time",
+      "minutesRange": "minutes of music in this period",
+      "liked": "liked songs by {artist}",
+      "genre": "your No. 1 genre"
+    },
+    "stats": {
+      "minutes": "{value} min",
+      "plays": "{count, plural, one {# play} other {# plays}}",
+      "artists": "{count, plural, one {# artist} other {# artists}}",
+      "topArtists": "Top {count} artists"
+    },
+    "window": {
+      "short_term": "Last 4 weeks",
+      "medium_term": "Last 6 months",
+      "long_term": "Last year"
+    },
+    "dialog": {
+      "title": "Share",
+      "lead": "A poster with your top, ready for Stories, your feed or WhatsApp.",
+      "close": "Close",
+      "templateLabel": "Template",
+      "templates": {
+        "festival": "Festival",
+        "basic": "Basic"
+      },
+      "formatLabel": "Format",
+      "formats": {
+        "story": "Stories 9:16",
+        "square": "Square 1:1"
+      },
+      "posterLabel": "Name on the poster",
+      "posterPlaceholder": "Encore Fest",
+      "posterHelp": "Optional. It only goes on the image and is never sent anywhere.",
+      "posterTooLong": "Use up to {max} characters.",
+      "posterInvalid": "Use only letters, numbers, spaces and . - ' & !",
+      "previewLabel": "Card preview",
+      "generating": "Putting your poster together…",
+      "alt": "{template} card: {names}",
+      "noteConnect": "Includes the Spotify attribution.",
+      "noteDemo": "Card marked as DEMO.",
+      "noteUpload": "Made on your device, nothing is uploaded.",
+      "share": "Share",
+      "sharing": "Opening…",
+      "download": "Download PNG",
+      "downloadSecondary": "Download",
+      "busy": "Generating…",
+      "errorTitle": "I couldn't create the image",
+      "errorBody": "The device may have run out of memory, or the connection dropped while loading the fonts.",
+      "retry": "Try again",
+      "shared": "Card shared",
+      "downloaded": "PNG downloaded",
+      "shareFallback": "Sharing didn't open, so we downloaded the PNG.",
+      "ready": "Card ready: {template}, {format}.",
+      "timing": "Created in {seconds} s"
+    },
+    "unavailable": "No data in this period to build a card."
   }
 }
