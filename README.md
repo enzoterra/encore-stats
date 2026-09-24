@@ -12,8 +12,9 @@ Stack: Next.js 16 (App Router, Turbopack) · React 19 · TypeScript 6 (`strict`)
 next-intl (PT-BR e EN) · Zod 4 · Vitest 5 · Playwright + axe. Deploy na Vercel. Sem banco.
 O plano completo está em [`docs/projeto/`](docs/projeto/).
 
-> Estado: **Sprint 0 (fundação)**. A página inicial é provisória; as funcionalidades entram nas
-> próximas sprints (veja `docs/projeto/PROGRESSO.md`).
+> Estado: fundação, motor de upload/demo e **BFF do modo Conectar** prontos (Sprints 0–2). As
+> telas entram nas próximas sprints; a página inicial e `/{idioma}/connect` são provisórias (veja
+> `docs/projeto/PROGRESSO.md`). Contrato do BFF: [`docs/api.md`](docs/api.md).
 
 ## Pré-requisitos
 
@@ -37,6 +38,10 @@ npm install -g pnpm@12.6.0
 # Opção B: sem instalar nada globalmente
 npx pnpm@12.6.0 install
 ```
+
+Se o pnpm 12 terminar **sem nenhuma mensagem** (código de saída 21), confira o `~/.npmrc`: um
+`cafile=` apontando para um arquivo que não existe faz o binário do pnpm abortar ao ler a
+configuração. Corrija o caminho (ou remova a linha) e rode de novo.
 
 Se um comando do pnpm ficar parado sem saída dentro do projeto, provavelmente há um processo
 `pnpm` órfão (de uma execução interrompida) segurando a trava do store: encerre-o no Gerenciador
@@ -83,13 +88,14 @@ pnpm exec playwright install chromium
 Catálogo completo e comentado em [`.env.example`](.env.example); validação com Zod em
 `src/server/env.ts`. Resumo:
 
-| Variável                                                             | Obrigatória          | Para quê                                           |
-| -------------------------------------------------------------------- | -------------------- | -------------------------------------------------- |
-| `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI` | Não (as três juntas) | Modo Conectar. Sem elas, o botão fica desabilitado |
-| `SESSION_SECRET`                                                     | Se houver Conectar   | 32 bytes em base64url para o cookie JWE            |
-| `SESSION_SECRET_PREVIOUS`                                            | Não                  | Rotação do segredo de sessão                       |
-| `NEXT_PUBLIC_SITE_URL`                                               | Em produção          | URL canônica (local: `http://127.0.0.1:3000`)      |
-| `NEXT_PUBLIC_REPO_URL`                                               | Não                  | Link "veja o código" do selo de privacidade        |
+| Variável                                                             | Obrigatória          | Para quê                                                     |
+| -------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------ |
+| `SPOTIFY_CLIENT_ID`, `SPOTIFY_CLIENT_SECRET`, `SPOTIFY_REDIRECT_URI` | Não (as três juntas) | Modo Conectar. Sem elas, o botão fica desabilitado           |
+| `SESSION_SECRET`                                                     | Se houver Conectar   | 32 bytes em base64url para o cookie JWE                      |
+| `SESSION_SECRET_PREVIOUS`                                            | Não                  | Rotação do segredo de sessão                                 |
+| `NEXT_PUBLIC_SITE_URL`                                               | Em produção          | URL canônica (local: `http://127.0.0.1:3000`)                |
+| `NEXT_PUBLIC_REPO_URL`                                               | Não                  | Link "veja o código" do selo de privacidade                  |
+| `SPOTIFY_API_BASE`, `SPOTIFY_ACCOUNTS_BASE`                          | Não                  | Só testes: mock do Spotify em loopback (proibidas na Vercel) |
 
 Configuração parcial do Spotify (ex.: só o Client ID) **falha na inicialização** com a lista das
 variáveis que faltam. Nunca commite `.env.local` (já está no `.gitignore`).
@@ -117,7 +123,63 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 6. Reinicie o `pnpm dev`. A página inicial passa a mostrar o Conectar como disponível.
 
 Escopos pedidos (mínimos): `user-top-read`, `user-read-recently-played`, `user-library-read`.
-O login em si chega na Sprint 2.
+
+### Testar o login real em `http://127.0.0.1:3000`
+
+1. Faça os passos acima (app no dashboard, redirect URI `http://127.0.0.1:3000/api/auth/callback`,
+   sua conta em **User Management**) e preencha o `.env.local`:
+
+   ```bash
+   SPOTIFY_CLIENT_ID=<client id>
+   SPOTIFY_CLIENT_SECRET=<client secret>
+   SPOTIFY_REDIRECT_URI=http://127.0.0.1:3000/api/auth/callback
+   SESSION_SECRET=<saída do comando node acima>
+   ```
+
+2. `pnpm dev` e abra **`http://127.0.0.1:3000/pt-BR/connect`** (use `127.0.0.1`, não
+   `localhost`: os cookies vivem na origem da redirect URI; se abrir `localhost`, o login te leva
+   para `127.0.0.1`).
+3. Clique em **Entrar com o Spotify**, autorize e volte para a mesma página, que passa a dizer
+   "Você está conectado ao Spotify".
+4. Na mesma aba, abra as rotas do BFF para ver os dados reduzidos (JSON):
+   `/api/spotify/me`, `/api/spotify/top?type=artists&range=short_term`,
+   `/api/spotify/top?type=tracks&range=long_term`, `/api/spotify/recent`,
+   `/api/spotify/saved?offset=0`.
+5. Nas DevTools (Application → Cookies) o cookie `encore_session` é `HttpOnly` e `SameSite=Lax`,
+   com validade de 30 dias. Localmente ele sai **sem** `Secure` e sem o prefixo `__Host-`, porque
+   o Safari descarta cookies `Secure` em HTTP e o Chrome rejeita `__Host-` fora de HTTPS; em
+   produção (HTTPS) o nome é `__Host-encore_session`, com `Secure` (detalhes em `docs/api.md`).
+6. Clique em **Sair**: o cookie some e `/api/spotify/me` passa a responder
+   `401 {"error":{"code":"UNAUTHENTICATED"}}`.
+
+Casos para conferir: cancelar no Spotify volta com "Você cancelou a autorização"; uma conta fora
+do User Management volta com a mensagem da lista de acesso (`?error=not_allowlisted`).
+
+### Testar o fluxo sem conta do Spotify (mock local)
+
+`scripts/spotify-mock-server.ts` simula o Accounts e a Web API com dados fictícios (confere o PKCE
+e rotaciona o refresh token). Em dois terminais:
+
+```bash
+node scripts/spotify-mock-server.ts     # http://127.0.0.1:4010
+```
+
+No `.env.local` (credenciais quaisquer, porque o mock não as confere contra nada real):
+
+```bash
+SPOTIFY_CLIENT_ID=mock
+SPOTIFY_CLIENT_SECRET=mock
+SPOTIFY_REDIRECT_URI=http://127.0.0.1:3000/api/auth/callback
+SESSION_SECRET=<32 bytes em base64url>
+SPOTIFY_ACCOUNTS_BASE=http://127.0.0.1:4010
+SPOTIFY_API_BASE=http://127.0.0.1:4010/v1
+```
+
+Depois `pnpm dev` (ou `pnpm build && pnpm start`) e siga os passos 2–6 acima. Apague as duas
+linhas `SPOTIFY_*_BASE` para voltar ao Spotify real.
+
+Variáveis do mock: `MOCK_SPOTIFY_DENY=1` (simula "cancelar"), `MOCK_SPOTIFY_FORBIDDEN=1` (conta
+fora da allowlist), `MOCK_SPOTIFY_EXPIRES_IN=30` (força refresh a cada chamada).
 
 ## Estrutura
 
@@ -126,13 +188,14 @@ app/[locale]/        páginas (RSC) em /pt-BR e /en
 app/api/             BFF (auth e proxy do Spotify) + /api/health
 proxy.ts             nonce de CSP, cabeçalhos de segurança e negociação de idioma
 src/domain/          lógica pura (histórico, Dataset, stats, demo), testável em Node
-src/server/          env validado, cabeçalhos de segurança, sessão e cliente Spotify
+src/server/          env validado, cabeçalhos de segurança, sessão JWE, cliente Spotify, logger
 src/features/        UI por área
 src/workers/         Web Workers (processamento do upload)
 src/i18n/            rotas e mensagens do next-intl
 e2e/                 testes Playwright + axe
-scripts/             geração das fixtures (`pnpm fixtures`)
-tests/               setup, stubs, fixtures e benchmark (`tests/perf`)
+scripts/             fixtures (`pnpm fixtures`) e mock local do Spotify
+tests/               setup, stubs, fixtures, mocks do Spotify e benchmark (`tests/perf`)
+docs/api.md          contrato do BFF (rotas, parâmetros, erros, TTLs, OAuth)
 ```
 
 Alias de import: `@/…` aponta para `src/…`.

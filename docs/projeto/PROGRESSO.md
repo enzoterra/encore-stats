@@ -3,11 +3,11 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: nenhuma. Sprint 1 ✅ concluída (dev-backend, 2026-09-24; aguarda commit do orquestrador)
-- Próximo passo ao retomar: Sprint 2 (dev-backend, BFF) e/ou Sprint 4 (dev-frontend), que já pode consumir `src/domain` e o worker
+- Sprint em andamento: nenhuma. Sprint 2 ✅ concluída (dev-backend, 2026-09-24; aguarda commit do orquestrador)
+- Próximo passo ao retomar: Sprint 4 (dev-frontend) e, depois, Sprint 5 (UI do Conectar sobre o BFF; contrato em `docs/api.md`). Pendente com o cliente: testar o login real em 127.0.0.1 (aceite da Sprint 2; passo a passo no README)
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-24 por dev-backend (fim da Sprint 1)
+- Última atualização: 2026-09-24 por dev-backend (fim da Sprint 2)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -112,14 +112,98 @@
   - S8: medir no iPhone real (RNF-03/04). No Node a folga é grande, mas o Safari/iOS precisa de medição
 - Próxima sprint: Sprint 2 (dev-backend) — `jose`, sessão, rotas `/api/spotify/*` usando os schemas de `src/domain/spotify-types.ts` para reduzir e validar as respostas
 
-### Sprint 2 — BFF e integração Spotify — ⬜ · dev-backend
-- [ ] S2.1 Sessão JWE (jose)
-- [ ] S2.2 `/api/auth/{login,callback,logout}`
-- [ ] S2.3 `spotify-client.ts` (refresh, 429, quota, invalid_grant, 403)
-- [ ] S2.4 Rotas `/api/spotify/*` com Cache-Control private
-- [ ] S2.5 Logger com allowlist + CSRF no logout
-- [ ] S2.6 Testes de integração (100% dos caminhos de segurança)
-- [ ] S2.7 `docs/api.md`
+### Sprint 2 — BFF e integração Spotify — ✅ concluída (2026-09-24) · dev-backend
+- [x] S2.1 Sessão JWE (jose)
+- [x] S2.2 `/api/auth/{login,callback,logout}`
+- [x] S2.3 `spotify-client.ts` (refresh, 429, quota, invalid_grant, 403)
+- [x] S2.4 Rotas `/api/spotify/*` com Cache-Control private
+- [x] S2.5 Logger com allowlist + CSRF no logout
+- [x] S2.6 Testes de integração (100% dos caminhos de segurança)
+- [x] S2.7 `docs/api.md`
+- Entregue:
+  - `src/server/`:
+    - `session.ts`: JWE `dir` + `A256GCM`, HKDF por finalidade, `kid`, rotação com `SESSION_SECRET_PREVIOUS`, teto absoluto de 30 d desde o login
+    - `cookies.ts`, `csrf.ts`, `logger.ts` (allowlist), `api-errors.ts`
+    - `upstream.ts` (timeout e retry), `spotify-auth.ts` (PKCE, troca e refresh), `spotify-client.ts`, `spotify-mappers.ts` (Zod + redução)
+    - `bff.ts` (esqueleto das rotas), `bff-params.ts`, `auth-shared.ts`, `connect-state.ts`
+  - Rotas: `GET /api/auth/login`, `GET /api/auth/callback`, `POST /api/auth/logout`, `GET /api/spotify/{me,top,recent,saved,artist/[id]}`
+  - Página provisória `app/[locale]/connect`: destino do callback, com estado da conexão, erros traduzidos e entrar/sair. Mensagens `Connect.*` em PT-BR e EN
+  - `env.ts`:
+    - `SPOTIFY_API_BASE`/`SPOTIFY_ACCOUNTS_BASE`;
+    - HTTPS obrigatório fora de loopback e em qualquer deploy da Vercel;
+    - a redirect URI tem de terminar em `/api/auth/callback`
+  - `tests/mocks/spotify.ts` (mock de `fetch` + respostas cruas do Spotify)
+  - `scripts/spotify-mock-server.ts`: mock HTTP do Accounts + Web API; confere o PKCE e rotaciona o refresh token
+  - `e2e/connect.spec.ts`, `docs/api.md`, README e `.env.example`
+- Versões instaladas: jose 6.2.12. Sem msw: o mock de `fetch` próprio cobre tudo com uma dependência a menos. `pnpm audit --audit-level=high`: sem vulnerabilidades
+- Números (Node 22.20, Windows):
+  - `pnpm test`: 347 testes (23 arquivos) verdes, 134 deles novos no BFF
+  - cobertura do BFF (`src/server` + `app/api`): 98% statements, 95,6% ramos, 99,5% linhas
+    - 100% em todas as rotas, `bff.ts`, `csrf.ts`, `spotify-client.ts` e `bff-params.ts`
+    - o que falta são ramos defensivos: os padrões de `sleep`/`random` (trocados nos testes) e o erro não tipado no callback
+  - cobertura total: 98,5% statements, 96,4% ramos; `src/domain` segue acima de 80%
+  - `pnpm test:e2e`: 17 testes verdes. Os 10 novos cobrem as rotas com o Conectar desabilitado, os cabeçalhos de cache, o 405 no GET do logout e a página `/connect` + axe
+  - fluxo real no Chromium contra o mock (`next start` + `scripts/spotify-mock-server.ts`):
+    - login → `/pt-BR/connect` conectado → 5 rotas respondem 200 com o TTL certo → sair → 401;
+    - com token de 30 s: refresh e ressela a cada chamada; 4 chamadas paralelas → 200 (tolerância a `invalid_grant`)
+- Caminhos de segurança cobertos por teste:
+  - sucesso;
+  - sem sessão; cookie adulterado, de outra chave, lixo ou gigante; token vindo do cliente ignorado;
+  - `state` ausente, diferente ou longo; cookie temporário ausente, adulterado ou expirado;
+  - `access_denied`; outro erro do OAuth; `invalid_grant` na troca e no refresh; escopos a menos;
+  - 403 no callback e nas rotas;
+  - 429 com e sem `Retry-After`, acima do teto, espera somada e jitter; `QUOTA_EXCEEDED`; 5xx; timeout; erro de rede; corpo gigante; resposta fora do schema;
+  - parâmetros inválidos em todas as rotas;
+  - `Cache-Control`/`Vary` em todas as respostas (nunca `public`/`s-maxage`);
+  - logout sem `Origin`, de outra origem, ou com `Origin: null` sem `Sec-Fetch-Site`;
+  - refresh que troca o refresh token; rotação de chave; teto de 30 d;
+  - nenhum token, `code`, `state` ou nome de música nos logs
+- Decisões:
+  - **Cookie em dev local:**
+    - em HTTPS (produção, staging, qualquer deploy da Vercel): `__Host-encore_session`/`__Host-encore_oauth` com `Secure`;
+    - em `http://127.0.0.1` (a redirect URI de loopback do Spotify não tem HTTPS), os nomes perdem o prefixo e o `Secure`. O Safari descarta cookies `Secure` em HTTP; o Chrome aceita `Secure` em loopback, mas rejeita `__Host-` fora de HTTPS (httpwg/http-extensions#2605);
+    - o modo vem da redirect URI, e o `env.ts` proíbe HTTP fora de loopback e em deploys da Vercel. Produção não muda
+  - **Destino do callback:** `/{locale}/connect`, com `?error=denied|state|oauth|scope|not_allowlisted|upstream`. A Sprint 5 faz a tela nessa rota ou redireciona dela para o dashboard
+  - **Allowlist:**
+    - o callback chama `/me` antes de gravar a sessão; 403 → `?error=not_allowlisted`, sem sessão;
+    - nas rotas, todo 403 do Spotify vira `NOT_ALLOWLISTED`. Com os escopos fixos, é a única causa esperada (o Spotify responde em texto: "the user may not be registered")
+  - **CSRF no logout:**
+    - com `Referrer-Policy: no-referrer`, um formulário da mesma origem manda `Origin: null` (conferido no Chromium);
+    - aceita `Origin` igual à origem do app, ou `null` + `Sec-Fetch-Site: same-origin`; nega sem `Origin`;
+    - `fetch` → 204; formulário → 303. `Clear-Site-Data: "cache"` limpa o cache HTTP com as respostas `private`
+  - **Bases do Spotify trocáveis:** só loopback, e proibidas com `VERCEL_ENV` `preview`/`production` (a app não sobe). Funcionam com `NODE_ENV=production` local (`pnpm build && pnpm start`), então os e2e do Conectar podem usar o build de produção
+  - **Refresh paralelo:**
+    - `invalid_grant` com o access token ainda válido (> 5 s) segue com o token atual e não apaga o cookie;
+    - com o token já vencido, a requisição perdedora devolve 401;
+    - por isso a S5 deve fazer a 1ª chamada (`me`) sozinha e só depois disparar as outras em paralelo (está em `docs/api.md`)
+  - **Bug achado no teste real e corrigido:** com token de validade curta, o `/me` do callback já renovava o token, mas o callback gravava o refresh token antigo. Agora grava a sessão renovada (há teste)
+  - Login aberto em outro host (ex.: `localhost`) → 307 para a origem da redirect URI, onde os cookies vivem
+  - Links "Abrir no Spotify" montados a partir do ID validado. Imagens só dos CDNs do Spotify (a de ~300 px). Itens inválidos de uma lista são descartados e contados no log (`dropped`)
+  - `QUOTA` responde `retryAfter: 900` (a pausa de 15 min do 03). 429 repassado sempre com `retryAfter` e `Retry-After`
+  - Códigos de erro além dos do 03: `NOT_FOUND` (404, artista), `CONNECT_DISABLED` (404), `FORBIDDEN` (403, logout), `INTERNAL` (500)
+  - Sem rate limiting próprio no BFF: não há estado para contar, a allowlist tem ≤ 5 contas e o Spotify já limita. Se a S7 achar necessário, a opção é uma regra do Vercel Firewall
+- Como verificar:
+  - `pnpm i` → `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test`
+  - `pnpm test:coverage`: linha `src/server` e as rotas de `app/api`
+  - `pnpm build` e `pnpm test:e2e` (17 testes). No Windows com o pnpm local, rode `pnpm build && pnpm start` num terminal e `pnpm test:e2e` em outro, como na nota da Sprint 1
+  - sem conta do Spotify:
+    - `node scripts/spotify-mock-server.ts` + `.env.local` com as bases do mock (README, "Testar o fluxo sem conta do Spotify");
+    - abrir `http://127.0.0.1:3000/pt-BR/connect` → Entrar → as rotas `/api/spotify/*` respondem JSON reduzido → Sair
+  - **login real** (aceite da sprint, feito pelo cliente): README, "Testar o login real em http://127.0.0.1:3000"
+- Nota de ambiente local:
+  - o `~/.npmrc` desta máquina tem `cafile=` apontando para um arquivo que não existe mais, e o binário do pnpm 12 aborta sem mensagem (código 21) ao ler a config;
+  - nesta sprint o pnpm 12.6.0 rodou com um HOME isolado (`.npmrc` só com o registry HTTPS e o `store-dir` do scratchpad). A config global não foi alterada;
+  - o README ganhou a dica
+- Pendências:
+  - Cliente: testar o login real com a própria conta (redirect URI local cadastrada e conta em User Management)
+  - S5:
+    - tela do Conectar em `/{locale}/connect`, substituindo a provisória;
+    - TanStack Query com os TTLs de `docs/api.md`, 1ª chamada sozinha, pausa de `retryAfter` em `QUOTA`/`RATE_LIMITED`;
+    - no logout, `fetch` POST (→ 204) + `queryClient.clear()` + limpar o sessionStorage;
+    - e2e do Conectar com `scripts/spotify-mock-server.ts` (um 2º `webServer` no Playwright ou um projeto separado)
+  - S6: rota `/api/spotify/image` só se o CORS do `i.scdn.co` falhar (ADR 9)
+  - S7: revisar a tolerância a `invalid_grant`, a regra 403 → `NOT_ALLOWLISTED`, os atributos de cookie em dev e a ausência de rate limiting
+- Próxima sprint: Sprint 4 (dev-frontend); o BFF já está pronto para a Sprint 5
 
 ### Sprint 3 — Sistema de design — ✅ concluída e aprovada pelo cliente (2026-09-24) · designer
 - Decisões do cliente (2026-09-24):

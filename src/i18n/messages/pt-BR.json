@@ -10,5 +10,23 @@
     "connectEnabled": "Conectar com o Spotify: disponível neste ambiente.",
     "connectDisabled": "Conectar com o Spotify: indisponível neste ambiente. Upload e Demo continuam funcionando.",
     "switchLanguage": "Read in English"
+  },
+  "Connect": {
+    "title": "Conectar com o Spotify",
+    "intro": "Página provisória do modo Conectar.",
+    "login": "Entrar com o Spotify",
+    "logout": "Sair",
+    "connected": "Você está conectado ao Spotify.",
+    "disconnected": "Você não está conectado.",
+    "disabled": "O modo Conectar está indisponível neste ambiente. Upload e Demo continuam funcionando.",
+    "back": "Voltar ao início",
+    "errors": {
+      "denied": "Você cancelou a autorização no Spotify.",
+      "state": "A tentativa de login expirou ou não é válida. Tente de novo.",
+      "oauth": "O Spotify não concluiu o login. Tente de novo.",
+      "scope": "O Spotify não concedeu as permissões necessárias. Tente de novo.",
+      "not_allowlisted": "Esta conta do Spotify não está na lista de acesso do Encore. Peça ao dono do app para incluí-la.",
+      "upstream": "O Spotify não respondeu. Tente de novo em instantes."
+    }
   }
 }

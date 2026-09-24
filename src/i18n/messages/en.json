@@ -10,5 +10,23 @@
     "connectEnabled": "Connect with Spotify: available in this environment.",
     "connectDisabled": "Connect with Spotify: unavailable in this environment. Upload and Demo still work.",
     "switchLanguage": "Ler em português"
+  },
+  "Connect": {
+    "title": "Connect with Spotify",
+    "intro": "Placeholder page for Connect mode.",
+    "login": "Log in with Spotify",
+    "logout": "Log out",
+    "connected": "You are connected to Spotify.",
+    "disconnected": "You are not connected.",
+    "disabled": "Connect mode is unavailable in this environment. Upload and Demo still work.",
+    "back": "Back to home",
+    "errors": {
+      "denied": "You cancelled the authorization on Spotify.",
+      "state": "The login attempt expired or is not valid. Please try again.",
+      "oauth": "Spotify did not complete the login. Please try again.",
+      "scope": "Spotify did not grant the required permissions. Please try again.",
+      "not_allowlisted": "This Spotify account is not on Encore's access list. Ask the app owner to add it.",
+      "upstream": "Spotify did not respond. Please try again in a moment."
+    }
   }
 }
