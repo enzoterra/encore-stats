@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Encore · mockup</title>
+<meta name="description" content="Mockup de referência do sistema de design Palco Neon (Sprint 3): dashboard mobile no modo Upload e prévia do card Festival 9:16. Dados fictícios.">
+<!-- Só no mockup: fontes via Google Fonts. No app, as fontes são self-hosted (10-design.md §13). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,500..800&family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+<style>
+/* ===== tokens (espelho do 10-design.md §12) ===== */
+:root {
+  color-scheme: dark;
+  --background:#0E0B1A; --surface:#17122A; --surface-2:#211A3A; --surface-3:#2B2248;
+  --fg:#F5F1FF; --fg-muted:#B8AED6; --fg-subtle:#968CB8; --line:#342A52; --line-strong:#7D71A8;
+  --primary:#FF3D8B; --primary-hover:#FF62A2; --primary-active:#E82E78; --primary-fg:#FF7AB0;
+  --ink:#0E0B1A; --accent:#FFE14D; --orange:#FF7A1A; --cyan:#3DE0FF; --focus:#FFE14D;
+  --success:#52F2C8; --warning:#FFC23D; --danger:#FF5A5F; --danger-fg:#FF8A8E; --info:#3DE0FF;
+  --heat-0:#211A3A; --heat-1:#3D1F66; --heat-2:#6E1F7E; --heat-3:#B02A80; --heat-4:#EC4A6E; --heat-5:#FF8A3D; --heat-6:#FFE14D;
+  --font-display:"Bricolage Grotesque","Arial Black",system-ui,sans-serif;
+  --font-sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --r-xs:4px; --r-sm:8px; --r-md:12px; --r-lg:16px; --r-xl:24px; --r-full:9999px;
+  --e2:0 8px 24px -12px rgb(0 0 0/.6); --e3:0 24px 64px -16px rgb(0 0 0/.7);
+  --glow:0 0 0 1px rgb(255 61 139/.35),0 10px 32px -10px rgb(255 61 139/.55);
+  --ease:cubic-bezier(.2,0,0,1); --ease-enter:cubic-bezier(.05,.7,.1,1);
+  --fast:120ms; --base:200ms; --slow:320ms; --reveal:600ms;
+}
+*,*::before,*::after { box-sizing:border-box; }
+html,body { margin:0; }
+body {
+  background:var(--background); color:var(--fg); font-family:var(--font-sans);
+  font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased; font-optical-sizing:auto;
+}
+:focus-visible { outline:2px solid var(--focus); outline-offset:2px; }
+button,input { font:inherit; color:inherit; }
+button { cursor:pointer; }
+[hidden] { display:none !important; }
+.tnum { font-variant-numeric:tabular-nums; }
+.sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+svg.i { width:20px; height:20px; flex:none; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+svg.i16 { width:16px; height:16px; }
+
+/* ===== página do mockup (moldura, não faz parte do app) ===== */
+.doc { max-width:1200px; margin:0 auto; padding:32px 16px 64px; }
+.doc-head h1 { font-family:var(--font-display); font-weight:800; font-size:clamp(2rem,1.4rem + 3vw,3rem); line-height:1; letter-spacing:-.03em; margin:0 0 8px; }
+.doc-head h1 span { color:var(--primary); }
+.doc-head p { color:var(--fg-muted); margin:0 0 16px; max-width:40rem; }
+.doc-tags { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:32px; }
+.doc-tag { font-size:12px; font-weight:600; padding:4px 12px; border-radius:var(--r-full); background:var(--surface-2); color:var(--fg-muted); border:1px solid var(--line); }
+.frames { display:flex; flex-wrap:wrap; gap:40px; align-items:flex-start; justify-content:center; }
+.frame { flex:0 1 390px; min-width:0; }
+.frame-title { font-size:12px; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan); margin:0 0 12px; }
+.phone { position:relative; width:100%; max-width:390px; margin:0 auto; border:1px solid var(--line); border-radius:40px; overflow:hidden; overflow:clip; background:var(--background); box-shadow:var(--e3); }
+@media (max-width:520px) {
+  .doc { padding:24px 0 48px; }
+  .doc-head, .frame-title { padding:0 16px; }
+  .phone { border-radius:0; border-left:0; border-right:0; max-width:none; }
+}
+
+/* ===== app: cabeçalho ===== */
+.app-head { position:sticky; top:0; z-index:5; height:56px; display:flex; align-items:center; gap:8px; padding:0 8px 0 16px; background:rgb(14 11 26/.85); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); border-bottom:1px solid var(--line); }
+.wordmark { font-family:var(--font-display); font-weight:800; font-size:22px; letter-spacing:-.02em; color:var(--primary); }
+.mode-badge { font-size:12px; font-weight:700; padding:2px 10px; border-radius:var(--r-full); background:var(--surface-2); color:var(--fg-muted); border:1px solid var(--line); }
+.spacer { flex:1; }
+.icon-btn { width:44px; height:44px; display:inline-grid; place-items:center; border-radius:var(--r-full); border:0; background:transparent; color:var(--fg-muted); transition:background var(--fast) var(--ease),color var(--fast) var(--ease); }
+.icon-btn:hover { background:var(--surface-2); color:var(--fg); }
+
+.app { padding:16px 16px 104px; display:flex; flex-direction:column; gap:32px; }
+section.blk { display:flex; flex-direction:column; gap:12px; }
+.h1 { font-family:var(--font-display); font-weight:800; font-size:32px; line-height:1.05; letter-spacing:-.02em; margin:0; }
+.h2 { font-family:var(--font-display); font-weight:700; font-size:24px; line-height:1.15; letter-spacing:-.01em; margin:0; }
+.overline { font-size:12px; font-weight:700; line-height:1.2; letter-spacing:.12em; text-transform:uppercase; color:var(--cyan); margin:0; }
+.muted { color:var(--fg-muted); }
+.small { font-size:14px; line-height:1.45; }
+.caption { font-size:12px; line-height:1.4; font-weight:500; letter-spacing:.01em; color:var(--fg-subtle); }
+
+/* banner */
+.banner { display:flex; gap:12px; align-items:flex-start; padding:12px 8px 12px 12px; background:var(--surface); border:1px solid var(--line); border-left:4px solid var(--info); border-radius:var(--r-md); font-size:14px; line-height:1.45; }
+.banner svg { color:var(--info); margin-top:1px; }
+.banner p { margin:0; flex:1; }
+.banner .icon-btn { width:36px; height:36px; margin:-6px 0; }
+
+/* selo de privacidade */
+.seal { display:inline-flex; align-items:center; gap:8px; height:32px; padding:0 12px; border-radius:var(--r-full); background:var(--surface); border:1px solid var(--line-strong); font-size:12px; font-weight:600; color:var(--fg); position:relative; }
+.seal svg { color:var(--success); }
+.seal::after { content:""; position:absolute; inset:-6px 0; } /* área de toque 44px */
+.seal-panel { display:none; margin-top:8px; padding:20px; background:var(--surface); border:1px solid var(--line); border-top:3px solid var(--success); border-radius:var(--r-lg); }
+.seal-panel.open { display:block; }
+.seal-panel h3 { font-family:var(--font-display); font-weight:700; font-size:20px; line-height:1.25; margin:0 0 12px; }
+.seal-panel ul { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:10px; font-size:14px; line-height:1.45; }
+.seal-panel li { display:flex; gap:10px; }
+.seal-panel li svg { color:var(--success); }
+.seal-panel a { color:var(--primary-fg); text-underline-offset:3px; }
+
+/* segmented + chips */
+.seg { display:flex; padding:4px; gap:2px; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-full); }
+.seg button { flex:1; min-width:0; height:36px; padding:0 8px; border:0; border-radius:var(--r-full); background:transparent; color:var(--fg-muted); font-size:14px; font-weight:600; white-space:nowrap; transition:background var(--fast) var(--ease),color var(--fast) var(--ease); }
+.seg button:hover { color:var(--fg); }
+.seg button[aria-checked="true"] { background:var(--accent); color:var(--ink); font-weight:700; }
+.chips { display:flex; gap:8px; overflow-x:auto; scroll-snap-type:x mandatory; padding:4px 2px; margin:0 -2px; scrollbar-width:none; padding-inline-end:24px; -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 20px),transparent); mask-image:linear-gradient(90deg,transparent 0,#000 12px,#000 calc(100% - 20px),transparent); }
+.chips::-webkit-scrollbar { display:none; }
+.chip { scroll-snap-align:start; flex:none; display:inline-flex; align-items:center; gap:6px; height:36px; padding:0 16px; border-radius:var(--r-full); border:0; background:var(--surface-2); color:var(--fg-muted); font-size:14px; font-weight:600; position:relative; }
+.chip::after { content:""; position:absolute; inset:-4px 0; }
+.chip[aria-pressed="true"] { background:var(--accent); color:var(--ink); font-weight:700; }
+.chip .ck { display:none; }
+.chip[aria-pressed="true"] .ck { display:block; }
+.stepper { display:flex; align-items:center; justify-content:space-between; background:var(--surface); border:1px solid var(--line); border-radius:var(--r-full); padding:0 4px; }
+.stepper strong { font-weight:600; }
+.range { display:flex; gap:12px; }
+.field { display:flex; flex-direction:column; gap:6px; flex:1; min-width:0; }
+.field label { font-size:14px; font-weight:600; }
+.input { height:44px; width:100%; padding:0 14px; background:var(--surface); border:1px solid var(--line-strong); border-radius:var(--r-md); color:var(--fg); }
+.input::placeholder { color:var(--fg-subtle); }
+.input:focus-visible { border-color:var(--primary); }
+.period-summary { font-size:14px; color:var(--fg-muted); margin:0; }
+
+/* métricas */
+.metric-hi { background:var(--primary); color:var(--ink); border-radius:var(--r-lg); padding:20px; box-shadow:var(--glow); display:flex; flex-direction:column; gap:4px; }
+.metric-hi .overline { color:var(--ink); }
+.metric-hi .val { font-family:var(--font-display); font-weight:800; font-size:48px; line-height:1; letter-spacing:-.02em; }
+.metric-hi .ctx { font-size:14px; font-weight:600; }
+.totals { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.total { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:12px; min-width:0; }
+.total .v { font-family:var(--font-display); font-weight:700; font-size:22px; line-height:1.05; }
+.total .l { font-size:12px; color:var(--fg-muted); }
+.mgrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.mcard { background:var(--surface); border:1px solid var(--line); border-radius:var(--r-lg); padding:16px; display:flex; flex-direction:column; gap:6px; min-width:0; }
+.mcard.wide { grid-column:1/-1; }
+.mcard .overline { display:flex; align-items:center; gap:6px; color:var(--fg-muted); }
+.mcard .val { font-family:var(--font-display); font-weight:800; font-size:30px; line-height:1; letter-spacing:-.02em; overflow-wrap:anywhere; }
+.mcard .val.name { font-size:22px; line-height:1.1; }
+.mcard .ctx { font-size:14px; line-height:1.4; color:var(--fg-muted); }
+.self { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--fg-subtle); margin-top:auto; padding-top:4px; }
+
+/* ranking */
+.rank { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.rank li { display:grid; grid-template-columns:32px 1fr auto; column-gap:12px; align-items:center; min-height:56px; padding:8px 0; border-bottom:1px solid var(--line); position:relative; }
+.rank .n { font-family:var(--font-display); font-weight:800; font-size:20px; color:var(--fg-subtle); font-variant-numeric:tabular-nums; }
+.rank li:nth-child(-n+3) .n { color:var(--accent); }
+.rank .t { min-width:0; }
+.rank .nm { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+.rank .sub { font-size:14px; color:var(--fg-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+.rank .vl { font-size:14px; color:var(--fg-muted); font-variant-numeric:tabular-nums; }
+.rank .bar { grid-column:2/4; height:3px; background:var(--surface-2); border-radius:var(--r-full); margin-top:6px; overflow:hidden; }
+.rank .bar i { display:block; height:100%; background:var(--primary); border-radius:inherit; }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:44px; padding:0 20px; border-radius:var(--r-full); border:1px solid transparent; font-weight:600; font-size:16px; text-decoration:none; transition:background var(--fast) var(--ease),box-shadow var(--fast) var(--ease),transform var(--fast) var(--ease); }
+.btn-primary { background:var(--primary); color:var(--ink); }
+.btn-primary:hover { background:var(--primary-hover); box-shadow:var(--glow); }
+.btn-primary:active { background:var(--primary-active); transform:translateY(1px); }
+.btn-secondary { background:var(--surface-2); color:var(--fg); border-color:var(--line-strong); }
+.btn-secondary:hover { background:var(--surface-3); }
+.btn-ghost { background:transparent; color:var(--fg-muted); }
+.btn-ghost:hover { background:var(--surface-2); color:var(--fg); }
+.btn-lg { height:52px; padding:0 24px; font-size:17px; }
+.btn-block { width:100%; }
+
+/* heatmap */
+.heat { margin:0; display:flex; flex-direction:column; gap:12px; }
+.heat-grid { display:grid; grid-template-columns:32px repeat(7,1fr); gap:2px; }
+.heat-grid .dh { font-size:12px; font-weight:600; color:var(--fg-muted); text-align:center; padding-bottom:4px; }
+.heat-grid .dh abbr { text-decoration:none; }
+.heat-grid .hl { font-size:11px; line-height:14px; color:var(--fg-subtle); text-align:right; padding-right:6px; font-variant-numeric:tabular-nums; }
+.heat-grid .c { height:14px; border-radius:2px; background:var(--heat-0); position:relative; }
+.heat-grid .c[data-b="0"] { box-shadow:inset 0 0 0 1px var(--line); }
+.heat-grid .c.peak { box-shadow:0 0 0 2px var(--ink),0 0 0 4px var(--fg); z-index:1; }
+.heat-legend { display:flex; align-items:center; gap:4px; font-size:12px; color:var(--fg-muted); flex-wrap:wrap; }
+.heat-legend .sw { width:22px; height:12px; border-radius:2px; }
+.heat-legend .sw.z { box-shadow:inset 0 0 0 1px var(--line); }
+.heat figcaption { font-size:14px; line-height:1.45; }
+.tip { position:absolute; z-index:10; pointer-events:none; background:var(--surface-2); color:var(--fg); box-shadow:var(--e2); border:1px solid var(--line); border-radius:var(--r-sm); padding:6px 10px; font-size:12px; font-weight:600; white-space:nowrap; transform:translate(-50%,calc(-100% - 8px)); opacity:0; transition:opacity var(--fast) var(--ease); }
+.tip.on { opacity:1; }
+.tbl-wrap { overflow-x:auto; border:1px solid var(--line); border-radius:var(--r-md); }
+table { border-collapse:collapse; width:100%; font-size:13px; }
+caption { text-align:left; padding:10px 12px; font-size:14px; color:var(--fg-muted); }
+th,td { padding:0 6px; height:36px; text-align:right; font-variant-numeric:tabular-nums; }
+thead th { font-weight:600; color:var(--fg-muted); border-bottom:1px solid var(--line); font-size:12px; }
+tbody th { text-align:left; font-weight:600; padding-left:12px; }
+tbody tr:nth-child(odd) { background:var(--surface); }
+
+/* plataforma */
+.plat { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:12px; }
+.plat li { display:grid; grid-template-columns:20px 1fr auto; gap:4px 10px; align-items:center; font-size:14px; }
+.plat svg { color:var(--fg-muted); }
+.plat .track { grid-column:2/4; height:8px; background:var(--surface-2); border-radius:var(--r-full); overflow:hidden; }
+.plat .track i { display:block; height:100%; background:var(--primary); border-radius:inherit; }
+.plat b { font-variant-numeric:tabular-nums; }
+
+.app-foot { font-size:12px; color:var(--fg-subtle); text-align:center; border-top:1px solid var(--line); padding-top:16px; }
+
+/* barra inferior */
+.actionbar { position:sticky; bottom:0; z-index:5; display:flex; align-items:center; gap:12px; padding:12px 16px max(12px,env(safe-area-inset-bottom)); background:var(--surface); border-top:1px solid var(--line); margin-top:-88px; }
+.actionbar .per { flex:1; min-width:0; text-align:left; background:transparent; border:0; padding:0; min-height:44px; }
+.actionbar .per b { display:block; font-family:var(--font-display); font-size:18px; line-height:1.1; }
+.actionbar .per span { font-size:12px; color:var(--fg-muted); }
+
+/* ===== sheet de compartilhamento ===== */
+.sheet-backdrop { background:linear-gradient(180deg,rgb(8 6 16/.72),rgb(8 6 16/.72)),repeating-linear-gradient(0deg,var(--surface) 0 56px,var(--background) 56px 64px); padding-top:48px; }
+.sheet { background:var(--surface-2); border-radius:var(--r-xl) var(--r-xl) 0 0; box-shadow:var(--e3); padding:8px 16px 24px; display:flex; flex-direction:column; gap:16px; animation:sheet-in var(--slow) var(--ease-enter); }
+@keyframes sheet-in { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
+.sheet .grab { width:36px; height:4px; border-radius:var(--r-full); background:var(--line-strong); margin:4px auto 0; }
+.sheet-top { display:flex; align-items:center; justify-content:space-between; }
+.sheet .seg { background:var(--surface); }
+.lbl { font-size:14px; font-weight:600; margin:0 0 6px; }
+.help { font-size:12px; color:var(--fg-muted); margin:6px 0 0; }
+.preview { display:flex; justify-content:center; }
+.card-wrap { container-type:inline-size; width:100%; max-width:300px; border-radius:var(--r-md); overflow:hidden; box-shadow:var(--e2); }
+.card-wrap.sq { max-width:340px; }
+.note { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--fg-muted); }
+.note svg { color:var(--cyan); }
+.basic-note { display:none; padding:16px; border:1px dashed var(--line-strong); border-radius:var(--r-md); font-size:14px; color:var(--fg-muted); }
+
+/* ===== card Festival: medidas em "px do canvas" (1080 de largura) via cqw ===== */
+.fest {
+  --u:calc(100cqw / 1080);
+  width:100%; aspect-ratio:9/16; display:flex; flex-direction:column; justify-content:space-between; align-items:center;
+  gap:calc(var(--u)*32);
+  padding:calc(var(--u)*250) calc(var(--u)*72) calc(var(--u)*280);
+  background-color:#0E0B1A;
+  background-image:
+    radial-gradient(circle at 12% 6%, rgb(255 61 139/.55) 0%, rgb(255 61 139/0) 38%),
+    radial-gradient(circle at 90% 10%, rgb(61 224 255/.40) 0%, rgb(61 224 255/0) 34%),
+    linear-gradient(180deg,#0E0B1A 0%,#140E28 55%,#2A0F3D 82%,#4A1247 100%);
+  position:relative; color:var(--fg); text-align:center; overflow:hidden;
+}
+.fest.sq { aspect-ratio:1/1; padding:calc(var(--u)*72); }
+.fest .safe { position:absolute; left:0; right:0; pointer-events:none; border:0 dashed rgb(61 224 255/.6); }
+.fest .safe.top { top:0; height:calc(var(--u)*250); border-bottom-width:1px; }
+.fest .safe.bot { bottom:0; height:calc(var(--u)*280); border-top-width:1px; }
+.fest.sq .safe, .fest.hide-safe .safe { display:none; }
+.fest .col { display:flex; flex-direction:column; align-items:center; width:100%; }
+.fest .top { gap:calc(var(--u)*64); }
+.fest.sq .top { gap:calc(var(--u)*28); }
+.fest .hdr { gap:calc(var(--u)*14); }
+.fest .pres { font-family:var(--font-sans); font-weight:700; font-size:calc(var(--u)*28); color:var(--cyan); letter-spacing:calc(var(--u)*8); }
+.fest .ttl, .fest .hd { font-family:var(--font-display); font-stretch:75%; font-variation-settings:"wdth" 75, "opsz" 96; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; text-transform:uppercase; }
+.fest .ttl { color:var(--primary); line-height:.95; }
+.fest .per { font-weight:700; font-size:calc(var(--u)*30); color:var(--ink); background:var(--accent); padding:calc(var(--u)*10) calc(var(--u)*28); border-radius:var(--r-full); letter-spacing:calc(var(--u)*3); text-transform:uppercase; }
+.fest .lineup { gap:calc(var(--u)*28); }
+.fest.sq .lineup { gap:calc(var(--u)*16); }
+.fest .hd { line-height:.92; }
+.fest .hd.h1 { color:var(--accent); }
+.fest .div { display:flex; align-items:center; gap:calc(var(--u)*20); width:100%; }
+.fest .div i { flex:1; height:calc(var(--u)*3); background:var(--primary); }
+.fest .div b { width:calc(var(--u)*14); height:calc(var(--u)*14); background:var(--accent); transform:rotate(45deg); }
+.fest .t2 { font-family:var(--font-display); font-stretch:75%; font-variation-settings:"wdth" 75, "opsz" 96; font-weight:800; font-size:calc(var(--u)*62); line-height:1.1; text-transform:uppercase; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.fest .t3 { font-weight:600; font-size:calc(var(--u)*32); line-height:1.45; letter-spacing:calc(var(--u)*1); color:var(--fg-muted); text-transform:uppercase; display:-webkit-box; -webkit-line-clamp:5; -webkit-box-orient:vertical; overflow:hidden; }
+.fest.sq .t2 { font-size:calc(var(--u)*44); }
+.fest.sq .t3 { font-size:calc(var(--u)*24); -webkit-line-clamp:3; }
+.fest .bottom { gap:calc(var(--u)*40); }
+.fest .stats { font-weight:700; font-size:calc(var(--u)*28); color:var(--orange); letter-spacing:calc(var(--u)*3); text-transform:uppercase; }
+.fest .foot { display:flex; justify-content:space-between; align-items:flex-end; width:100%; text-align:left; }
+.fest .foot .wm { font-family:var(--font-display); font-weight:800; font-size:calc(var(--u)*40); letter-spacing:calc(var(--u)*-1); line-height:1.1; }
+.fest .foot .site { font-size:calc(var(--u)*22); color:var(--fg-subtle); }
+.fest .foot .attr { font-size:calc(var(--u)*22); color:var(--fg-subtle); text-align:right; max-width:calc(var(--u)*520); }
+.fest.sq .pres { font-size:calc(var(--u)*22); }
+.fest.sq .per { font-size:calc(var(--u)*24); padding:calc(var(--u)*6) calc(var(--u)*20); }
+.fest.sq .stats { font-size:calc(var(--u)*22); }
+.fest.sq .bottom { gap:calc(var(--u)*20); }
+.fest.sq .foot .wm { font-size:calc(var(--u)*34); }
+
+/* ===== paleta (referência para o cliente) ===== */
+.palette { margin-top:56px; }
+.palette h2 { font-family:var(--font-display); font-weight:700; font-size:24px; margin:0 0 16px; }
+.sw-row { display:flex; flex-wrap:wrap; gap:12px; }
+.sw-card { flex:1 1 150px; border:1px solid var(--line); border-radius:var(--r-lg); overflow:hidden; background:var(--surface); }
+.sw-card .c { height:64px; display:flex; align-items:flex-end; padding:8px 10px; font-weight:700; font-size:14px; }
+.sw-card .m { padding:8px 10px; font-size:12px; color:var(--fg-muted); line-height:1.4; }
+.sw-card .m b { color:var(--fg); font-weight:600; }
+.type-row { display:flex; flex-wrap:wrap; gap:24px; margin-top:24px; align-items:baseline; }
+
+@media (prefers-reduced-motion: reduce) {
+  *,::before,::after { animation-duration:.01ms !important; animation-iteration-count:1 !important; transition-duration:.01ms !important; scroll-behavior:auto !important; }
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <!-- Ícones desenhados só para o mockup, no estilo outline 2px. No app: Lucide (10-design.md §6). -->
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.5 3.4 8.2 8 9 4.6-.8 8-4.5 8-9V6z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 16v-5M12 8h.01"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c0 4 3 7 6 8M11 5c0 4-3 7-6 8"/><path d="m13 21 4-9 4 9M14.5 18h5"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12 5 5 9-10"/></symbol>
+  <symbol id="i-chev-l" viewBox="0 0 24 24"><path d="m15 6-6 6 6 6"/></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M3 15h18M9 4v16"/></symbol>
+  <symbol id="i-phone" viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></symbol>
+  <symbol id="i-laptop" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 19h20"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+  <symbol id="i-skip" viewBox="0 0 24 24"><path d="m5 5 10 7-10 7z"/><path d="M19 5v14"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-pct" viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/></symbol>
+  <symbol id="i-wifi-off" viewBox="0 0 24 24"><path d="M2 8.8a15 15 0 0 1 4.2-2.6M10 5.1A15 15 0 0 1 22 8.8M5 12.5a10 10 0 0 1 5.2-2.6M16.8 10.7a10 10 0 0 1 2.2 1.8M8.5 16a5 5 0 0 1 7 0M12 20h.01M3 3l18 18"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5M16 7l5 5-5 5"/></symbol>
+</svg>
+
+<div class="doc">
+  <header class="doc-head">
+    <h1><span>encore</span> · mockup de referência</h1>
+    <p>Sistema de design "Palco Neon" aplicado a duas telas-chave: (A) dashboard mobile no modo Upload e (B) prévia do card Festival 9:16 no modal de compartilhamento. Tudo interativo; os dados são fictícios.</p>
+    <div class="doc-tags" aria-label="Legenda">
+      <span class="doc-tag">Sprint 3 · aguardando aprovação</span>
+      <span class="doc-tag">Artistas e músicas fictícios</span>
+      <span class="doc-tag">Especificação: docs/projeto/10-design.md</span>
+      <span class="doc-tag">Cards gerados no satori: design/cards/preview/</span>
+    </div>
+  </header>
+
+  <div class="frames">
+    <!-- ================= A · DASHBOARD ================= -->
+    <section class="frame" aria-labelledby="fa">
+      <h2 class="frame-title" id="fa">A · Dashboard — modo Upload</h2>
+      <div class="phone">
+        <header class="app-head">
+          <span class="wordmark">encore</span>
+          <span class="mode-badge">Upload</span>
+          <span class="spacer"></span>
+          <button class="icon-btn" aria-label="Idioma: português. Trocar idioma"><svg class="i"><use href="#i-lang"/></svg></button>
+          <button class="icon-btn" aria-label="Compartilhar" onclick="document.getElementById('fb').scrollIntoView({behavior:'smooth'})"><svg class="i"><use href="#i-share"/></svg></button>
+        </header>
+
+        <main class="app" id="app">
+          <div class="banner" role="note" id="reload-banner">
+            <svg class="i" aria-hidden="true"><use href="#i-info"/></svg>
+            <p>Seus dados ficam só nesta aba. Se recarregar, você precisa enviar o arquivo de novo.</p>
+            <button class="icon-btn" aria-label="Fechar aviso" onclick="this.parentElement.remove()"><svg class="i"><use href="#i-x"/></svg></button>
+          </div>
+
+          <section class="blk" aria-labelledby="t-title">
+            <p class="overline">Seu histórico</p>
+            <h1 class="h1" id="t-title">Seu <span id="title-period">2024</span></h1>
+            <div>
+              <button class="seal" aria-expanded="false" aria-controls="seal-panel" id="seal-btn">
+                <svg class="i i16" aria-hidden="true"><use href="#i-lock"/></svg>Processado no seu aparelho
+              </button>
+              <div class="seal-panel" id="seal-panel">
+                <h3>Seus dados ficam com você</h3>
+                <ul>
+                  <li><svg class="i" aria-hidden="true"><use href="#i-shield"/></svg>O arquivo é lido no seu navegador e nunca é enviado.</li>
+                  <li><svg class="i" aria-hidden="true"><use href="#i-lock"/></svg>Sem banco de dados, sem contas, sem analytics.</li>
+                  <li><svg class="i" aria-hidden="true"><use href="#i-wifi-off"/></svg>Depois de carregar, funciona offline. Teste: desligue a internet e envie o arquivo.</li>
+                  <li><svg class="i" aria-hidden="true"><use href="#i-code"/></svg><span>Código aberto: <a href="#" onclick="return false">confira você mesmo</a>.</span></li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- seletor de período -->
+          <section class="blk" aria-labelledby="t-period">
+            <h2 class="sr-only" id="t-period">Período</h2>
+            <div class="seg" role="radiogroup" aria-label="Tipo de período" id="period-mode">
+              <button role="radio" aria-checked="false" data-mode="month">Mês</button>
+              <button role="radio" aria-checked="true" data-mode="year">Ano</button>
+              <button role="radio" aria-checked="false" data-mode="all">Sempre</button>
+              <button role="radio" aria-checked="false" data-mode="range">Intervalo</button>
+            </div>
+            <div id="pm-year" class="chips" role="group" aria-label="Ano"></div>
+            <div id="pm-month" class="stepper" hidden>
+              <button class="icon-btn" aria-label="Mês anterior"><svg class="i"><use href="#i-chev-l"/></svg></button>
+              <strong>dezembro de 2024</strong>
+              <button class="icon-btn" aria-label="Próximo mês" disabled style="opacity:.4;cursor:not-allowed"><svg class="i"><use href="#i-chev-r"/></svg></button>
+            </div>
+            <div id="pm-range" class="range" hidden>
+              <div class="field"><label for="d1">De</label><input class="input" type="date" id="d1" value="2024-06-01" min="2017-03-02" max="2024-12-31"></div>
+              <div class="field"><label for="d2">Até</label><input class="input" type="date" id="d2" value="2024-08-31" min="2017-03-02" max="2024-12-31"></div>
+            </div>
+            <p class="period-summary tnum" id="period-summary">1 jan – 31 dez 2024 · 366 dias · 9.214 plays</p>
+            <p class="sr-only" aria-live="polite" id="period-live"></p>
+          </section>
+
+          <!-- totais -->
+          <section class="blk" aria-labelledby="t-totals">
+            <h2 class="sr-only" id="t-totals">Totais do período</h2>
+            <div class="metric-hi">
+              <p class="overline">Minutos de música</p>
+              <div class="val tnum" id="m-min">48.213</div>
+              <div class="ctx" id="m-min-ctx">≈ 33 dias inteiros de som</div>
+            </div>
+            <div class="totals">
+              <div class="total"><div class="v tnum" id="m-plays">9.214</div><div class="l">plays</div></div>
+              <div class="total"><div class="v tnum" id="m-art">612</div><div class="l">artistas</div></div>
+              <div class="total"><div class="v tnum" id="m-trk">2.408</div><div class="l">músicas</div></div>
+            </div>
+          </section>
+
+          <!-- você por você -->
+          <section class="blk" aria-labelledby="t-self">
+            <h2 class="h2" id="t-self">Você por você</h2>
+            <p class="small muted" style="margin:0">Comparações com o seu próprio histórico, e não com outros ouvintes.</p>
+            <div class="mgrid">
+              <div class="mcard wide">
+                <p class="overline"><svg class="i i16" aria-hidden="true"><use href="#i-heart"/></svg>Fã desde</p>
+                <div class="val">mar 2019</div>
+                <div class="ctx">Seu primeiro play de <b>Lua Vermelha</b>, seu nº 1, foi há 5 anos.</div>
+                <span class="self"><svg class="i i16" aria-hidden="true"><use href="#i-info"/></svg>vs. você mesmo</span>
+              </div>
+              <div class="mcard">
+                <p class="overline"><svg class="i i16" aria-hidden="true"><use href="#i-pct"/></svg>Dos seus plays</p>
+                <div class="val tnum">14%</div>
+                <div class="ctx">foram Lua Vermelha</div>
+                <span class="self"><svg class="i i16" aria-hidden="true"><use href="#i-info"/></svg>vs. você</span>
+              </div>
+              <div class="mcard">
+                <p class="overline"><svg class="i i16" aria-hidden="true"><use href="#i-cal"/></svg>Dias diferentes</p>
+                <div class="val tnum">142</div>
+                <div class="ctx">com Lua Vermelha no fone</div>
+                <span class="self"><svg class="i i16" aria-hidden="true"><use href="#i-info"/></svg>vs. você</span>
+              </div>
+              <div class="mcard">
+                <p class="overline"><svg class="i i16" aria-hidden="true"><use href="#i-skip"/></svg>Mais pulada</p>
+                <div class="val name">Ventilador no Talo</div>
+                <div class="ctx">pulada 61 vezes</div>
+                <span class="self"><svg class="i i16" aria-hidden="true"><use href="#i-info"/></svg>vs. você</span>
+              </div>
+              <div class="mcard">
+                <p class="overline"><svg class="i i16" aria-hidden="true"><use href="#i-sun"/></svg>Dia mais musical</p>
+                <div class="val name">14 jun</div>
+                <div class="ctx">6 h 42 min em um dia</div>
+                <span class="self"><svg class="i i16" aria-hidden="true"><use href="#i-info"/></svg>vs. você</span>
+              </div>
+            </div>
+          </section>
+
+          <!-- tops -->
+          <section class="blk" aria-labelledby="t-top">
+            <h2 class="h2" id="t-top">Seu top</h2>
+            <div class="seg" role="radiogroup" aria-label="Tipo de ranking" id="top-kind">
+              <button role="radio" aria-checked="true" data-k="artists">Artistas</button>
+              <button role="radio" aria-checked="false" data-k="tracks">Músicas</button>
+              <button role="radio" aria-checked="false" data-k="albums">Álbuns</button>
+            </div>
+            <ol class="rank" id="rank" aria-label="Top 10"></ol>
+            <button class="btn btn-ghost" style="align-self:flex-start">Ver top 50</button>
+          </section>
+
+          <!-- heatmap -->
+          <section class="blk" aria-labelledby="t-heat">
+            <h2 class="h2" id="t-heat">Quando você ouve</h2>
+            <figure class="heat" id="heat" role="img" aria-labelledby="heat-cap">
+              <div class="heat-grid" id="heat-grid" aria-hidden="true"></div>
+              <div class="heat-legend" id="heat-legend" aria-hidden="true"></div>
+              <figcaption id="heat-cap"></figcaption>
+            </figure>
+            <button class="btn btn-ghost" style="align-self:flex-start" aria-expanded="false" aria-controls="heat-table" id="heat-toggle"><svg class="i" aria-hidden="true"><use href="#i-table"/></svg>Ver como tabela</button>
+            <div class="tbl-wrap" id="heat-table" hidden tabindex="0" role="region" aria-label="Tabela de plays por dia e faixa de horário"></div>
+            <div class="tip" id="tip" role="tooltip"></div>
+          </section>
+
+          <!-- plataforma -->
+          <section class="blk" aria-labelledby="t-plat">
+            <h2 class="h2" id="t-plat">Onde você ouve</h2>
+            <ul class="plat">
+              <li><svg class="i" aria-hidden="true"><use href="#i-phone"/></svg><span>Celular</span><b>62%</b><span class="track"><i style="width:62%"></i></span></li>
+              <li><svg class="i" aria-hidden="true"><use href="#i-laptop"/></svg><span>Computador</span><b>29%</b><span class="track"><i style="width:29%"></i></span></li>
+              <li><svg class="i" aria-hidden="true"><use href="#i-globe"/></svg><span>Navegador</span><b>9%</b><span class="track"><i style="width:9%"></i></span></li>
+            </ul>
+          </section>
+
+          <p class="app-foot">Do seu histórico estendido do Spotify, processado no seu aparelho.<br>Encore não é afiliado nem endossado pelo Spotify.</p>
+        </main>
+
+        <div class="actionbar">
+          <button class="per" aria-label="Período: 2024. Alterar período" onclick="document.getElementById('period-mode').scrollIntoView({behavior:'smooth',block:'center'})">
+            <b id="bar-period">2024</b><span class="tnum" id="bar-sum">48.213 min · 9.214 plays</span>
+          </button>
+          <button class="btn btn-primary" onclick="document.getElementById('fb').scrollIntoView({behavior:'smooth'})"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg>Compartilhar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= B · COMPARTILHAR ================= -->
+    <section class="frame" aria-labelledby="fb">
+      <h2 class="frame-title" id="fb">B · Compartilhar — card Festival 9:16</h2>
+      <div class="phone sheet-backdrop">
+        <div class="sheet" role="dialog" aria-modal="false" aria-labelledby="sh-title">
+          <div class="grab" aria-hidden="true"></div>
+          <div class="sheet-top">
+            <h2 class="h2" id="sh-title">Compartilhar</h2>
+            <button class="icon-btn" aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button>
+          </div>
+          <div>
+            <p class="lbl" id="lb-tpl">Template</p>
+            <div class="seg" role="radiogroup" aria-labelledby="lb-tpl" id="tpl">
+              <button role="radio" aria-checked="true" data-v="festival">Festival</button>
+              <button role="radio" aria-checked="false" data-v="basic">Básico</button>
+            </div>
+          </div>
+          <div>
+            <p class="lbl" id="lb-fmt">Formato</p>
+            <div class="seg" role="radiogroup" aria-labelledby="lb-fmt" id="fmt">
+              <button role="radio" aria-checked="true" data-v="story">Stories 9:16</button>
+              <button role="radio" aria-checked="false" data-v="square">Quadrado 1:1</button>
+            </div>
+          </div>
+          <div class="field" id="name-field">
+            <label for="poster-name">Nome no cartaz (opcional)</label>
+            <input class="input" id="poster-name" maxlength="20" placeholder="Encore Fest" autocomplete="off" aria-describedby="poster-help">
+            <p class="help" id="poster-help">Fica só na imagem, não é enviado a lugar nenhum.</p>
+          </div>
+
+          <div class="preview">
+            <div class="card-wrap" id="card-wrap">
+              <div class="fest" id="fest" role="img" aria-label="">
+                <div class="safe top" aria-hidden="true"></div>
+                <div class="safe bot" aria-hidden="true"></div>
+                <div class="col top">
+                  <div class="col hdr">
+                    <div class="pres">ENCORE APRESENTA</div>
+                    <div class="ttl" id="f-title">ENCORE FEST</div>
+                    <div class="per" id="f-per">2024</div>
+                  </div>
+                  <div class="col lineup">
+                    <div class="hd h1" id="f-h1"></div>
+                    <div class="hd" id="f-h2"></div>
+                    <div class="hd" id="f-h3"></div>
+                    <div class="div" aria-hidden="true"><i></i><b></b><i></i></div>
+                    <div class="t2" id="f-t2"></div>
+                    <div class="t3" id="f-t3"></div>
+                  </div>
+                </div>
+                <div class="col bottom">
+                  <div class="stats" id="f-stats">48.213 min · 9.214 plays · 612 artistas</div>
+                  <div class="foot">
+                    <div><div class="wm">encore</div><div class="site">encore.app</div></div>
+                    <div class="attr">Do seu histórico do Spotify · processado no seu aparelho</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="basic-note" id="basic-note">A prévia do template Básico está em <code>design/cards/preview/basic-story-upload.png</code>, gerada pelo satori a partir do protótipo. Neste mockup, só o Festival é desenhado em HTML.</p>
+          </div>
+          <label class="note"><input type="checkbox" id="safe-toggle" checked> Mostrar áreas seguras dos Stories (só no mockup)</label>
+          <p class="note"><svg class="i i16" aria-hidden="true"><use href="#i-info"/></svg>Modo Upload: card tipográfico, sem capas nem logo do Spotify.</p>
+          <button class="btn btn-primary btn-lg btn-block"><svg class="i" aria-hidden="true"><use href="#i-share"/></svg>Compartilhar</button>
+          <button class="btn btn-secondary btn-block"><svg class="i" aria-hidden="true"><use href="#i-download"/></svg>Baixar PNG</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ================= paleta ================= -->
+  <section class="palette" aria-labelledby="t-pal">
+    <h2 id="t-pal">Paleta e tipos</h2>
+    <div class="sw-row">
+      <div class="sw-card"><div class="c" style="background:#FF3D8B;color:#0E0B1A">Magenta</div><div class="m"><b>#FF3D8B</b> · primária<br>tinta sobre ela 5,8:1</div></div>
+      <div class="sw-card"><div class="c" style="background:#FFE14D;color:#0E0B1A">Amarelo-ácido</div><div class="m"><b>#FFE14D</b> · seleção, foco<br>14,9:1</div></div>
+      <div class="sw-card"><div class="c" style="background:#FF7A1A;color:#0E0B1A">Laranja</div><div class="m"><b>#FF7A1A</b> · apoio<br>7,4:1</div></div>
+      <div class="sw-card"><div class="c" style="background:#3DE0FF;color:#0E0B1A">Ciano</div><div class="m"><b>#3DE0FF</b> · rótulos, info<br>12,3:1</div></div>
+      <div class="sw-card"><div class="c" style="background:#0E0B1A;color:#F5F1FF;box-shadow:inset 0 -1px 0 #342A52">Palco</div><div class="m"><b>#0E0B1A</b> · fundo e tinta<br>texto #F5F1FF 17,5:1</div></div>
+      <div class="sw-card"><div class="c" style="background:linear-gradient(90deg,#211A3A,#3D1F66,#6E1F7E,#B02A80,#EC4A6E,#FF8A3D,#FFE14D);color:#F5F1FF"><span style="text-shadow:0 1px 2px #0E0B1A">Heatmap</span></div><div class="m"><b>heat-0…6</b> · L* crescente<br>seguro para daltônicos</div></div>
+    </div>
+    <div class="type-row">
+      <span style="font-family:var(--font-display);font-weight:800;font-size:44px;letter-spacing:-.03em;line-height:1">Bricolage 800</span>
+      <span style="font-family:var(--font-display);font-weight:800;font-stretch:75%;font-variation-settings:'wdth' 75;font-size:44px;line-height:1">BRICOLAGE CONDENSED</span>
+      <span style="font-size:18px">Inter 400 · <b style="font-weight:600">600</b> · <b>700</b> · <span class="tnum">0123456789</span></span>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  // ---------- utilitários ----------
+  const $ = (s, r = document) => r.querySelector(s);
+  const nf = new Intl.NumberFormat('pt-BR');
+  const seg = new Intl.Segmenter('pt-BR', { granularity: 'grapheme' });
+  const len = (s) => [...seg.segment(s)].length;
+  const trunc = (s, n) => { const g = [...seg.segment(s)].map((x) => x.segment); return g.length <= n ? s : g.slice(0, n - 1).join('').trimEnd() + '…'; };
+  const fit = (s, steps) => { for (const st of steps) if (len(s) <= st.max) return { text: s, size: st.size }; const l = steps[steps.length - 1]; return { text: trunc(s, l.max), size: l.size }; };
+  function mulberry32(a) { return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const radioGroup = (el, onChange) => el.addEventListener('click', (e) => {
+    const b = e.target.closest('[role=radio]'); if (!b) return;
+    el.querySelectorAll('[role=radio]').forEach((x) => x.setAttribute('aria-checked', String(x === b)));
+    onChange(b);
+  });
+  // setas do teclado nos radiogroups (comportamento do Radix ToggleGroup)
+  document.querySelectorAll('[role=radiogroup]').forEach((g) => g.addEventListener('keydown', (e) => {
+    if (!['ArrowLeft', 'ArrowRight'].includes(e.key)) return;
+    const items = [...g.querySelectorAll('[role=radio]')]; const i = items.indexOf(document.activeElement);
+    const n = items[(i + (e.key === 'ArrowRight' ? 1 : items.length - 1)) % items.length]; n.focus(); n.click(); e.preventDefault();
+  }));
+
+  // ---------- dados fictícios ----------
+  const ARTISTS = ['Lua Vermelha', 'Os Ventiladores', 'Marina Sal', 'DJ Caju', 'Neon Tropical', 'Banda Farol', 'Clara Nuvem', 'Tiago Maré', 'Coletivo Samambaia', 'Ana Trovão', 'Rádio Pitanga', 'Los Pelicanos', 'Júlia Estrela', 'Quarteto Cometa', 'MC Brisa', 'Vitória Régia', 'Duo Aurora', 'Felipe Lagoa', 'Orquestra de Garagem', 'Selvagem Sutil', 'Nina Bossa', 'Os Carambolas', 'Kiko Veludo', 'Sereia Elétrica', 'Pedro Mangue'];
+  const TRACKS = [['Céu de Neon', 'Lua Vermelha'], ['Ventilador no Talo', 'Os Ventiladores'], ['Maré Alta (ao vivo)', 'Tiago Maré'], ['Caju Maduro', 'DJ Caju'], ['Farol Aceso às Três da Manhã', 'Banda Farol'], ['Sal na Pele', 'Marina Sal'], ['Tropicália de Garagem', 'Neon Tropical'], ['Nuvem Passageira', 'Clara Nuvem'], ['Samambaia Elétrica', 'Coletivo Samambaia'], ['Trovão de Verão', 'Ana Trovão']];
+  const ALBUMS = [['Noite Magenta', 'Lua Vermelha'], ['Ventania', 'Os Ventiladores'], ['Maresia', 'Marina Sal'], ['Caju Club Vol. 2', 'DJ Caju'], ['Neon Tropical', 'Neon Tropical'], ['Faroleiro', 'Banda Farol'], ['Céu Aberto', 'Clara Nuvem'], ['Preamar', 'Tiago Maré'], ['Folhagem', 'Coletivo Samambaia'], ['Relâmpago', 'Ana Trovão']];
+  const YEARS = { 2019: 0.42, 2020: 0.71, 2021: 0.83, 2022: 0.9, 2023: 1.04, 2024: 1 };
+  let scale = 1, periodLabel = '2024', seed = 2024;
+
+  // ---------- selo ----------
+  $('#seal-btn').addEventListener('click', (e) => { const o = e.currentTarget.getAttribute('aria-expanded') !== 'true'; e.currentTarget.setAttribute('aria-expanded', String(o)); $('#seal-panel').classList.toggle('open', o); });
+
+  // ---------- período ----------
+  const yearBox = $('#pm-year');
+  Object.keys(YEARS).forEach((y) => {
+    const b = document.createElement('button'); b.className = 'chip'; b.setAttribute('aria-pressed', String(y === '2024'));
+    b.innerHTML = `<svg class="i i16 ck" aria-hidden="true"><use href="#i-check"/></svg>${y}`;
+    b.onclick = () => { yearBox.querySelectorAll('.chip').forEach((c) => c.setAttribute('aria-pressed', String(c === b))); setPeriod(y, YEARS[y], +y, yearRange(y)); };
+    yearBox.appendChild(b);
+  });
+  requestAnimationFrame(() => { yearBox.scrollLeft = yearBox.scrollWidth; });
+  radioGroup($('#period-mode'), (b) => {
+    const m = b.dataset.mode;
+    $('#pm-year').hidden = m !== 'year'; $('#pm-month').hidden = m !== 'month'; $('#pm-range').hidden = m !== 'range';
+    if (m === 'all') setPeriod('desde sempre', 4.9, 7, 'mar 2017 – dez 2024 · 2.861 dias', 'Desde sempre');
+    if (m === 'month') setPeriod('dez 2024', 0.093, 12, '1–31 dez 2024 · 31 dias');
+    if (m === 'range') setPeriod('jun–ago 2024', 0.27, 68, '1 jun – 31 ago 2024 · 92 dias');
+    if (m === 'year') { const sel = yearBox.querySelector('[aria-pressed=true]').textContent.trim(); setPeriod(sel, YEARS[sel], +sel, yearRange(sel)); }
+  });
+  function yearRange(y) { const leap = (y % 4 === 0 && y % 100 !== 0) || y % 400 === 0; return `1 jan – 31 dez ${y} · ${leap ? 366 : 365} dias`; }
+  function setPeriod(label, s, sd, range, title) {
+    scale = s; periodLabel = label; seed = sd;
+    const min = Math.round(48213 * s), plays = Math.round(9214 * s);
+    $('#m-min').textContent = nf.format(min);
+    $('#m-min-ctx').textContent = `≈ ${nf.format(Math.max(1, Math.round(min / 1440)))} dias inteiros de som`;
+    $('#m-plays').textContent = nf.format(plays);
+    $('#m-art').textContent = nf.format(Math.round(612 * Math.sqrt(s)));
+    $('#m-trk').textContent = nf.format(Math.round(2408 * Math.sqrt(s)));
+    $('#period-summary').textContent = `${range} · ${nf.format(plays)} plays`;
+    $('#title-period').textContent = title ? title.toLowerCase() : label;
+    $('#bar-period').textContent = title || label; $('#bar-sum').textContent = `${nf.format(min)} min · ${nf.format(plays)} plays`;
+    $('#period-live').textContent = `Mostrando ${title || label}`;
+    renderRank(); renderHeat(); renderFest();
+  }
+
+  // ---------- ranking ----------
+  let kind = 'artists';
+  radioGroup($('#top-kind'), (b) => { kind = b.dataset.k; renderRank(); });
+  function order(list) { if (seed === 2024) return list.slice(); const r = mulberry32(seed); const a = list.slice(); for (let i = 0; i < Math.min(4, a.length); i++) { const j = Math.floor(r() * Math.min(3, a.length)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  function renderRank() {
+    const r = mulberry32(seed * 7);
+    const base = [1284, 1011, 877, 702, 655, 590, 541, 488, 432, 401].map((v) => Math.max(1, Math.round(v * scale * (0.9 + r() * 0.2))));
+    base.sort((a, b) => b - a);
+    const items = kind === 'artists' ? order(ARTISTS.slice(0, 10)).map((n) => [n, null]) : order(kind === 'tracks' ? TRACKS : ALBUMS);
+    $('#rank').innerHTML = items.map(([n, sub], i) => {
+      const plays = base[i], mins = Math.round(plays * 3.4), h = Math.floor(mins / 60), m = mins % 60;
+      const s = sub ? `${sub} · ${nf.format(plays)} plays` : `${nf.format(plays)} plays`;
+      return `<li><span class="n">${i + 1}</span><span class="t"><span class="nm" title="${n}">${n}</span><span class="sub">${s}</span></span><span class="vl">${h ? h + ' h ' : ''}${m} min</span><span class="bar" aria-hidden="true"><i style="width:${Math.round(plays / base[0] * 100)}%"></i></span></li>`;
+    }).join('');
+  }
+
+  // ---------- heatmap ----------
+  const DAYS = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  const DAB = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+  function heatData() {
+    const r = mulberry32(seed * 13);
+    const hour = [.25, .12, .05, .02, .01, .02, .12, .45, .75, .6, .5, .55, .7, .6, .55, .6, .7, .85, 1, .95, .9, .8, .6, .4];
+    return DAYS.map((_, d) => hour.map((hv, h) => {
+      const wk = d === 0 || d === 6; let v = hv * (wk ? (h < 10 ? .5 : 1.1) : 1) * (d === 5 && h >= 18 ? 1.35 : 1) * (0.75 + r() * 0.5);
+      if (wk && h <= 2) v += .35; v = Math.round(v * 60 * scale);
+      return hv < 0.1 && r() < 0.3 ? 0 : v;
+    }));
+  }
+  function renderHeat() {
+    const data = heatData();
+    const nz = data.flat().filter((v) => v > 0).sort((a, b) => a - b);
+    const q = [1, 2, 3, 4, 5].map((k) => nz[Math.floor(nz.length * k / 6)] ?? 0);
+    const bin = (v) => (v <= 0 ? 0 : 1 + q.filter((t) => v > t).length);
+    let peak = { v: -1 };
+    data.forEach((row, d) => row.forEach((v, h) => { if (v > peak.v) peak = { v, d, h }; }));
+    const g = $('#heat-grid');
+    let html = '<span></span>' + DAB.map((a, i) => `<span class="dh"><abbr title="${DAYS[i]}">${a}</abbr></span>`).join('');
+    for (let h = 0; h < 24; h++) {
+      html += `<span class="hl">${h % 3 === 0 ? h + 'h' : ''}</span>`;
+      for (let d = 0; d < 7; d++) {
+        const v = data[d][h], b = bin(v);
+        html += `<span class="c${d === peak.d && h === peak.h ? ' peak' : ''}" data-b="${b}" data-t="${DAYS[d].slice(0, 3)}, ${h}h–${h + 1}h: ${nf.format(v)} plays" style="background:var(--heat-${b})"></span>`;
+      }
+    }
+    g.innerHTML = html;
+    const lim = [0, ...q, nz[nz.length - 1] ?? 0];
+    const labels = ['0', ...[0, 1, 2, 3, 4, 5].map((i) => `${nf.format((i ? lim[i] : 0) + 1)}–${nf.format(lim[i + 1])}`)];
+    $('#heat-legend').innerHTML = '<span>menos</span>' + labels.map((l, i) => `<span class="sw${i ? '' : ' z'}" style="background:var(--heat-${i})" title="${l} plays"></span>`).join('') + '<span>mais</span>';
+    const blocks = DAYS.map((_, d) => Array.from({ length: 8 }, (_, k) => data[d].slice(k * 3, k * 3 + 3).reduce((a, b) => a + b, 0)));
+    let low = { v: Infinity }; for (let k = 0; k < 8; k++) { const s = blocks.reduce((a, row) => a + row[k], 0); if (s < low.v) low = { v: s, k }; }
+    $('#heat-cap').textContent = `Você ouve mais às ${DAYS[peak.d].toLowerCase()}s entre ${peak.h}h e ${peak.h + 1}h (${nf.format(peak.v)} plays). O horário mais quieto é de ${low.k * 3}h às ${low.k * 3 + 3}h.`;
+    $('#heat-table').innerHTML = `<table><caption>Plays por dia e faixa de 3 horas · ${periodLabel}</caption><thead><tr><th scope="col" style="text-align:left;padding-left:12px">Dia</th>${[...Array(8)].map((_, k) => `<th scope="col">${k * 3}–${k * 3 + 3}h</th>`).join('')}</tr></thead><tbody>${blocks.map((row, d) => `<tr><th scope="row">${DAYS[d].slice(0, 3)}</th>${row.map((v) => `<td>${nf.format(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  }
+  $('#heat-toggle').addEventListener('click', (e) => { const t = $('#heat-table'); t.hidden = !t.hidden; e.currentTarget.setAttribute('aria-expanded', String(!t.hidden)); e.currentTarget.lastChild.textContent = t.hidden ? 'Ver como tabela' : 'Esconder tabela'; });
+  const tip = $('#tip');
+  const showTip = (c) => { const sec = c.closest('section'); const rc = c.getBoundingClientRect(), rs = sec.getBoundingClientRect(); tip.textContent = c.dataset.t; tip.style.left = (rc.left - rs.left + rc.width / 2) + 'px'; tip.style.top = (rc.top - rs.top) + 'px'; tip.classList.add('on'); };
+  $('#heat-grid').addEventListener('pointerover', (e) => { const c = e.target.closest('.c'); if (c) showTip(c); });
+  $('#heat-grid').addEventListener('pointerleave', () => tip.classList.remove('on'));
+  $('#heat-grid').closest('section').style.position = 'relative';
+
+  // ---------- card Festival ----------
+  let fmt = 'story';
+  const U = (s) => s.toLocaleUpperCase('pt-BR');
+  const keep = (s) => s.replace(/ /g, ' ');
+  function renderFest() {
+    const story = fmt === 'story';
+    const a = order(ARTISTS.slice(0, 3)).concat(ARTISTS.slice(3));
+    const steps = story ? [{ max: 11, size: 150 }, { max: 15, size: 120 }, { max: 20, size: 96 }] : [{ max: 11, size: 104 }, { max: 15, size: 84 }, { max: 20, size: 68 }];
+    const f = a.slice(0, 3).map((n, i) => fit(U(n), steps.map((s) => ({ ...s, size: i ? Math.round(s.size * 0.8) : s.size }))));
+    f[1].size = f[2].size = Math.min(f[1].size, f[2].size);
+    ['#f-h1', '#f-h2', '#f-h3'].forEach((id, i) => { const el = $(id); el.textContent = f[i].text; el.style.fontSize = `calc(var(--u) * ${f[i].size})`; });
+    $('#f-t2').textContent = a.slice(3, 10).map((n) => keep(trunc(U(n), 22))).join('  •  ');
+    $('#f-t3').textContent = a.slice(10, story ? 25 : 20).map((n) => keep(trunc(U(n), 22))).join('  •  ');
+    const nm = $('#poster-name').value.trim();
+    const t = fit(nm ? `FESTIVAL ${U(nm)}` : 'ENCORE FEST', story ? [{ max: 18, size: 104 }, { max: 24, size: 84 }, { max: 30, size: 68 }] : [{ max: 18, size: 72 }, { max: 24, size: 60 }, { max: 30, size: 50 }]);
+    const tt = $('#f-title'); tt.textContent = t.text; tt.style.fontSize = `calc(var(--u) * ${t.size})`;
+    $('#f-per').textContent = U(periodLabel);
+    $('#f-stats').textContent = `${$('#m-min').textContent} min  ·  ${$('#m-plays').textContent} plays  ·  ${$('#m-art').textContent} artistas`;
+    $('#fest').setAttribute('aria-label', `Card Festival ${story ? 'Stories 9:16' : 'quadrado 1:1'}: ${t.text}, ${periodLabel}. Headliners: ${a.slice(0, 3).join(', ')}. Também: ${a.slice(3, 10).join(', ')}.`);
+  }
+  radioGroup($('#fmt'), (b) => { fmt = b.dataset.v; $('#fest').classList.toggle('sq', fmt === 'square'); $('#card-wrap').classList.toggle('sq', fmt === 'square'); renderFest(); });
+  radioGroup($('#tpl'), (b) => { const basic = b.dataset.v === 'basic'; $('#card-wrap').style.display = basic ? 'none' : ''; $('#basic-note').style.display = basic ? 'block' : 'none'; $('#name-field').style.display = basic ? 'none' : ''; });
+  $('#poster-name').addEventListener('input', renderFest);
+  $('#safe-toggle').addEventListener('change', (e) => $('#fest').classList.toggle('hide-safe', !e.target.checked));
+
+  renderRank(); renderHeat(); renderFest();
+})();
+</script>
+</body>
+</html>
