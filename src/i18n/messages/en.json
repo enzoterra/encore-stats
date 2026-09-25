@@ -515,6 +515,7 @@
     "forbidden": {
       "title": "This app is still in test mode",
       "body": "Spotify only lets 5 invited accounts use Connect mode on a new app, and yours is not on the list yet. Your history works without an invite.",
+      "ownerPremium": "If your account was already invited, the cause may be on the app side: since February 2026, Spotify only keeps an app in test mode working if the account that owns it has Premium. If so, let whoever runs Encore know.",
       "upload": "Upload my history",
       "demo": "See the demo",
       "otherAccount": "I have been invited: try again"
@@ -731,5 +732,13 @@
       "timing": "Created in {seconds} s"
     },
     "unavailable": "No data in this period to build a card."
+  },
+  "NotFound": {
+    "metaTitle": "Page not found · Encore",
+    "overline": "Error 404",
+    "title": "This page does not exist",
+    "body": "The link may be broken or the address was mistyped. Go back to the start or explore the Demo, which works without logging in.",
+    "home": "Go to the home page",
+    "demo": "See the demo"
   }
 }

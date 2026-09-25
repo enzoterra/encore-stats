@@ -59,6 +59,24 @@ describe('<ConnectLanding />', () => {
       '/api/auth/login?locale=pt-BR',
     );
   });
+
+  it.each([
+    ['pt-BR', ptBR, /conta dona dele tiver Premium/],
+    ['en', en, /account that owns it has Premium/],
+  ] as const)(
+    'fora da allowlist (%s): cita a outra causa do 403, o dono do app sem Premium',
+    (locale, messages, premium) => {
+      renderWithIntl(<NotAllowlisted />, locale);
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(
+        messages.Connect.forbidden.title,
+      );
+      expect(screen.getByText(messages.Connect.forbidden.body)).toBeInTheDocument();
+      expect(screen.getByText(messages.Connect.forbidden.ownerPremium)).toHaveTextContent(premium);
+      expect(
+        screen.getByRole('link', { name: messages.Connect.forbidden.otherAccount }),
+      ).toHaveAttribute('href', `/api/auth/login?locale=${locale}`);
+    },
+  );
 });
 
 describe('Demo · visão Conectar', () => {

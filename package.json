@@ -4,9 +4,9 @@
   "private": true,
   "description": "Encore: estatísticas pessoais do Spotify com privacidade por arquitetura.",
   "license": "UNLICENSED",
-  "packageManager": "pnpm@12.6.0",
+  "packageManager": "pnpm@10.34.5",
   "engines": {
-    "node": ">=22.12.0"
+    "node": "24.x"
   },
   "scripts": {
     "dev": "next dev --hostname 127.0.0.1 --port 3000",

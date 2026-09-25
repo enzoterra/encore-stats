@@ -1,11 +1,18 @@
 import type { NextConfig } from 'next';
 import createNextIntlPlugin from 'next-intl/plugin';
 
+import { parseEnv } from './src/server/env-schema';
 import {
   apiSecurityHeaders,
   buildWorkerContentSecurityPolicy,
   staticSecurityHeaders,
 } from './src/server/security-headers';
+
+// Fail fast já no `next build` (e no `next dev`/`start`): as páginas são dinâmicas, então sem isto
+// um ambiente inválido só apareceria na 1ª requisição. Na Vercel, um deploy com configuração
+// inválida (ex.: produção sem as variáveis de privacidade) falha no build e não é publicado; o
+// deployment anterior continua no ar. As mensagens citam só o nome das variáveis.
+parseEnv(process.env);
 
 const withNextIntl = createNextIntlPlugin('./src/i18n/request.ts');
 

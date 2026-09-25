@@ -41,5 +41,8 @@ export default function proxy(request: NextRequest): NextResponse | Response {
 export const config = {
   // Páginas apenas: API, arquivos do Next e arquivos estáticos (com ponto) ficam de fora.
   // Os cabeçalhos estáticos dessas rotas vêm de `next.config.ts`.
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
+  // A 2ª entrada cobre caminhos com ponto sob um locale (ex.: `/pt-BR/x.y`): não há arquivo
+  // estático ali, e eles caem no 404 localizado, que precisa da CSP com nonce como qualquer página.
+  // Literal (o Next analisa o `config` estaticamente); manter igual a `routing.locales`.
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)', '/(pt-BR|en)/:path*'],
 };

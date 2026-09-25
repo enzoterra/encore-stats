@@ -15,12 +15,15 @@ function FullState({
   icon,
   title,
   body,
+  note,
   children,
   testId,
 }: {
   icon: ReactNode;
   title: string;
   body: string;
+  /** Texto secundário abaixo do corpo (ex.: a outra causa conhecida do 403). */
+  note?: string;
   children: ReactNode;
   testId: string;
 }) {
@@ -34,6 +37,7 @@ function FullState({
         {title}
       </h1>
       <p className="max-w-prose text-body-lg text-fg-muted">{body}</p>
+      {note ? <p className="max-w-prose text-body-sm text-fg-muted">{note}</p> : null}
       <div className="mt-2 flex w-full flex-col items-center gap-3 sm:w-auto sm:flex-row">
         {children}
       </div>
@@ -61,7 +65,9 @@ export function SessionExpired() {
 
 /**
  * Fora da allowlist (403, RF-14, US-08): explica o limite de 5 contas do Spotify e manda para
- * Upload ou Demo, que funcionam sem convite.
+ * Upload ou Demo, que funcionam sem convite. Qualquer 403 do Spotify chega aqui; a outra causa
+ * conhecida é a conta dona do app sem Premium (regra de fev/2026 do Development Mode), citada na
+ * nota para quem já foi convidado.
  */
 export function NotAllowlisted({ className }: { className?: string }) {
   const t = useTranslations('Connect.forbidden');
@@ -73,6 +79,7 @@ export function NotAllowlisted({ className }: { className?: string }) {
         icon={<ShieldCheck aria-hidden="true" className="size-10 text-info" />}
         title={t('title')}
         body={t('body')}
+        note={t('ownerPremium')}
       >
         <Link href="/upload" className={buttonClasses({ variant: 'primary', size: 'lg' })}>
           {t('upload')}

@@ -47,7 +47,7 @@ flowchart LR
 | Camada | Tecnologia | Versão | Por quê |
 |---|---|---|---|
 | Runtime | Node.js | **24 LTS** (Active LTS) | LTS ativo. O 22 está em manutenção. Migrar para o 26 depois que ele virar LTS (out/2026) |
-| Gerenciador | pnpm | **12.6.x** (fixado em `packageManager`) | Dependências estritas, scripts de install bloqueados por padrão, `minimumReleaseAge` contra supply-chain |
+| Gerenciador | pnpm | **10.34.5** (fixado em `packageManager`; ADR 10) | Dependências estritas, scripts de install bloqueados (`strictDepBuilds`), `minimumReleaseAge` estrito contra supply-chain |
 | Framework | Next.js (App Router, Turbopack) | **16.3.6** (aplicar 16.3.7+ assim que sair: security release em 30/set) | BFF e UI no mesmo deploy; `proxy.ts`; integração com next-intl |
 | UI | React / React DOM | **19.3.0** | Versão atual suportada pelo Next 16 |
 | Linguagem | TypeScript | **6.0.3** | TS 7 (nativo em Go) não tem JS API: o `next build` exige flag experimental e o typescript-eslint só suporta `<6.1`. Reavaliar TS 7 quando o ecossistema acompanhar |
@@ -137,6 +137,8 @@ Todas as stats de `src/domain/stats` recebem `(dataset, period, tz)` e são **fu
 | `NEXT_PUBLIC_PRIVACY_CONTROLLER` | sim em produção | Nome do controlador dos dados, exibido em `/privacy` (LGPD, art. 9º). Sprint 7 |
 | `NEXT_PUBLIC_PRIVACY_CONTACT` | sim em produção | E-mail de contato do titular, exibido em `/privacy` (Res. CD/ANPD 2/2022, art. 11). Sprint 7 |
 
+Validação: `src/server/env-schema.ts` (Zod, puro) é chamado no `next.config.ts`, então um ambiente inválido falha já no `next build` (na Vercel, o deploy não é publicado); `src/server/env.ts` (`server-only`) valida de novo em runtime, com cache. Valores por ambiente da Vercel: README, "Deploy na Vercel" (S8.0).
+
 ## ADRs
 1. **BFF em vez de PKCE puro.** Contexto: sessão persistente sem expor o refresh token ao JS. Alternativa: SPA Vite + PKCE, com refresh token em localStorage e risco de XSS. Consequência: um pouco mais de código no servidor, mas tokens protegidos e respostas reduzidas. **Decidido com o usuário.**
 2. **Sem banco; sessão em cookie JWE.** Alinha com a LGPD. Revogação = apagar o cookie, ou o usuário remove o app nas configurações do Spotify.
@@ -156,3 +158,4 @@ Todas as stats de `src/domain/stats` recebem `(dataset, period, tz)` e são **fu
      - Qualquer falha (CORS, host, tamanho, formato) → card tipográfico, sem erro. A capa não passa pelo servidor.
    - **CSP e WASM (Sprint 6):** satori (Yoga + HarfBuzz) e resvg rodam num Web Worker (`src/workers/card.worker.ts`). Um worker usa a CSP da resposta do próprio script, então `'wasm-unsafe-eval'` saiu da CSP das páginas e ficou só no cabeçalho de `/_next/static/*` (`default-src 'none'; script-src 'self' 'wasm-unsafe-eval'; connect-src data:; base-uri 'none'`). O `data:` é o WASM do Yoga embutido no satori. Restringir por rota não funcionaria: a navegação do App Router é feita no cliente e mantém a CSP do documento da 1ª página. Os workers não fazem requisição de rede: fontes e WASM são buscados no próprio site pela thread principal e transferidos.
 8. **Dados do modo Demo com artistas e músicas fictícios.** Evita exibir metadados do Spotify sem atribuição e não depende de rede.
+10. **pnpm 10 em vez de 12** (cliente, 2026-09-25). O build da Vercel só suporta pnpm até a 10 ([vercel/vercel#17434](https://github.com/vercel/vercel/issues/17434), aberta): com o pnpm 11/12 o build falha. Voltamos para a 10.34.5 (a única 10.x sem advisory em 2026-09-25), com deploy sem configuração (a Vercel lê o `packageManager`). O que o pnpm 11+ fazia por padrão ficou explícito no `pnpm-workspace.yaml` (`strictDepBuilds`, `blockExoticSubdeps`); o `minimumReleaseAge` definido já é estrito no pnpm 10. Consequências: o Corepack volta a funcionar localmente e o lockfile volta a ter um documento YAML só (o grafo do Dependabot lê). Reavaliar o pnpm 12 quando a issue for fechada.

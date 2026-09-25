@@ -136,6 +136,7 @@ describe('<ConnectDashboard /> com o BFF', () => {
     setup({ me: () => json(403, { error: { code: 'NOT_ALLOWLISTED' } }) });
     expect(await screen.findByRole('heading', { name: t.forbidden.title })).toBeInTheDocument();
     expect(screen.getByText(/5 contas convidadas/)).toBeInTheDocument();
+    expect(screen.getByText(t.forbidden.ownerPremium)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: t.forbidden.upload })).toHaveAttribute(
       'href',
       '/upload',

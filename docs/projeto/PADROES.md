@@ -23,7 +23,7 @@
 - Dependências: pnpm, `pnpm audit` sem alta/crítica, versões fixadas no lockfile.
 
 ## 3. Stack e versões (fixadas em 03)
-Node 24 LTS · pnpm 12 · Next 16.3.x · React 19.3 · TypeScript 6.0 (`strict`) · Tailwind 4.3 · next-intl 4 · TanStack Query 5 · Zustand 5 · Zod 4 · fflate 0.8 · Comlink 4 · jose 6 · satori 0.33 + @resvg/resvg-wasm 2.6 · Radix UI · Vitest 5 · Playwright 1.63 + axe.
+Node 24 LTS · pnpm 10 (10.34.5; ADR 10) · Next 16.3.x · React 19.3 · TypeScript 6.0 (`strict`) · Tailwind 4.3 · next-intl 4 · TanStack Query 5 · Zustand 5 · Zod 4 · fflate 0.8 · Comlink 4 · jose 6 · satori 0.33 + @resvg/resvg-wasm 2.6 · Radix UI · Vitest 5 · Playwright 1.63 + axe.
 Ao instalar, confirme o patch mais recente (`pnpm view <pkg> version`). Não mude de major sem ADR.
 
 ## 4. Comandos

@@ -1,0 +1,275 @@
+import { z } from 'zod';
+
+/**
+ * Configuração do servidor (12-factor), validada com Zod. Módulo puro (sem `server-only`), para o
+ * `next.config.ts` validar o ambiente já no build; o resto do app importa de `./env`.
+ * Catálogo completo em `docs/projeto/03-arquitetura.md` e em `.env.example`.
+ *
+ * Regras:
+ * - Sem nenhuma credencial do Spotify o app sobe normalmente: o modo Conectar fica
+ *   desabilitado e Upload + Demo funcionam.
+ * - Credenciais parciais são erro de configuração (fail fast), para não esconder um
+ *   `.env` incompleto atrás de um botão desabilitado.
+ * - Mensagens de erro citam só o NOME da variável, nunca o valor.
+ * - Na Vercel (preview/produção) tudo é HTTPS, então o cookie de sessão é sempre
+ *   `__Host-` + `Secure`. HTTP só é aceito em loopback (desenvolvimento local).
+ * - `SPOTIFY_API_BASE` e `SPOTIFY_ACCOUNTS_BASE` (mocks de teste) só apontam para loopback
+ *   e são proibidas em qualquer deploy da Vercel.
+ * - O `SESSION_SECRET` público dos e2e (`PUBLIC_TEST_SESSION_SECRET`) é proibido em deploys.
+ * - `NEXT_PUBLIC_REPO_URL` só por HTTPS (vira `href` em várias telas).
+ * - LGPD (art. 9º e Res. CD/ANPD 2/2022, art. 11): em produção, a página de privacidade precisa
+ *   identificar o controlador e um canal de contato (`NEXT_PUBLIC_PRIVACY_CONTROLLER` e
+ *   `NEXT_PUBLIC_PRIVACY_CONTACT`).
+ */
+
+const optionalString = z
+  .string()
+  .trim()
+  .transform((value) => (value === '' ? undefined : value))
+  .optional();
+
+/** 32 bytes em base64url sem padding = 43 caracteres. */
+const SESSION_SECRET_PATTERN = /^[A-Za-z0-9_-]{43}$/;
+const sessionSecret = optionalString.refine(
+  (value) => value === undefined || SESSION_SECRET_PATTERN.test(value),
+  { message: 'deve ter 32 bytes em base64url (43 caracteres, sem "=")' },
+);
+
+const optionalUrl = optionalString.refine(
+  (value) => value === undefined || z.url().safeParse(value).success,
+  { message: 'deve ser uma URL absoluta' },
+);
+
+/** Hosts de loopback: os únicos em que HTTP é aceito (o tráfego não sai da máquina). */
+const LOOPBACK_HOSTS = new Set(['127.0.0.1', '[::1]', 'localhost']);
+
+function safeUrl(value: string): URL | undefined {
+  try {
+    return new URL(value);
+  } catch {
+    return undefined;
+  }
+}
+
+export function isLoopbackUrl(value: string): boolean {
+  const url = safeUrl(value);
+  return url !== undefined && LOOPBACK_HOSTS.has(url.hostname);
+}
+
+/** HTTPS em qualquer host; HTTP só em loopback. */
+function isHttpsOrLoopback(url: URL): boolean {
+  if (url.protocol === 'https:') return true;
+  return url.protocol === 'http:' && LOOPBACK_HOSTS.has(url.hostname);
+}
+
+/**
+ * `SESSION_SECRET` dos e2e, versionado em `playwright.config.ts` e no README: público, então
+ * nunca pode valer num deploy.
+ */
+export const PUBLIC_TEST_SESSION_SECRET = 'e2e-only-not-a-secret-000000000000000000000';
+
+const httpsUrl = optionalString.refine(
+  (value) => value === undefined || z.url({ protocol: /^https$/ }).safeParse(value).success,
+  { message: 'deve ser uma URL https://' },
+);
+
+const privacyContact = optionalString.refine(
+  (value) => value === undefined || z.email().safeParse(value).success,
+  { message: 'deve ser um endereço de e-mail' },
+);
+
+const privacyController = optionalString.refine(
+  (value) => value === undefined || (value.length <= 120 && !/[\p{Cc}<>]/u.test(value)),
+  { message: 'deve ser um nome curto (até 120 caracteres), sem < > nem caracteres de controle' },
+);
+
+export const CALLBACK_PATH = '/api/auth/callback';
+export const DEFAULT_SPOTIFY_API_BASE = 'https://api.spotify.com/v1';
+export const DEFAULT_SPOTIFY_ACCOUNTS_BASE = 'https://accounts.spotify.com';
+
+const HTTPS_MESSAGE = 'deve usar HTTPS (HTTP só em loopback, fora da Vercel)';
+
+export const envSchema = z
+  .object({
+    SPOTIFY_CLIENT_ID: optionalString,
+    SPOTIFY_CLIENT_SECRET: optionalString,
+    SPOTIFY_REDIRECT_URI: optionalUrl,
+    SESSION_SECRET: sessionSecret,
+    SESSION_SECRET_PREVIOUS: sessionSecret,
+    NEXT_PUBLIC_SITE_URL: optionalUrl,
+    NEXT_PUBLIC_REPO_URL: httpsUrl,
+    NEXT_PUBLIC_PRIVACY_CONTROLLER: privacyController,
+    NEXT_PUBLIC_PRIVACY_CONTACT: privacyContact,
+    SPOTIFY_API_BASE: optionalUrl,
+    SPOTIFY_ACCOUNTS_BASE: optionalUrl,
+    VERCEL_ENV: z.enum(['development', 'preview', 'production']).optional(),
+  })
+  .superRefine((env, ctx) => {
+    const spotifyKeys = [
+      'SPOTIFY_CLIENT_ID',
+      'SPOTIFY_CLIENT_SECRET',
+      'SPOTIFY_REDIRECT_URI',
+    ] as const;
+    const present = spotifyKeys.filter((key) => env[key] !== undefined);
+    if (present.length > 0 && present.length < spotifyKeys.length) {
+      for (const key of spotifyKeys) {
+        if (env[key] === undefined) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [key],
+            message: 'obrigatória quando outra credencial do Spotify está definida',
+          });
+        }
+      }
+    }
+    if (present.length === spotifyKeys.length && env.SESSION_SECRET === undefined) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['SESSION_SECRET'],
+        message: 'obrigatória quando o modo Conectar está configurado',
+      });
+    }
+
+    const onVercelDeploy = env.VERCEL_ENV === 'preview' || env.VERCEL_ENV === 'production';
+
+    // URLs já reprovadas no próprio campo (formato) ficam de fora das regras abaixo.
+    for (const key of ['SPOTIFY_REDIRECT_URI', 'NEXT_PUBLIC_SITE_URL'] as const) {
+      const url = env[key] === undefined ? undefined : safeUrl(env[key]);
+      if (url === undefined) continue;
+      if (!isHttpsOrLoopback(url) || (onVercelDeploy && url.protocol !== 'https:')) {
+        ctx.addIssue({ code: 'custom', path: [key], message: HTTPS_MESSAGE });
+      }
+    }
+
+    const redirect =
+      env.SPOTIFY_REDIRECT_URI === undefined ? undefined : safeUrl(env.SPOTIFY_REDIRECT_URI);
+    if (redirect !== undefined) {
+      if (redirect.pathname !== CALLBACK_PATH || redirect.search !== '' || redirect.hash !== '') {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['SPOTIFY_REDIRECT_URI'],
+          message: `deve apontar exatamente para ${CALLBACK_PATH}`,
+        });
+      }
+    }
+
+    for (const key of ['SPOTIFY_API_BASE', 'SPOTIFY_ACCOUNTS_BASE'] as const) {
+      const value = env[key];
+      if (value === undefined || safeUrl(value) === undefined) continue;
+      if (onVercelDeploy) {
+        ctx.addIssue({ code: 'custom', path: [key], message: 'proibida em deploys da Vercel' });
+      } else if (!isLoopbackUrl(value)) {
+        ctx.addIssue({ code: 'custom', path: [key], message: 'só aceita loopback (mock local)' });
+      }
+    }
+
+    if (onVercelDeploy) {
+      for (const key of ['SESSION_SECRET', 'SESSION_SECRET_PREVIOUS'] as const) {
+        if (env[key] === PUBLIC_TEST_SESSION_SECRET) {
+          ctx.addIssue({
+            code: 'custom',
+            path: [key],
+            message: 'é o segredo público dos e2e; gere um novo para deploys',
+          });
+        }
+      }
+    }
+
+    if (env.VERCEL_ENV === 'production') {
+      for (const key of [
+        'NEXT_PUBLIC_SITE_URL',
+        'NEXT_PUBLIC_PRIVACY_CONTROLLER',
+        'NEXT_PUBLIC_PRIVACY_CONTACT',
+      ] as const) {
+        if (env[key] === undefined) {
+          ctx.addIssue({ code: 'custom', path: [key], message: 'obrigatória em produção' });
+        }
+      }
+    }
+  });
+
+export type ConnectStatus = { enabled: true } | { enabled: false; reason: 'missing-credentials' };
+
+export type SpotifyConfig = {
+  clientId: string;
+  clientSecret: string;
+  redirectUri: string;
+  /** Origem do app segundo a redirect URI: é nela que os cookies vivem. */
+  appOrigin: string;
+  /** `https://api.spotify.com/v1` ou um mock em loopback (fora da Vercel). */
+  apiBase: string;
+  /** `https://accounts.spotify.com` ou um mock em loopback (fora da Vercel). */
+  accountsBase: string;
+  /**
+   * `true` quando a redirect URI é HTTPS: cookies `__Host-` + `Secure`. Em HTTP de loopback
+   * (dev local) os cookies saem sem prefixo e sem `Secure` (ver `src/server/cookies.ts`).
+   */
+  secureCookies: boolean;
+};
+
+export type ServerEnv = {
+  spotify: SpotifyConfig | undefined;
+  sessionSecret: string | undefined;
+  sessionSecretPrevious: string | undefined;
+  siteUrl: string;
+  repoUrl: string | undefined;
+  /** Controlador e contato exibidos na página de privacidade (LGPD). */
+  privacy: { controller: string | undefined; contact: string | undefined };
+  vercelEnv: 'development' | 'preview' | 'production' | undefined;
+  connect: ConnectStatus;
+};
+
+export const DEFAULT_SITE_URL = 'http://127.0.0.1:3000';
+
+export class EnvValidationError extends Error {
+  constructor(public readonly problems: string[]) {
+    super(`Configuração de ambiente inválida:\n${problems.map((p) => `  - ${p}`).join('\n')}`);
+    this.name = 'EnvValidationError';
+  }
+}
+
+function stripTrailingSlash(value: string): string {
+  return value.replace(/\/+$/, '');
+}
+
+/** Função pura: recebe um objeto de ambiente e devolve a configuração tipada. */
+export function parseEnv(source: Record<string, string | undefined>): ServerEnv {
+  const result = envSchema.safeParse(source);
+  if (!result.success) {
+    throw new EnvValidationError(
+      result.error.issues.map((issue) => `${issue.path.join('.') || '(env)'}: ${issue.message}`),
+    );
+  }
+  const env = result.data;
+  const spotify: SpotifyConfig | undefined =
+    env.SPOTIFY_CLIENT_ID && env.SPOTIFY_CLIENT_SECRET && env.SPOTIFY_REDIRECT_URI
+      ? {
+          clientId: env.SPOTIFY_CLIENT_ID,
+          clientSecret: env.SPOTIFY_CLIENT_SECRET,
+          redirectUri: env.SPOTIFY_REDIRECT_URI,
+          appOrigin: new URL(env.SPOTIFY_REDIRECT_URI).origin,
+          apiBase: stripTrailingSlash(env.SPOTIFY_API_BASE ?? DEFAULT_SPOTIFY_API_BASE),
+          accountsBase: stripTrailingSlash(
+            env.SPOTIFY_ACCOUNTS_BASE ?? DEFAULT_SPOTIFY_ACCOUNTS_BASE,
+          ),
+          secureCookies: new URL(env.SPOTIFY_REDIRECT_URI).protocol === 'https:',
+        }
+      : undefined;
+
+  return {
+    spotify,
+    sessionSecret: env.SESSION_SECRET,
+    sessionSecretPrevious: env.SESSION_SECRET_PREVIOUS,
+    siteUrl: env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL,
+    repoUrl: env.NEXT_PUBLIC_REPO_URL,
+    privacy: {
+      controller: env.NEXT_PUBLIC_PRIVACY_CONTROLLER,
+      contact: env.NEXT_PUBLIC_PRIVACY_CONTACT,
+    },
+    vercelEnv: env.VERCEL_ENV,
+    connect:
+      spotify && env.SESSION_SECRET
+        ? { enabled: true }
+        : { enabled: false, reason: 'missing-credentials' },
+  };
+}

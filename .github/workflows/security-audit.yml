@@ -1,8 +1,9 @@
 name: Auditoria semanal de dependências
 
 # SCA agendada (docs/projeto/08-seguranca.md, relatorio-seguranca.md): o `pnpm audit` do CI só roda
-# em push/PR, e o grafo de dependências do GitHub ainda não lê o lockfile do pnpm 12 (dois
-# documentos YAML; dependabot-core#15904), então os alertas do Dependabot podem não aparecer.
+# em push/PR, então uma advisory publicada numa semana sem commits passaria despercebida. Complementa
+# os alertas do Dependabot (o lockfile do pnpm 10 é um documento YAML só, que o grafo de dependências
+# do GitHub lê) com a mesma regra do gate do CI e sem depender de configuração do repositório.
 # Uma advisory nova alta/crítica faz este job falhar e o GitHub avisa o dono por e-mail.
 on:
   schedule:

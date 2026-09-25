@@ -3,12 +3,12 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: nenhuma. Sprint 7 ✅ concluída (analista-de-seguranca, 2026-09-24): sem alta/crítica aberta no código; relatório em `docs/projeto/relatorio-seguranca.md`. Aguarda o commit do orquestrador e duas decisões do cliente (Developer Policy do Spotify; controlador e contato da privacidade)
+- Sprint em andamento: Sprint 8. **S8.0 ✅ concluído** (analista-de-infra, 2026-09-25): pnpm 10.34.5, Node 24.x, README "Deploy na Vercel", 404 localizado, 403 com Premium e validação do ambiente no `next build`. Próximo: Next 16.3.7 (após 30/09) e S8.1. Sprint 7 ✅ concluída e commitada (31d45e3): sem alta/crítica aberta no código; relatório em `docs/projeto/relatorio-seguranca.md`. Decisões do cliente de 2026-09-25: Developer Policy (risco aceito no MVP) e dados de privacidade (controlador e contato; vão só nas variáveis da Vercel)
 - Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
-- Próximo passo ao retomar: aceite das Sprints 5 e 6 pelo cliente (screenshots em `docs/projeto/screenshots/sprint5/` e `sprint6/`) e as decisões da Sprint 7. Depois, a Sprint 8, que começa por atualizar para o Next 16.3.7 (sai em 30/09). Compartilhar um card de um iPhone real fica para a S8. Pendente com o cliente: testar o login real em 127.0.0.1 (aceite das Sprints 2 e 5; passo a passo no README)
+- Próximo passo ao retomar: commit do S8.0 pelo orquestrador; o dono prepara Vercel/Spotify/GitHub (README, "Deploy na Vercel"). Depois: atualizar para o Next 16.3.7 (sai em 30/09; gate do go-live), S8.1–S8.5. Pendentes com o cliente: aceite das Sprints 5 e 6 (screenshots em `docs/projeto/screenshots/sprint5/` e `sprint6/`), testar o login real em 127.0.0.1 (passo a passo no README). Compartilhar um card de um iPhone real fica para a S8
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-24 por analista-de-seguranca (fim da Sprint 7)
+- Última atualização: 2026-09-25 por analista-de-infra (S8.0 concluído)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -28,6 +28,10 @@
   - Visual "Palco Neon".
   - Nome **Encore**.
   - Métricas "você por você": fã desde, % dos plays, dias diferentes, mais pulada, dia mais musical.
+- 2026-09-25:
+  - Developer Policy do Spotify (S7-03): **cliente aceita o risco no MVP**. Tendências, gêneros ponderados e contagem de curtidas ficam no Conectar (app pessoal, Development Mode, ≤ 5 contas).
+  - **Downgrade de pnpm 12 → pnpm 10 (última 10.34.x)**: a Vercel só suporta pnpm até 10 (vercel/vercel#17434 aberto). Deploy com zero configuração, sem `installCommand` customizado.
+  - Privacidade (S7-01): controlador **Enzo Terra**, contato **enzoterra18@gmail.com**. Valores só nas variáveis `NEXT_PUBLIC_PRIVACY_CONTROLLER`/`NEXT_PUBLIC_PRIVACY_CONTACT` da Vercel (Production e staging), sem valor padrão no código nem no `.env.example`.
 
 ## Sprints
 ### Sprint 0 — Fundação — ✅ concluída (2026-09-24) · analista-de-infra
@@ -525,7 +529,46 @@
   - mensagem do 403 citando o Premium do dono
 - Próxima sprint: Sprint 8 (orquestrador + analista-de-infra), depois das decisões do cliente
 
-### Sprint 8 — Validação, UAT e deploy — ⬜ · orquestrador + analista-de-infra
+### Sprint 8 — Validação, UAT e deploy — 🔄 · orquestrador + analista-de-infra
+- [x] S8.0 Preparação para a Vercel: pnpm 10, Node 24.x fixo, README "Deploy na Vercel", `not-found` localizado, mensagem do 403 com Premium
+  - [x] S8.0.1 pnpm 10.34.5: `packageManager`, `pnpm-workspace.yaml`, lockfile regerado (sem mudar versões)
+    - 10.34.5 (2026-07-10) é a `latest-10` e a única 10.x sem advisory: GHSA-c59q-g84q-2gj5, GHSA-vq4v-j7r6-jq4m e GHSA-vx52-2968-3vc6 (altas, set/2026) só foram corrigidas nela
+    - `pnpm-workspace.yaml`: `minimumReleaseAge: 1440` (no pnpm 10, definir o valor já liga a checagem estrita; testado: versão exata imatura → `ERR_PNPM_NO_MATURE_MATCHING_VERSION`, exit 1; intervalo → maior versão madura), `allowBuilds` (existe no 10.26+), `overrides` da fflate, e dois padrões do pnpm 11+ que no 10 precisam ser explícitos: `strictDepBuilds: true` (testado: script não revisado → `ERR_PNPM_IGNORED_BUILDS`) e `blockExoticSubdeps: true`
+    - Lockfile: o `pnpm install --fix-lockfile` do pnpm 10 regravou o arquivo sem o documento `packageManagerDependencies` (158 linhas a menos, nenhuma outra mudança): 766 pacotes e 38 diretas idênticos
+  - [x] S8.0.2 CI, Dependabot e docs sem as notas do pnpm 12
+    - `.github/actions/setup`: `pnpm/action-setup` sem `version:` lê o `packageManager` (nada a mudar). `security-audit.yml` mantido como redundância (o `pnpm audit` do CI só roda em push/PR), com o comentário atualizado: o lockfile de um documento só volta a ser lido pelo grafo do Dependabot (o dependabot-core#15904 era só do formato de dois documentos)
+    - README (pré-requisitos: Corepack funciona com o pnpm 10; saíram as alternativas e as notas do binário do pnpm 12), `03-arquitetura.md` (tabela + ADR 10), `PADROES.md`, `08-seguranca.md` e `relatorio-seguranca.md` (nota de atualização em S7-02 e seção 9)
+  - [x] S8.0.3 `engines.node` → `24.x` (a Vercel escolhe o Node por esse campo; localmente, outra major só gera aviso `Unsupported engine` do pnpm)
+  - [x] S8.0.4 `not-found` localizado (pt-BR/en) compatível com a CSP, com testes
+    - `app/[locale]/[...rest]/page.tsx` (chama `notFound()`; `generateMetadata` com o título) + `app/[locale]/not-found.tsx` (cabeçalho, "Erro 404", início e Demo; não reflete a URL). Mensagens `NotFound.*` em pt-BR e en
+    - `proxy.ts`: 2ª entrada no matcher, `'/(pt-BR|en)/:path*'`, para caminhos com ponto sob um locale (ex.: `/pt-BR/x.y`) também receberem a CSP com nonce. `tests/proxy-config.test.ts` garante que a lista bate com `routing.locales`
+    - Antes: `/pt-BR/nao-existe` servia o `/_not-found` estático, em inglês, com 0 de 7 scripts com nonce (JS bloqueado). Agora: 404, 7/7 scripts com o nonce da CSP, título e `lang` do locale, seletor de idioma funcionando
+    - Limitação do Next 16 (não configurável): `notFound()` numa rota dinâmica responde com um shell de erro (`<html id="__next_error__">`) e o React monta a página no cliente. Sem JS, a tela fica vazia (o app todo já depende de JS). Caminhos sem locale e com ponto (ex.: `/foo.bar`) ficam fora do proxy, como antes (sem CSP, página que não reflete a URL)
+    - `e2e/not-found.spec.ts`: 9 testes × 2 navegadores (status 404, CSP com nonce, 0 violações, título/`lang`/h1 nos dois idiomas, caminho com ponto, sub-rota inexistente, redirecionamento sem prefixo, seletor de idioma, links, URL não refletida, axe e 360 px); 54/54 com `--repeat-each=3`
+  - [x] S8.0.5 Mensagem do 403 (`NOT_ALLOWLISTED`) citando o Premium do dono, com testes
+    - `Connect.forbidden.ownerPremium` (pt-BR/en), exibida como nota em `NotAllowlisted` (`account-states.tsx`): se a conta já foi convidada, a causa pode ser a conta dona do app sem Premium (regra de fev/2026). Aparece tanto no `?error=not_allowlisted` do callback quanto no 403 das rotas
+    - Testes: `connect-views.test.tsx` (pt-BR e en), `connect.test.tsx` (403 do BFF) e `e2e/connect.spec.ts` (tela da allowlist)
+  - [x] S8.0.5a Validação do ambiente no build (descoberta ao simular o build de produção do S8.0.7)
+    - Problema: as páginas são dinâmicas, então o `env.ts` só validava na 1ª requisição. Um `next build` com `VERCEL_ENV=production` e sem as variáveis de privacidade **passava**, e o deploy iria ao ar respondendo 500
+    - `src/server/env.ts` foi dividido: o schema, `parseEnv`, tipos e constantes foram para `src/server/env-schema.ts` (puro, sem `server-only`, que lança erro fora do bundler do Next e impediria o import no `next.config.ts`). O `env.ts` mantém `import 'server-only'`, reexporta tudo (`export * from './env-schema'`) e guarda os acessores com cache (`getServerEnv`, `getConnectStatus`, `getConnectConfig`, `resetServerEnvCache`). Nenhum import do app mudou; o código do schema é o mesmo, byte a byte
+    - `next.config.ts` chama `parseEnv(process.env)`: ambiente inválido falha no `next build` (e no `dev`/`start`). Na Vercel, o deploy falha no build e o anterior continua no ar
+  - [x] S8.0.6 README "Deploy na Vercel" + checklist de go-live (`09`)
+    - README, seção "Deploy na Vercel": importar o repositório (sem Override), ambientes (produção em `main`, `staging` com URL fixa do branch e Deployment Protection, previews dinâmicos sem Conectar), tabela de variáveis por escopo (Production / Preview do branch `staging` / Preview geral), `SESSION_SECRET` por ambiente + rotação, redirect URIs, allowlist e Premium, conferência com `curl` e rollback (Instant Rollback, limite do Hobby, Undo Rollback). Controlador e contato informados pelo cliente aparecem só como valores a cadastrar no painel
+    - **Sem `vercel.json`:** nada o exige (framework detectado, pnpm pelo lockfile + `packageManager`, Node pelo `engines`, cabeçalhos no `proxy.ts`/`next.config.ts`, sem rewrite/cron/região). Opcional documentado: `ENABLE_EXPERIMENTAL_COREPACK=1` se o pnpm 10 da imagem da Vercel for anterior à 10.34.5
+    - `09-operacao-e-deploy.md`: checklist de go-live expandido (Next ≥ 16.3.7, escopos das variáveis, Premium, valores de privacidade), linha do staging e rollback; `relatorio-seguranca.md` (S7-01) com a atualização dos dados de privacidade
+  - [x] S8.0.7 Verificação completa com o pnpm 10 (install congelado, lint, format, tipos, testes, build, audit, e2e, builds de produção simulados)
+    - Ambiente: Windows 11, Node 24.14.1, pnpm 10.34.5 via Corepack 0.34.6 (`corepack pnpm --version` → 10.34.5)
+    - `pnpm install --frozen-lockfile`: ok (também numa cópia limpa do repositório, sem `node_modules`: 32 s, nenhum script de build não revisado)
+    - `pnpm lint` 0 warnings · `pnpm format:check` ok · `pnpm typecheck` ok
+    - `pnpm test`: **518 testes (42 arquivos)** verdes (+4: 2 do 403 em pt-BR/en, 2 do matcher do proxy). `pnpm test:coverage`: 92,99% statements / 88,84% ramos / 94,04% linhas; `src/server` 97,46% / 95,2% / 99,41%; limiar de `src/domain` ok
+    - `pnpm build` ok (rota nova `ƒ /[locale]/[...rest]`)
+    - `pnpm audit --audit-level=high --registry=https://registry.npmjs.org/`: sem vulnerabilidades (também sem nenhuma de severidade menor)
+    - Builds simulados: `VERCEL_ENV=production` sem as obrigatórias → **falha** (exit 1, `EnvValidationError` com `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_PRIVACY_CONTROLLER`, `NEXT_PUBLIC_PRIVACY_CONTACT`); `VERCEL_ENV=preview` com `SPOTIFY_API_BASE` e o segredo dos e2e → falha; produção com `http://` e contato inválido → falha; produção válida (site `https://encore-exemplo.vercel.app`, controlador `Enzo Terra`, contato `enzoterra18@gmail.com`, Spotify falso com redirect HTTPS e `SESSION_SECRET` aleatório) → **passa**, e o `next start` desse build mostra controlador e contato em `/pt-BR/privacy`, `/api/health` ok, 404 em `/en/nope`, 401 com `default-src 'none'` + CORP em `/api/spotify/me`. Depois, build limpo sem variáveis (não ficou valor falso no `.next`)
+    - `pnpm test:e2e` (Playwright sobe os 3 servidores sozinho no Windows agora; a nota da S1 sobre subir à mão deixou de valer): **126 testes** (108 + 18 do 404). Com `--workers=4`: **126/126 verdes**. Com o padrão local (11 workers nesta máquina de 22 threads), 1–2 testes do Conectar/cards e o de troca de período (243 ms > 200 ms no WebKit) falham por tempo: o trace mostra hidratação de ~2,6 s e respostas de 0,3–2 s (contenção de CPU); isolados, passam (troca de período 6/6, 14–106 ms). O CI usa 2 workers
+  - Versões: pnpm 10.34.5 (`packageManager`), Node `24.x` (`engines`); dependências sem nenhuma mudança (next 16.3.6, react/react-dom 19.3.0, next-intl 4.14.6, zod 4.6.5, satori 0.33.5, fflate 0.8.3, jose 6.2.12 etc.; 766 pacotes idênticos)
+  - Como verificar: `corepack enable` → `pnpm install --frozen-lockfile` → `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build` → `pnpm audit --audit-level=high --registry=https://registry.npmjs.org/` → `pnpm exec playwright install chromium webkit && pnpm exec playwright test --workers=4`. Env: `VERCEL_ENV=production pnpm build` tem de falhar listando as 3 variáveis; com elas preenchidas (HTTPS), passa. 404: `curl -i http://127.0.0.1:3000/pt-BR/nao-existe` → 404 com CSP com nonce e os `<script>` com `nonce`
+  - Pendências para o dono (painéis): importar na Vercel, criar o branch `staging`, Deployment Protection, variáveis por escopo (valores de privacidade do cliente), redirect URIs de produção/staging no Spotify, Premium na conta dona, confirmar no log do build o pnpm 10.x (e, se < 10.34.5, `ENABLE_EXPERIMENTAL_COREPACK=1`), conferir no GitHub (Insights → Dependency graph) se o grafo lista as dependências
+  - Próximo: Next 16.3.7 (após 30/09; a Vercel também bloqueia por padrão novos deploys de Next vulnerável), depois S8.1
 - [ ] S8.1 Validação de rotas e fluxos vs. user stories
 - [ ] S8.2 Medições (Lighthouse, benchmark, memória)
 - [ ] S8.3 Vercel + redirect URIs + allowlist

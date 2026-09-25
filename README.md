@@ -12,40 +12,26 @@ Stack: Next.js 16 (App Router, Turbopack) · React 19 · TypeScript 6 (`strict`)
 next-intl (PT-BR e EN) · Zod 4 · Vitest 5 · Playwright + axe. Deploy na Vercel. Sem banco.
 O plano completo está em [`docs/projeto/`](docs/projeto/).
 
-> Estado: fundação, motor de upload/demo e **BFF do modo Conectar** prontos (Sprints 0–2). As
-> telas entram nas próximas sprints; a página inicial e `/{idioma}/connect` são provisórias (veja
-> `docs/projeto/PROGRESSO.md`). Contrato do BFF: [`docs/api.md`](docs/api.md).
+> Estado: MVP completo (Sprints 0–7: upload, demo, Conectar, cards e auditoria de segurança); a
+> Sprint 8 cuida da validação e do deploy na Vercel (veja `docs/projeto/PROGRESSO.md`). Contrato do
+> BFF: [`docs/api.md`](docs/api.md).
 
 ## Pré-requisitos
 
-| Ferramenta | Versão                        | Observação                                                                         |
-| ---------- | ----------------------------- | ---------------------------------------------------------------------------------- |
-| Node.js    | **24 LTS** (`.nvmrc`)         | O CI usa Node 24. Localmente, qualquer Node **≥ 22.12** funciona (`engines.node`). |
-| pnpm       | **12.6.0** (`packageManager`) | Veja "Instalando o pnpm 12" abaixo.                                                |
+| Ferramenta | Versão                         | Observação                                                                         |
+| ---------- | ------------------------------ | ---------------------------------------------------------------------------------- |
+| Node.js    | **24.x** (`.nvmrc`, `engines`) | O CI e a Vercel usam Node 24; com outra major o pnpm avisa (`Unsupported engine`). |
+| pnpm       | **10.34.5** (`packageManager`) | Via Corepack (abaixo). A Vercel ainda não suporta pnpm 11+.                        |
 
-### Instalando o pnpm 12
-
-O caminho padrão é o Corepack (`corepack enable`). **Atenção:** o Corepack 0.34–0.36 ainda não
-executa o pnpm 12 (procura `bin/pnpm.cjs`, que o pnpm 12 não publica mais) e falha com
-`Cannot find module ...\pnpm\12.6.0\bin\pnpm.cjs` (`MODULE_NOT_FOUND`). Enquanto o Corepack não
-for atualizado, use uma das alternativas:
+O jeito mais simples de ter a versão certa do pnpm é o Corepack, que vem com o Node 24 e lê o
+campo `packageManager` do `package.json`:
 
 ```bash
-# Opção A: instalação global via npm (desative o shim do Corepack para o pnpm não ser sombreado)
-corepack disable pnpm
-npm install -g pnpm@12.6.0
-
-# Opção B: sem instalar nada globalmente
-npx pnpm@12.6.0 install
+corepack enable        # uma vez por máquina; depois, `pnpm` já roda a 10.34.5 neste projeto
+pnpm --version         # 10.34.5
 ```
 
-Se o pnpm 12 terminar **sem nenhuma mensagem** (código de saída 21), confira o `~/.npmrc`: um
-`cafile=` apontando para um arquivo que não existe faz o binário do pnpm abortar ao ler a
-configuração. Corrija o caminho (ou remova a linha) e rode de novo.
-
-Se um comando do pnpm ficar parado sem saída dentro do projeto, provavelmente há um processo
-`pnpm` órfão (de uma execução interrompida) segurando a trava do store: encerre-o no Gerenciador
-de Tarefas e rode de novo.
+Sem Corepack: `npm install -g pnpm@10.34.5`.
 
 ## Como rodar localmente
 
@@ -110,7 +96,7 @@ pnpm exec playwright install chromium webkit
 ## Variáveis de ambiente
 
 Catálogo completo e comentado em [`.env.example`](.env.example); validação com Zod em
-`src/server/env.ts`. Resumo:
+`src/server/env.ts` (por ambiente na Vercel: veja "Deploy na Vercel"). Resumo:
 
 | Variável                                                             | Obrigatória          | Para quê                                                      |
 | -------------------------------------------------------------------- | -------------------- | ------------------------------------------------------------- |
@@ -122,8 +108,9 @@ Catálogo completo e comentado em [`.env.example`](.env.example); validação co
 | `NEXT_PUBLIC_PRIVACY_CONTROLLER`, `NEXT_PUBLIC_PRIVACY_CONTACT`      | Em produção          | Controlador e e-mail de contato exibidos em `/privacy` (LGPD) |
 | `SPOTIFY_API_BASE`, `SPOTIFY_ACCOUNTS_BASE`                          | Não                  | Só testes: mock do Spotify em loopback (proibidas na Vercel)  |
 
-Configuração parcial do Spotify (ex.: só o Client ID) **falha na inicialização** com a lista das
-variáveis que faltam. Nunca commite `.env.local` (já está no `.gitignore`).
+Configuração parcial do Spotify (ex.: só o Client ID) **falha no `next build` e na
+inicialização** com a lista das variáveis que faltam (o schema fica em `src/server/env-schema.ts`,
+que o `next.config.ts` também chama). Nunca commite `.env.local` (já está no `.gitignore`).
 
 Gerar um `SESSION_SECRET`:
 
@@ -139,7 +126,7 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
 2. **Create app**: nome "Encore", uma descrição curta, e marque **Web API**.
 3. Em **Redirect URIs**, cadastre exatamente:
    - local: `http://127.0.0.1:3000/api/auth/callback`
-   - staging e produção: `https://<domínio>/api/auth/callback` (na Sprint 8)
+   - staging e produção: `https://<domínio>/api/auth/callback` (veja "Deploy na Vercel")
 4. Copie o **Client ID** e o **Client Secret** para o `.env.local` (`SPOTIFY_CLIENT_ID`,
    `SPOTIFY_CLIENT_SECRET`), defina `SPOTIFY_REDIRECT_URI` com a URI local acima e gere o
    `SESSION_SECRET`.
@@ -217,8 +204,9 @@ não existem de verdade; o dashboard mostra a inicial no lugar.
 O `pnpm test:e2e` sobe três servidores, em ordem (`playwright.config.ts`): o app em `:3000` sem
 credenciais (faz o build), o mock do Spotify em `:4010` e o mesmo build em `:3100` com o Conectar
 ligado contra o mock (`SESSION_SECRET` descartável, só de teste). `e2e/connect-live.spec.ts` faz
-login → dashboard → trocar janela → varredura → logout (cache limpo), mais axe, 360 px, `QUOTA` e 401. No Windows com o pnpm local (nota da Sprint 1), suba os três à mão e rode `pnpm test:e2e`
-(os servidores já de pé são reaproveitados):
+login → dashboard → trocar janela → varredura → logout (cache limpo), mais axe, 360 px, `QUOTA` e 401. Com o pnpm 10 via Corepack, o
+`pnpm test:e2e` sobe os três sozinho também no Windows. Para depurar, dá para subi-los à mão (os
+servidores já de pé são reaproveitados):
 
 ```bash
 pnpm build
@@ -234,6 +222,126 @@ Guidelines (developer.spotify.com/documentation/design): `Full_Logo_White_RGB.sv
 `2024-spotify-full-logo.zip` (→ `spotify-full-logo-white.svg`) e `Primary_Logo_White_RGB.svg` do
 pacote `2024-spotify-logo-icon.zip` (→ `spotify-icon-white.svg`), baixados em 2026-09-24. Só
 aparecem junto de dados vindos da API do Spotify (modo Conectar), nunca no Upload nem no Demo.
+
+## Deploy na Vercel
+
+O deploy é **sem configuração** e **sem `vercel.json`**: a Vercel detecta o Next.js, instala com o
+pnpm 10 (pelo `pnpm-lock.yaml` + `packageManager`), usa o Node 24 (pelo `engines.node: 24.x`) e
+roda `pnpm build`. Os cabeçalhos de segurança já vêm do `proxy.ts` (CSP com nonce) e do
+`next.config.ts`; não há rewrite, redirect, cron nem região que precise de `vercel.json`.
+
+O `next build` valida as variáveis de ambiente (`src/server/env-schema.ts`, chamado pelo
+`next.config.ts`). Configuração inválida **falha o build** com a lista dos nomes que faltam ou
+estão errados (nunca os valores), e o deployment anterior continua no ar.
+
+### 1. Importar o repositório
+
+1. Em [vercel.com/new](https://vercel.com/new), **Import Git Repository** e escolha este repositório
+   (dê ao app da Vercel no GitHub acesso só a ele).
+2. **Framework Preset:** Next.js (detectado). Não ligue nenhum _Override_ em Build, Install ou
+   Output. **Root Directory:** a raiz.
+3. **Antes do primeiro deploy**, cadastre as variáveis de produção (passo 3). Sem elas, o build de
+   produção falha de propósito.
+4. Depois do deploy, confira no log do build a linha do pnpm (`pnpm@10.x`) e a do Node (24.x).
+   Opcional: se o pnpm do log for anterior à 10.34.5, crie a variável
+   `ENABLE_EXPERIMENTAL_COREPACK=1` (todos os ambientes). Assim a Vercel usa, via Corepack,
+   exatamente a versão do `packageManager`.
+
+### 2. Ambientes
+
+| Ambiente            | Branch         | URL                                                                     | Conectar                                 | Proteção              |
+| ------------------- | -------------- | ----------------------------------------------------------------------- | ---------------------------------------- | --------------------- |
+| Produção            | `main`         | `https://<projeto>.vercel.app` (ou domínio próprio)                     | Sim                                      | Pública               |
+| Staging             | `staging`      | URL fixa do branch: `https://<projeto>-git-staging-<escopo>.vercel.app` | Sim (redirect URI cadastrada no Spotify) | Deployment Protection |
+| Previews (PRs etc.) | qualquer outro | dinâmica, uma por deployment                                            | **Não** (sem variáveis do Spotify)       | Deployment Protection |
+
+1. Crie o branch: `git switch -c staging && git push -u origin staging`. A URL fixa aparece em
+   **Deployments** → deployment do `staging` → **Domains** (a que tem `-git-staging-`). Para uma
+   URL mais curta, em **Settings → Domains** adicione um domínio e ligue-o ao branch `staging`.
+2. **Settings → Deployment Protection → Vercel Authentication:** ligada, em _Standard Protection_
+   (protege todos os previews, inclusive o `staging`, e deixa o domínio de produção público).
+   Quem abre o `staging` precisa entrar com uma conta Vercel com acesso ao projeto (no Hobby, só
+   1 usuário externo) ou usar um _Shareable Link_ do deployment.
+3. **Settings → Git:** confira que o _Production Branch_ é `main`. Proteja o `main` no GitHub
+   exigindo os jobs do CI (veja `docs/projeto/relatorio-seguranca.md`, seção 9).
+
+### 3. Variáveis de ambiente
+
+Em **Settings → Environment Variables**. Para o `staging`, escolha _Preview_ e, em "Select a
+custom Preview branch", o branch `staging`: variáveis de um branch sobrescrevem as de _Preview_
+geral. **Não** crie as variáveis do Spotify em _Preview_ geral: é a ausência delas que desliga o
+Conectar nos previews dinâmicos (a redirect URI deles não está cadastrada no Spotify).
+
+| Variável                                    | Produção                                 | Preview do `staging`                  | Previews dinâmicos | Observação                                          |
+| ------------------------------------------- | ---------------------------------------- | ------------------------------------- | ------------------ | --------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`                      | **Obrigatória**: `https://<produção>`    | Recomendada: `https://<staging>`      | Deixe vazia        | Só HTTPS em deploys                                 |
+| `NEXT_PUBLIC_PRIVACY_CONTROLLER`            | **Obrigatória**: `Enzo Terra`            | Recomendada: `Enzo Terra`             | Opcional           | Nome do controlador, exibido em `/privacy`          |
+| `NEXT_PUBLIC_PRIVACY_CONTACT`               | **Obrigatória**: `enzoterra18@gmail.com` | Recomendada: `enzoterra18@gmail.com`  | Opcional           | E-mail de contato do titular, exibido em `/privacy` |
+| `SPOTIFY_CLIENT_ID`                         | Sim                                      | Sim (o mesmo app)                     | **Não**            | As três do Spotify vão juntas, ou nenhuma           |
+| `SPOTIFY_CLIENT_SECRET`                     | Sim, _Sensitive_                         | Sim, _Sensitive_                      | **Não**            | Só no servidor                                      |
+| `SPOTIFY_REDIRECT_URI`                      | `https://<produção>/api/auth/callback`   | `https://<staging>/api/auth/callback` | **Não**            | Idêntica à cadastrada no Spotify                    |
+| `SESSION_SECRET`                            | Sim, _Sensitive_, **só de produção**     | Sim, _Sensitive_, **outro valor**     | **Não**            | Obrigatória quando o Conectar está configurado      |
+| `SESSION_SECRET_PREVIOUS`                   | Só durante uma rotação                   | Só durante uma rotação                | Não                | O segredo anterior, para não derrubar sessões       |
+| `NEXT_PUBLIC_REPO_URL`                      | Opcional                                 | Opcional                              | Opcional           | Só `https://`                                       |
+| `SPOTIFY_API_BASE`, `SPOTIFY_ACCOUNTS_BASE` | **Nunca**                                | **Nunca**                             | **Nunca**          | Só mocks locais; o build de deploy falha com elas   |
+
+`VERCEL_ENV` é definida pela própria Vercel (`production` ou `preview`) e liga as regras de deploy
+do `env.ts`: HTTPS obrigatório, mocks proibidos, segredo dos e2e recusado e, em produção, as três
+primeiras linhas da tabela obrigatórias.
+
+Os valores de privacidade acima foram informados pelo cliente em 2026-09-25 e existem **só no
+painel da Vercel**: o código e o `.env.example` não têm valor padrão para eles.
+
+Gere um `SESSION_SECRET` **por ambiente** (rode o comando duas vezes, cole direto no painel e não
+guarde a saída em outro lugar):
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+```
+
+Rotação: copie o valor atual para `SESSION_SECRET_PREVIOUS`, gere um novo `SESSION_SECRET` e faça
+Redeploy. Apague o `SESSION_SECRET_PREVIOUS` depois de 30 dias (a validade máxima da sessão).
+
+Mudou alguma variável? Ela só vale para deployments novos: use **Redeploy** no último deployment.
+As `NEXT_PUBLIC_*` entram no JavaScript no build, então também só mudam com um novo build.
+
+### 4. Spotify Developer Dashboard
+
+1. No app "Encore", **Edit Settings → Redirect URIs**, deixe exatamente:
+   - `https://<produção>/api/auth/callback`
+   - `https://<staging>/api/auth/callback` (a URL fixa do branch, nunca a de um deployment)
+   - `http://127.0.0.1:3000/api/auth/callback` (desenvolvimento local)
+2. **User Management:** até 5 contas (o dono + 4), com nome e e-mail da conta Spotify de cada uma.
+3. **A conta dona do app precisa ter Spotify Premium.** Desde fevereiro de 2026, sem Premium o
+   Spotify para o app em _Development Mode_ e todo login volta 403, que o Encore mostra como a
+   tela "Este app ainda está em modo de teste" (ela cita essa causa).
+
+### 5. Conferir o deploy
+
+```bash
+curl -s https://<produção>/api/health                 # {"status":"ok"}
+curl -sI https://<produção>/pt-BR                     # CSP com nonce, HSTS, nosniff, COOP...
+curl -sI https://<produção>/api/spotify/me            # 401, default-src 'none', CORP same-origin
+curl -s -o /dev/null -w "%{http_code}\n" https://<produção>/pt-BR/nao-existe   # 404
+```
+
+Depois, no navegador: `/pt-BR/privacy` mostra o controlador e o contato, e o Conectar faz login e
+logout com uma conta da allowlist (em produção e no `staging`).
+
+### 6. Rollback
+
+Deploys da Vercel são imutáveis e não há banco nem migração, então voltar é instantâneo:
+
+1. Na visão geral do projeto, no quadro do deployment de produção, clique em **Instant Rollback**
+   (ou, em **Deployments**, ⋮ → **Instant Rollback**). No Hobby, só dá para voltar ao deployment
+   de produção imediatamente anterior.
+2. O deployment volta com as variáveis de ambiente **que ele tinha**: mudanças posteriores no
+   painel não se aplicam a ele.
+3. Depois de um rollback, a Vercel **para de publicar** os pushes em `main` sozinha. Corrigido o
+   problema, use **Undo Rollback** (ou promova um deployment novo) para reativar a publicação
+   automática.
+
+Antes de cada go-live, anote qual é o deployment de produção atual (o alvo do rollback).
 
 ## Estrutura
 

@@ -74,6 +74,8 @@ test.describe('Conectar desabilitado', () => {
       'Este app ainda está em modo de teste',
     );
     await expect(page.getByText(/5 contas convidadas/)).toBeVisible();
+    // A outra causa conhecida de 403: a conta dona do app sem Premium (Development Mode).
+    await expect(page.getByText(/conta dona dele tiver Premium/)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Enviar meu histórico' })).toHaveAttribute(
       'href',
       '/pt-BR/upload',

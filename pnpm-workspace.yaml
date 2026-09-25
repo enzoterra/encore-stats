@@ -1,12 +1,15 @@
-# Configurações do pnpm 12 (projeto único, sem workspaces).
+# Configurações do pnpm 10 (projeto único, sem workspaces). A Vercel instala com pnpm 10
+# (versão de `packageManager`); o pnpm 11+ ainda não roda no build dela (vercel/vercel#17434).
 
-# Defesa de supply chain: só instala versões publicadas há pelo menos 1 dia.
-# Com o valor explícito, o pnpm 12 liga `minimumReleaseAgeStrict` e falha em vez
-# de aceitar uma versão imatura. Para um patch de segurança urgente, adicione a
-# versão em `minimumReleaseAgeExclude` (ex.: `- next@16.3.7`) e remova depois.
+# Defesa de supply chain: só instala versões publicadas há pelo menos 1 dia (pnpm ≥ 10.16).
+# No pnpm 10, definir `minimumReleaseAge` já liga a checagem estrita: se nenhuma versão madura
+# satisfaz o intervalo pedido, a instalação falha (ERR_PNPM_NO_MATURE_MATCHING_VERSION) em vez de
+# aceitar a versão imatura. Para um patch de segurança urgente, adicione a versão em
+# `minimumReleaseAgeExclude` (ex.: `- next@16.3.7`) e remova depois.
 minimumReleaseAge: 1440
 
 # Scripts de install são bloqueados por padrão; só liberamos o que for necessário.
+# `allowBuilds` existe desde o pnpm 10.26 (`false` = ignorar o script, `true` = permitir).
 # @parcel/watcher e @swc/core (dependências do next-intl) usam binários pré-compilados
 # via optionalDependencies; o script de build deles não é necessário.
 allowBuilds:
@@ -14,6 +17,14 @@ allowBuilds:
   '@swc/core': false
   # unrs-resolver (eslint-import-resolver-typescript): binário nativo pré-compilado.
   unrs-resolver: false
+
+# O pnpm 10 só avisa sobre scripts de build não revisados; com isto, a instalação falha até a
+# dependência entrar em `allowBuilds` (padrão do pnpm 11+).
+strictDepBuilds: true
+
+# Dependências transitivas só do registry (sem git ou tarball por URL). Padrão do pnpm 11+;
+# no pnpm 10 precisa ser explícito.
+blockExoticSubdeps: true
 
 # satori 0.33.5 fixa fflate 0.7.3 (GHSA-px8p-9vwx-vf98, moderada, em `unzipSync` com ZIP64; o
 # satori só usa `inflateSync` nas fontes). Forçamos a mesma fflate do projeto, já corrigida.

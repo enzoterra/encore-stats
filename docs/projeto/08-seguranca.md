@@ -37,7 +37,7 @@
 | Resposta da API embutida por outro site | `<script>`/`<img>` apontando para `/api/*` | `Cross-Origin-Resource-Policy: same-origin`, `nosniff`, CSP `default-src 'none'` nas rotas `/api/*`; cookie `SameSite=Lax` |
 | Resposta anômala do Spotify | Corpo gigante sem `Content-Length` | Leitura em streaming com teto de 2 MiB (`upstream.ts`, S7) |
 | Segredo de teste em produção | Copiar o `SESSION_SECRET` público dos e2e | `env.ts` recusa esse valor em qualquer deploy da Vercel (S7) |
-| Supply chain | Dependência maliciosa | pnpm (scripts bloqueados, `minimumReleaseAge`), lockfile, Dependabot, audit, dependency-review, actions fixadas por SHA |
+| Supply chain | Dependência maliciosa | pnpm 10 (scripts bloqueados com `strictDepBuilds`, `minimumReleaseAge` estrito, `blockExoticSubdeps`), lockfile, Dependabot, audit, dependency-review, actions fixadas por SHA |
 
 ## Autenticação e autorização
 - OAuth 2.0 Authorization Code + PKCE (S256), escopos mínimos:
@@ -102,7 +102,7 @@ Mudanças da Sprint 7:
 
 ## Pipeline (DevSecOps proporcional)
 - **SAST:** CodeQL (default setup, ativado pelo dono) + regras do ESLint (`react/no-danger`, anti-rede, anti-storage, `no-console` no BFF). Em repositório privado, CodeQL exige GitHub Code Security.
-- **SCA:** `pnpm audit --audit-level=high` bloqueante no CI e semanal (`security-audit.yml`); dependency-review no PR (só em repositório público ou com Code Security); Dependabot (as atualizações de versão funcionam com o pnpm 12, mas o grafo de dependências ainda não lê o lockfile de dois documentos: dependabot-core#15904).
+- **SCA:** `pnpm audit --audit-level=high` bloqueante no CI e semanal (`security-audit.yml`); dependency-review no PR (só em repositório público ou com Code Security); Dependabot (atualizações de versão e alertas; desde a S8.0 o lockfile é do pnpm 10, com um documento YAML só, e o grafo de dependências volta a lê-lo).
 - **Segredos:** GitHub secret scanning + push protection; `.env*` no `.gitignore` (exceto `.env.example`).
 - **DAST:** pentest leve manual na Sprint 7 (curl + script Node + Playwright contra o build de produção e o mock; ZAP não usado para não instalar ferramenta nova). Refazer com ZAP baseline contra o staging na S8, se possível. Relatório: `relatorio-seguranca.md`.
 

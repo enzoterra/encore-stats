@@ -118,6 +118,8 @@ Severidade no estilo CVSS 3.1, com o vetor quando se aplica. Os de conformidade 
 
 **Pendente do dono:** definir o nome do controlador e um e-mail de contato. Pode ser um alias dedicado, para não publicar o e-mail pessoal.
 
+**Atualização (2026-09-25):** o cliente informou o controlador e o contato. Os valores vão só nas variáveis de Production e do `staging` na Vercel (checklist de go-live em `09-operacao-e-deploy.md`); o código continua sem valor padrão.
+
 ### S7-02 — SCA sem visibilidade no GitHub (Médio) — mitigado
 
 **Evidências:**
@@ -132,6 +134,8 @@ Severidade no estilo CVSS 3.1, com o vetor quando se aplica. Os de conformidade 
   - também roda manual (`workflow_dispatch`);
   - uma advisory nova alta/crítica faz o job falhar, e o GitHub avisa o dono por e-mail. Isso cobre o período sem push.
 - O `pnpm audit --audit-level=high` bloqueante no CI continua.
+
+**Atualização (S8.0, 2026-09-25):** o projeto voltou para o pnpm 10.34.5 (a Vercel não roda o pnpm 11+). O lockfile agora tem um documento YAML só (sem `packageManagerDependencies`), que o grafo de dependências do GitHub lê: a causa do dependabot-core#15904 deixa de se aplicar. O `security-audit.yml` semanal continua, como redundância aos alertas do Dependabot. O dono confere em Insights → Dependency graph se as dependências aparecem.
 
 **Pendente do dono:** seção 9.
 
@@ -421,9 +425,8 @@ Conferido contra as [Design Guidelines](https://developer.spotify.com/documentat
 2. **Branch protection / ruleset em `main`:** exigir os jobs `Lint e formatação`, `Tipos`, `Testes…`, `Build`, `E2E…` e `Auditoria de dependências`. Com o repositório público, exigir também `Revisão de dependências do PR` e o CodeQL.
 3. **Dependabot:**
    - ligar os alertas e as security updates;
-   - enquanto o dependabot-core#15904 estiver aberto, os alertas podem não aparecer: o `security-audit.yml` cobre;
-   - conferir em Insights → Dependency graph se o grafo lista as dependências;
-   - acompanhar a issue.
+   - conferir em Insights → Dependency graph se o grafo lista as dependências (com o lockfile do pnpm 10, desde a S8.0, deve listar; o dependabot-core#15904 só afetava o lockfile de dois documentos do pnpm 12);
+   - o `security-audit.yml` semanal continua como redundância.
 4. **Notificações de Actions:** manter o e-mail de "workflow failed" ligado, porque é por ele que o audit semanal avisa.
 
 **Vercel (S8):**

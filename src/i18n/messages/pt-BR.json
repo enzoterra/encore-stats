@@ -515,6 +515,7 @@
     "forbidden": {
       "title": "Este app ainda está em modo de teste",
       "body": "O Spotify só deixa 5 contas convidadas usarem o modo Conectar de um app novo, e a sua ainda não está na lista. O seu histórico funciona sem convite.",
+      "ownerPremium": "Se a sua conta já foi convidada, a causa pode estar no app: desde fevereiro de 2026, o Spotify só mantém um app em modo de teste funcionando se a conta dona dele tiver Premium. Nesse caso, avise quem mantém o Encore.",
       "upload": "Enviar meu histórico",
       "demo": "Ver demo",
       "otherAccount": "Já recebi o convite: tentar de novo"
@@ -731,5 +732,13 @@
       "timing": "Gerado em {seconds} s"
     },
     "unavailable": "Sem dados no período para montar um card."
+  },
+  "NotFound": {
+    "metaTitle": "Página não encontrada · Encore",
+    "overline": "Erro 404",
+    "title": "Esta página não existe",
+    "body": "O link pode estar quebrado ou o endereço foi digitado errado. Volte para o início ou explore o Demo, que funciona sem login.",
+    "home": "Ir para o início",
+    "demo": "Ver demo"
   }
 }
