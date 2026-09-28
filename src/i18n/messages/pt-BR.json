@@ -1,7 +1,7 @@
 {
   "Metadata": {
     "title": "Encore - suas estatísticas do Spotify",
-    "description": "Veja suas estatísticas do Spotify com privacidade: o histórico é processado no seu navegador.",
+    "description": "Veja suas estatísticas do Spotify quando quiser. Seu histórico é lido no seu aparelho e não sai dele.",
     "privacyTitle": "Privacidade · Encore",
     "onboardingTitle": "Como pedir seu histórico · Encore",
     "uploadTitle": "Enviar histórico · Encore",
@@ -31,31 +31,31 @@
     "notAffiliated": "Encore não é afiliado nem endossado pelo Spotify.",
     "privacy": "Privacidade",
     "howTo": "Como pedir o histórico",
-    "code": "Código-fonte",
-    "tagline": "Suas estatísticas do Spotify, processadas no seu aparelho."
+    "code": "Código do site",
+    "tagline": "Suas estatísticas do Spotify, calculadas no seu aparelho."
   },
   "Seal": {
     "compact": {
-      "upload": "Processado no seu aparelho",
-      "connect": "Nada fica guardado no servidor",
-      "demo": "Dados fictícios · sem rede"
+      "upload": "Tudo fica no seu aparelho",
+      "connect": "Não guardamos suas músicas",
+      "demo": "Só dados inventados"
     },
-    "openLabel": "{label}. Ver como seus dados são tratados",
+    "openLabel": "{label}. Ver como cuidamos dos seus dados",
     "title": "Seus dados ficam com você",
-    "local": "O arquivo é lido no seu navegador e nunca é enviado.",
-    "localConnect": "Seu acesso ao Spotify fica num cookie criptografado; os dados, só nesta aba.",
-    "localDemo": "O demo usa um histórico inventado, gerado no seu navegador.",
-    "noDatabase": "Sem banco de dados, sem contas, sem analytics.",
-    "offline": "Depois de carregar, funciona offline. Teste: desligue a internet e envie o arquivo.",
-    "openSource": "Código aberto:",
+    "local": "Seu arquivo é lido aqui, no seu aparelho, e não é enviado para lugar nenhum.",
+    "localConnect": "Sua conexão com o Spotify fica salva neste aparelho, trancada de um jeito que só o Encore abre. O que vem da sua conta fica só nesta aba.",
+    "localDemo": "A demo usa um histórico inventado, criado aqui mesmo, no seu aparelho.",
+    "noDatabase": "Sem cadastro, sem rastreamento e sem guardar suas músicas com a gente.",
+    "offline": "O arquivo do seu histórico não passa pela internet: a conta toda é feita no seu aparelho.",
+    "openSource": "O código do site é público:",
     "openSourceLink": "confira você mesmo",
-    "openSourceSoon": "Código aberto: o link do repositório entra na publicação.",
+    "openSourceSoon": "O código do site vai ser público. O link aparece aqui quando for publicado.",
     "policy": "Política de privacidade"
   },
   "Landing": {
     "overline": "Estatísticas do Spotify, do seu jeito",
     "title": "Seu ano em música. Quando você quiser.",
-    "lead": "O Encore transforma o seu histórico do Spotify em tops, horários e curiosidades de qualquer período, sem enviar nada para servidor nenhum.",
+    "lead": "O Encore transforma o seu histórico do Spotify em tops, horários e curiosidades de qualquer período. E o seu histórico não sai do seu aparelho.",
     "start": "Escolha como começar",
     "posterCaption": "Exemplo com artistas fictícios",
     "posterPresents": "Encore apresenta",
@@ -63,123 +63,123 @@
     "posterPeriod": "Seu 2025",
     "posterStats": "48.213 min · 9.214 plays · 612 artistas",
     "modesTitle": "Três jeitos de começar",
-    "modesLead": "Todos mostram o mesmo tipo de painel. Muda de onde vêm os dados.",
+    "modesLead": "Os três mostram o mesmo tipo de resultado. O que muda é de onde vêm as suas músicas.",
     "upload": {
       "badge": "Mais completo",
       "title": "Enviar meu histórico",
-      "body": "Todo o seu histórico, desde o primeiro play: tops de qualquer período, horários e as métricas \"você por você\".",
+      "body": "Todo o seu histórico, desde o primeiro play: tops de qualquer período, os horários em que você mais ouve e as comparações \"você por você\".",
       "cta": "Enviar meu histórico",
       "secondary": "Ainda não tenho o arquivo",
-      "note": "O Spotify pode levar até 30 dias para enviar o arquivo."
+      "note": "O Spotify pode levar até 30 dias para mandar o arquivo."
     },
     "connect": {
       "badge": "Ao vivo",
       "title": "Conectar com Spotify",
-      "body": "Seus tops das últimas 4 semanas, 6 meses e 1 ano, tendências e curtidas, direto da sua conta.",
+      "body": "Seus tops das últimas 4 semanas, 6 meses e 1 ano, o que está subindo e suas curtidas, direto da sua conta.",
       "cta": "Conectar com Spotify",
-      "limited": "Em modo de teste: só contas convidadas (até 5).",
-      "disabled": "Indisponível nesta instalação",
-      "disabledWhy": "O dono do site não configurou o acesso ao Spotify. Upload e Demo funcionam normalmente."
+      "limited": "Por enquanto, só para convidados (até 5 contas).",
+      "disabled": "Ainda não disponível neste site",
+      "disabledWhy": "Quem cuida do site ainda não ligou a conexão com o Spotify. Enviar o histórico e ver a demo funcionam normalmente."
     },
     "demo": {
       "badge": "Sem conta",
       "title": "Ver demo",
-      "body": "Um histórico fictício de 3 anos para explorar tudo agora, sem arquivo e sem login.",
+      "body": "Um histórico fictício de 3 anos para explorar tudo agora, sem arquivo e sem entrar em conta nenhuma.",
       "cta": "Ver demo"
     },
     "featuresTitle": "O que você descobre",
     "features": {
       "tops": {
         "title": "Tops de qualquer período",
-        "body": "Artistas, músicas e álbuns de um mês, de um ano, de um intervalo ou desde sempre."
+        "body": "Artistas, músicas e álbuns de um mês, de um ano, de um período à sua escolha ou desde sempre."
       },
       "when": {
         "title": "Quando você ouve",
-        "body": "Um mapa de calor hora × dia no seu fuso, com tabela para quem prefere números."
+        "body": "Um mapa colorido dos dias e horários em que você mais ouve, no seu horário, e uma tabela para quem prefere números."
       },
       "self": {
         "title": "Você por você",
-        "body": "Fã desde quando, dias diferentes, a mais pulada: comparações honestas com você mesmo."
+        "body": "Desde quando você é fã, em quantos dias ouviu, a música que mais pulou: você comparado só com você."
       },
       "share": {
         "title": "Cards para compartilhar",
-        "body": "Cartazes de festival e resumos prontos para os Stories. Chegam na próxima etapa."
+        "body": "Cartazes de festival e resumos prontos para os Stories, o feed ou o WhatsApp."
       }
     },
-    "privacyTitle": "Privacidade por arquitetura",
-    "privacyLead": "Não é uma promessa num rodapé: o Encore foi feito para não precisar dos seus dados."
+    "privacyTitle": "Privacidade que vem de fábrica",
+    "privacyLead": "Não é só uma promessa no rodapé: o Encore foi feito para funcionar sem ficar com os seus dados."
   },
   "Privacy": {
-    "overline": "LGPD",
+    "overline": "Seus dados e a LGPD",
     "title": "Privacidade",
-    "lead": "O Encore foi desenhado para tratar o mínimo possível de dados, e quase tudo acontece no seu próprio aparelho. Esta página explica o que é tratado, onde, por quanto tempo e como revogar o acesso.",
-    "updated": "Atualizada em 24 de setembro de 2026.",
-    "summaryTitle": "Resumo",
+    "lead": "O Encore foi feito para usar o mínimo possível dos seus dados, e quase tudo acontece no seu próprio aparelho. Aqui você vê o que usamos, onde fica, por quanto tempo e como cancelar o acesso quando quiser.",
+    "updated": "Atualizada em 28 de setembro de 2026.",
+    "summaryTitle": "Em poucas palavras",
     "summary": [
-      "Seu histórico enviado nunca sai do navegador: não há upload para servidor.",
-      "Não temos banco de dados, contas próprias, analytics nem cookies de rastreamento.",
-      "No modo Conectar, só guardamos o acesso ao Spotify num cookie criptografado no seu navegador."
+      "O histórico que você envia é lido no seu aparelho e não é mandado para nós nem para ninguém.",
+      "Não pedimos cadastro, não guardamos suas músicas com a gente e não usamos ferramentas que rastreiam suas visitas.",
+      "No modo Conectar, o que vem do Spotify fica só nesta aba, e a sua conexão com o Spotify fica salva neste aparelho, protegida para que só o Encore consiga ler."
     ],
     "controller": {
       "title": "Quem cuida dos seus dados",
-      "controller": "O Encore é um projeto pessoal. O controlador dos dados (LGPD, art. 5º, VI) é {name}.",
-      "controllerUnset": "O Encore é um projeto pessoal, e quem o mantém é o controlador dos dados (LGPD, art. 5º, VI).",
-      "contact": "Dúvidas ou pedidos sobre seus dados:",
-      "contactRepo": "Dúvidas ou pedidos sobre seus dados podem ser feitos pelo repositório do projeto:",
-      "contactUnset": "Dúvidas ou pedidos sobre seus dados podem ser feitos pelo repositório do projeto."
+      "controller": "O Encore é um projeto pessoal. Quem responde pelos seus dados aqui é {name} (o \"controlador\", na LGPD, art. 5º, VI).",
+      "controllerUnset": "O Encore é um projeto pessoal. Quem responde pelos seus dados é a pessoa que mantém o site (o \"controlador\", na LGPD, art. 5º, VI).",
+      "contact": "Para tirar dúvidas ou fazer pedidos sobre seus dados, escreva para:",
+      "contactRepo": "Para tirar dúvidas ou fazer pedidos sobre seus dados, use a página do projeto:",
+      "contactUnset": "Para tirar dúvidas ou fazer pedidos sobre seus dados, fale com quem mantém o site pela página do projeto."
     },
     "what": {
-      "title": "O que é tratado",
-      "uploadTitle": "Modo Upload (seu arquivo)",
-      "upload": "Do arquivo do histórico estendido, lemos só: data e hora de cada play, quanto tempo tocou, nome da música, do artista e do álbum, o identificador da faixa, a plataforma (celular, computador…) e se a música foi pulada ou tocada no aleatório.",
-      "uploadDiscarded": "Endereço IP, país de conexão e os demais campos do arquivo são descartados na leitura, sem nunca serem usados.",
-      "connectTitle": "Modo Conectar (sua conta Spotify)",
-      "connect": "Com a sua autorização, consultamos o seu perfil básico (identificador, nome e foto), seus tops, as tocadas recentemente e as músicas curtidas. As permissões pedidas são só de leitura.",
+      "title": "Quais dados usamos",
+      "uploadTitle": "Modo Upload: o arquivo que você envia",
+      "upload": "Do seu histórico, lemos só: o dia e a hora em que cada música tocou, por quanto tempo tocou, o nome da música, do artista e do álbum, o código da música no Spotify, onde você ouviu (celular, computador…) e se você pulou a música ou ouviu no aleatório.",
+      "uploadDiscarded": "O endereço de internet (IP), o país de onde você estava conectado e as outras informações do arquivo são deixados de lado durante a leitura e nunca são usados.",
+      "connectTitle": "Modo Conectar: sua conta do Spotify",
+      "connect": "Com a sua autorização, vemos o seu perfil básico (código da conta, nome e foto), seus tops, o que você ouviu por último e suas músicas curtidas. O Encore só pede permissão para ver: ele não consegue mudar nada na sua conta.",
       "demoTitle": "Modo Demo",
-      "demo": "Usa apenas dados inventados, gerados no seu navegador. Nenhum dado pessoal é tratado."
+      "demo": "Usa só dados inventados, criados no seu aparelho. Nenhum dado pessoal é usado."
     },
     "where": {
       "title": "Onde os dados ficam",
-      "body": "O processamento do arquivo acontece num Web Worker do seu navegador. No modo Conectar, o servidor do Encore apenas repassa as consultas ao Spotify e devolve uma versão reduzida da resposta, sem gravá-la. O site é hospedado na Vercel, e as consultas do modo Conectar passam pelos servidores dela e do Spotify, que podem ficar fora do Brasil. Essa transferência é necessária para prestar o serviço que você pediu (LGPD, art. 33, IX)."
+      "body": "Seu arquivo é lido no próprio aparelho, dentro desta página. No modo Conectar, o Encore busca as informações no Spotify por você e entrega só o que a tela precisa, sem guardar nada no caminho. O site fica hospedado na Vercel, uma empresa de hospedagem de sites, e no modo Conectar essas buscas passam pelos sistemas da Vercel e do Spotify, que podem ficar fora do Brasil. Essa passagem por outro país é necessária para entregar o que você pediu (LGPD, art. 33, IX)."
     },
     "howLong": {
       "title": "Por quanto tempo",
       "items": [
-        "Histórico enviado: só na memória da aba, até você recarregar ou fechar a página.",
-        "Respostas do Spotify (Conectar): na memória ou no sessionStorage da aba, por no máximo 12 horas, e apagadas ao sair.",
-        "Cookie de sessão (Conectar): criptografado, dura no máximo 30 dias e é apagado quando você clica em Sair.",
-        "Registros técnicos: o Encore só registra rota, status e duração das requisições, sem conteúdo. A Vercel, como hospedagem, também registra dados técnicos de cada acesso (como endereço IP e página acessada) por pouco tempo (cerca de 1 hora no plano usado), conforme a política de privacidade dela."
+        "Histórico enviado: fica só na memória desta aba, até você recarregar ou fechar a página.",
+        "O que vem do Spotify (modo Conectar): fica só nesta aba do navegador, por no máximo 12 horas, e é apagado quando você clica em Sair.",
+        "Sua conexão com o Spotify (modo Conectar): fica salva neste navegador num cookie protegido, dura no máximo 30 dias e é apagada quando você clica em Sair.",
+        "Registros de funcionamento: o Encore só anota qual parte do site foi usada, se deu certo e quanto tempo levou, sem nada das suas músicas ou da sua conta. A Vercel, que hospeda o site, também anota dados de cada acesso (como o endereço de internet, o IP, e a página aberta) e os guarda por pouco tempo (cerca de 1 hora no plano usado), conforme a política de privacidade dela."
       ]
     },
     "legal": {
-      "title": "Base legal",
-      "body": "O tratamento serve para prestar o serviço que você pediu (LGPD, art. 7º, V). No modo Conectar, ele também depende da autorização que você dá no Spotify, que pode ser revogada a qualquer momento. Não usamos seus dados para publicidade nem perfilamento, e não os compartilhamos com terceiros."
+      "title": "Por que podemos usar esses dados",
+      "body": "Usamos esses dados só para entregar o que você pediu: as suas estatísticas (é a base legal da LGPD, art. 7º, V). No modo Conectar, também dependemos da autorização que você dá no Spotify, e você pode tirá-la quando quiser. Não usamos seus dados para anúncios nem para montar um perfil seu, e não os entregamos a outras empresas para uso delas."
     },
     "sharing": {
       "title": "Compartilhamento",
-      "body": "Não vendemos nem compartilhamos dados. O Spotify é a origem dos dados do modo Conectar, e a Vercel hospeda o site. Os cards que você gerar ficam no seu aparelho até você decidir compartilhá-los."
+      "body": "Não vendemos nem compartilhamos seus dados. O Spotify é de onde vêm os dados do modo Conectar, e a Vercel é a empresa que hospeda o site. Os cards que você cria ficam no seu aparelho até você decidir compartilhar."
     },
     "rights": {
-      "title": "Seus direitos e como revogar",
+      "title": "Seus direitos e como cancelar o acesso",
       "items": [
         "Apagar o histórico enviado: feche ou recarregue a aba.",
-        "Encerrar o modo Conectar: use o botão Sair, que apaga o cookie e o cache desta aba.",
-        "Confirmação, acesso, correção, portabilidade, eliminação e informação sobre compartilhamento (LGPD, art. 18): como não guardamos seus dados no servidor, não existe uma cópia nossa para consultar ou exportar. Mesmo assim, qualquer pedido pode ser feito pelo contato acima.",
-        "Você também pode apresentar reclamação à Autoridade Nacional de Proteção de Dados (ANPD).",
-        "Revogar o acesso do Encore à sua conta: remova o app em"
+        "Sair do modo Conectar: clique em Sair. Isso apaga a sua conexão salva e o que veio do Spotify nesta aba.",
+        "Pela LGPD (art. 18), você pode pedir para confirmar se usamos seus dados, ver quais são, corrigir, levar para outro serviço, apagar e saber com quem foram compartilhados. Como não guardamos seus dados com a gente, não existe uma cópia nossa para consultar ou exportar. Mesmo assim, você pode fazer qualquer pedido pelo contato acima.",
+        "Você também pode reclamar na Autoridade Nacional de Proteção de Dados (ANPD), o órgão do governo que fiscaliza a LGPD.",
+        "Tirar o acesso do Encore à sua conta do Spotify: remova o app em"
       ],
       "revokeLink": "spotify.com/account/apps"
     },
     "cookies": {
       "title": "Cookies",
-      "body": "Só usamos cookies essenciais: o da sessão do modo Conectar e um temporário, de 10 minutos, durante o login. A preferência de idioma pode ser guardada no seu navegador."
+      "body": "Cookies são pequenos arquivos que um site salva no seu navegador. O Encore só usa os essenciais: um que mantém você conectado no modo Conectar e outro, temporário, de 10 minutos, enquanto você entra com o Spotify. Sua preferência de idioma também pode ficar salva no seu navegador."
     }
   },
   "Onboarding": {
     "overline": "Antes de começar",
     "title": "Peça seu histórico ao Spotify",
-    "lead": "O Encore usa o histórico estendido, que o Spotify envia por e-mail quando você pede. É de graça e traz tudo desde a criação da sua conta.",
-    "wait": "O Spotify pode levar até 30 dias para enviar. Geralmente chega antes.",
+    "lead": "O Encore usa o seu histórico completo, que o Spotify manda por e-mail quando você pede. É de graça e traz tudo desde que você criou a conta.",
+    "wait": "O Spotify pode levar até 30 dias para mandar. Geralmente chega antes.",
     "waitTitle": "Tenha um pouco de paciência",
     "stepsLabel": "Passo a passo",
     "steps": {
@@ -192,57 +192,57 @@
         "title": "Marque o histórico de streaming estendido",
         "bodyBefore": "Selecione",
         "bodyStrong": "Histórico de streaming estendido",
-        "bodyAfter": "e desmarque o resto. É o único arquivo de que precisamos."
+        "bodyAfter": "e desmarque o resto. É o seu histórico completo, e é só dele que precisamos."
       },
       "confirm": {
-        "title": "Confirme pelo e-mail que o Spotify enviar",
+        "title": "Confirme pelo e-mail que o Spotify mandar",
         "body": "O pedido só começa depois que você clicar no link de confirmação."
       },
       "return": {
-        "title": "Quando o .zip chegar, volte aqui",
-        "body": "Solte o arquivo na página de envio, sem descompactar.",
+        "title": "Quando o arquivo chegar, volte aqui",
+        "body": "Envie o arquivo na página de envio do jeito que ele veio, sem descompactar.",
         "link": "Ir para o envio"
       }
     },
     "reminder": {
-      "cta": "Baixar lembrete (.ics)",
-      "help": "Um lembrete semanal por 5 semanas no seu calendário, gerado aqui mesmo.",
-      "done": "Lembrete baixado — nada foi enviado.",
+      "cta": "Baixar lembrete para a agenda",
+      "help": "Um lembrete por semana, durante 5 semanas, para pôr na sua agenda. Ele é criado aqui mesmo.",
+      "done": "Lembrete baixado. Nada foi enviado.",
       "eventTitle": "Encore: chegou o histórico do Spotify?",
-      "eventDescription": "Veja se o e-mail do Spotify com o histórico estendido chegou. Quando chegar, envie o .zip em {url}"
+      "eventDescription": "Veja se chegou o e-mail do Spotify com o seu histórico completo. Quando chegar, envie o arquivo em {url}"
     },
     "meanwhile": {
       "title": "Enquanto isso",
-      "demoTitle": "Explore o demo",
-      "demoBody": "Veja o painel completo com um histórico fictício.",
+      "demoTitle": "Explore a demo",
+      "demoBody": "Veja tudo o que o Encore mostra, com um histórico fictício.",
       "demoCta": "Ver demo",
       "connectTitle": "Conecte sua conta",
       "connectBody": "Seus tops recentes, direto do Spotify.",
       "connectCta": "Conectar com Spotify",
-      "connectDisabled": "Indisponível nesta instalação."
+      "connectDisabled": "Ainda não disponível neste site."
     }
   },
   "Upload": {
     "overline": "Modo Upload",
     "title": "Envie seu histórico",
-    "lead": "Solte o .zip que o Spotify mandou por e-mail. Ele é lido aqui mesmo, no seu navegador.",
+    "lead": "Envie o arquivo que o Spotify mandou por e-mail. Ele é lido aqui mesmo, no seu aparelho, e não sai dele.",
     "dropzone": {
-      "idle": "Solte o .zip do Spotify aqui",
+      "idle": "Solte aqui o arquivo do Spotify",
       "or": "ou",
       "choose": "Escolher arquivo",
-      "help": "Aceita o .zip ou os Streaming_History_Audio_*.json. Nada sai do seu aparelho.",
+      "help": "Pode ser o arquivo do jeito que chegou (.zip) ou os arquivos \"Streaming_History_Audio\" que vêm dentro dele. Nada sai do seu aparelho.",
       "dragValid": "Pode soltar",
-      "dragInvalid": "Só .zip ou .json do Spotify",
-      "inputLabel": "Escolher o arquivo do histórico (.zip ou .json)"
+      "dragInvalid": "Só o arquivo do Spotify (.zip ou .json)",
+      "inputLabel": "Escolher o arquivo do Spotify (.zip ou .json)"
     },
     "noFile": "Ainda não tem o arquivo?",
     "noFileLink": "Veja como pedir ao Spotify",
     "progress": {
       "title": "Lendo seu histórico",
       "steps": {
-        "unzip": "Descompactar",
+        "unzip": "Abrir",
         "parse": "Ler",
-        "aggregate": "Agregar"
+        "aggregate": "Somar"
       },
       "stepState": {
         "done": "concluída",
@@ -259,63 +259,67 @@
     "reset": "Enviar outro arquivo",
     "errors": {
       "UNSUPPORTED_FILE": {
-        "title": "Esse tipo de arquivo não é aceito",
-        "body": "\"{file}\" não é .zip nem .json. Envie o .zip que o Spotify mandou ou os Streaming_History_Audio_*.json."
+        "title": "Esse arquivo não serve",
+        "body": "\"{file}\" não parece ser o arquivo do Spotify. Envie o arquivo que chegou no e-mail do Spotify (o nome termina em .zip)."
       },
       "INVALID_ZIP": {
-        "title": "Não consegui abrir esse arquivo",
-        "body": "\"{file}\" não parece um .zip válido. Envie o arquivo que o Spotify mandou por e-mail, sem descompactar."
+        "title": "Não deu para abrir esse arquivo",
+        "body": "\"{file}\" parece estar danificado ou não é o arquivo do Spotify. Baixe de novo pelo link do e-mail e envie sem descompactar."
       },
       "UNSAFE_PATH": {
-        "title": "Arquivo fora do padrão",
-        "body": "Por segurança, recusamos zips com caminhos suspeitos (como \"../\"). O .zip original do Spotify não tem isso."
+        "title": "Esse arquivo tem algo estranho",
+        "body": "Encontramos dentro dele uma coisa que o arquivo do Spotify não tem, então paramos por segurança. Baixe o arquivo de novo pelo link do e-mail do Spotify."
       },
       "TOO_MANY_ENTRIES": {
-        "title": "Arquivo grande demais ou fora do padrão",
-        "body": "O envio tem mais de {limit} arquivos. O .zip do Spotify costuma ter bem menos."
+        "title": "Esse arquivo é diferente do esperado",
+        "body": "Ele tem mais de {limit} arquivos dentro, e o do Spotify costuma ter bem menos. Confira se é o arquivo certo."
       },
       "ENTRY_TOO_LARGE": {
-        "title": "Arquivo grande demais ou fora do padrão",
-        "body": "\"{entry}\" passa de {limit} MB descompactado. Por segurança, recusamos arquivos desse tamanho."
+        "title": "Arquivo grande demais",
+        "body": "\"{entry}\" fica com mais de {limit} MB depois de aberto. Por segurança, não lemos arquivos desse tamanho."
       },
       "TOTAL_TOO_LARGE": {
-        "title": "Arquivo grande demais ou fora do padrão",
-        "body": "Por segurança, recusamos históricos acima de {limit} MB descompactados."
+        "title": "Arquivo grande demais",
+        "body": "Por segurança, só lemos históricos de até {limit} MB depois de abertos, e esse passou do limite."
       },
       "COMPRESSION_RATIO": {
-        "title": "Arquivo grande demais ou fora do padrão",
-        "body": "\"{entry}\" tem uma compressão suspeita (mais de {limit}×). Por segurança, paramos a leitura."
+        "title": "Esse arquivo é diferente do esperado",
+        "body": "\"{entry}\" cresce mais de {limit} vezes ao ser aberto, muito mais que um histórico normal. Por segurança, paramos a leitura."
       },
       "NO_HISTORY_FILES": {
-        "title": "Esse zip não tem o histórico estendido",
-        "body": "Procuramos Streaming_History_Audio_*.json e não achamos. Confira se é o arquivo do histórico estendido."
+        "title": "Esse arquivo não tem o histórico completo",
+        "body": "Não encontramos as suas músicas nele. Confira se você pediu o \"Histórico de streaming estendido\" ao Spotify."
       },
       "WRONG_EXPORT": {
         "title": "Esse é o pacote \"Dados da conta\"",
-        "body": "Ele traz só o último ano, num formato reduzido. Peça o \"Histórico de streaming estendido\" para ver tudo."
+        "body": "Ele só traz o último ano, e com menos detalhes. Peça o \"Histórico de streaming estendido\" para ver tudo."
       },
       "INVALID_JSON": {
-        "title": "Um dos arquivos está corrompido",
-        "body": "\"{entry}\" não é um JSON válido. Baixe o .zip de novo pelo link do e-mail do Spotify."
+        "title": "Uma parte do arquivo está danificada",
+        "body": "Não deu para ler \"{entry}\". Baixe o arquivo de novo pelo link do e-mail do Spotify."
       },
       "UNEXPECTED_FORMAT": {
-        "title": "O formato mudou ou o arquivo não é do Spotify",
-        "body": "\"{entry}\" não tem os campos que esperávamos de um histórico do Spotify."
+        "title": "Não reconhecemos esse arquivo",
+        "body": "\"{entry}\" não tem as informações que um histórico do Spotify costuma ter. Pode ser outro arquivo, ou o Spotify mudou o formato."
       },
       "INVALID_RECORDS": {
-        "title": "O formato mudou ou o arquivo está corrompido",
-        "body": "Mais de 5% dos registros de \"{entry}\" ({invalid} de {total}) não estão no formato esperado."
+        "title": "Parte do histórico não dá para ler",
+        "body": "Mais de 5% das músicas de \"{entry}\" ({invalid} de {total}) vieram num formato que não reconhecemos. O arquivo pode estar danificado, ou o Spotify mudou o formato."
       },
       "INTERNAL": {
-        "title": "O navegador não deu conta",
-        "body": "Algo falhou ao ler o arquivo, talvez falta de memória. Tente num computador ou feche outras abas."
+        "title": "O aparelho não deu conta",
+        "body": "Algo falhou ao ler o arquivo, talvez por falta de memória. Feche outras abas e tente de novo, ou use um computador."
+      },
+      "OFFLINE": {
+        "title": "Sem internet",
+        "body": "Parece que você está sem internet. Conecte-se e tente de novo: seu arquivo continua sem sair do aparelho."
       }
     },
     "actions": {
       "tryAnother": "Tentar outro arquivo",
       "tryAgain": "Tentar de novo",
-      "howTo": "Como pedir o histórico estendido",
-      "report": "Avisar no GitHub"
+      "howTo": "Como pedir o histórico completo",
+      "report": "Avisar do problema no GitHub"
     }
   },
   "Dashboard": {
@@ -329,11 +333,11 @@
       "all": "Você, desde sempre",
       "range": "Seu período"
     },
-    "reloadBanner": "Seus dados ficam só nesta aba. Se recarregar, você precisa enviar o arquivo de novo.",
+    "reloadBanner": "Seus dados ficam só nesta aba. Se recarregar a página, você precisa enviar o arquivo de novo.",
     "reloadBannerClose": "Fechar aviso",
     "demoBanner": "Tudo aqui é inventado: artistas, músicas e hábitos. Troque o período e explore à vontade.",
     "tabs": {
-      "label": "Visões do demo",
+      "label": "Visões da demo",
       "upload": "Visão Upload",
       "connect": "Visão Conectar"
     },
@@ -372,39 +376,39 @@
       "artists": "artistas",
       "tracks": "músicas",
       "ruleLabel": "Como contamos",
-      "rule": "Um play conta a partir de 30 segundos ouvidos. Os minutos somam todo o tempo de música, e podcasts, audiolivros e faixas locais ficam de fora."
+      "rule": "Um play conta a partir de 30 segundos ouvidos. Os minutos somam todo o tempo de música. Podcasts, audiolivros e arquivos de música do próprio aparelho ficam de fora."
     },
     "self": {
       "title": "Você por você",
       "lead": "Comparações com o seu próprio histórico, e não com outros ouvintes.",
       "badge": "vs. você mesmo",
       "howLabel": "Como calculamos",
-      "fewData": "Pouco dado nesse período",
+      "fewData": "Poucos dados nesse período",
       "fanSince": {
         "label": "Fã desde",
         "context": "Seu primeiro play de <b>{artist}</b>, seu nº 1 do período.",
-        "how": "Data do primeiro play (de 30 s ou mais) do seu artista nº 1 do período, olhando todo o seu histórico."
+        "how": "O dia do primeiro play (de 30 s ou mais) do seu artista nº 1 do período, olhando todo o seu histórico."
       },
       "share": {
         "label": "Dos seus plays",
         "context": "foram de <b>{artist}</b>",
-        "how": "Plays do seu artista nº 1 divididos por todos os seus plays no período."
+        "how": "Os plays do seu artista nº 1 divididos por todos os seus plays no período."
       },
       "days": {
         "label": "Dias diferentes",
         "context": "com <b>{artist}</b> no fone",
-        "how": "Quantos dias do período tiveram pelo menos um play do seu artista nº 1, no seu fuso."
+        "how": "Em quantos dias do período você ouviu pelo menos uma música do seu artista nº 1, no horário de onde você está."
       },
       "skipped": {
         "label": "Mais pulada",
         "context": "{artist} · pulada {skips, plural, one {# vez} other {# vezes}}",
-        "empty": "Precisamos de pelo menos 5 pulos no período.",
-        "how": "A música que você mais pulou no período. Conta como pulo quando o Spotify marca a faixa como pulada ou quando você avançou para a próxima."
+        "empty": "Precisamos de pelo menos 5 músicas puladas no período.",
+        "how": "A música que você mais pulou no período. Conta como pulo quando o Spotify marca a música como pulada ou quando você passou para a próxima."
       },
       "day": {
         "label": "Dia mais musical",
         "context": "{duration} de música em um só dia",
-        "how": "O dia do período com mais tempo de música, no seu fuso."
+        "how": "O dia do período em que você mais ouviu música, no horário de onde você está."
       }
     },
     "top": {
@@ -431,7 +435,7 @@
       "tooltip": "{day}, {from}–{to}: {plays, plural, one {# play} other {# plays}}",
       "showTable": "Ver como tabela",
       "hideTable": "Esconder tabela",
-      "tableCaption": "Plays por dia e faixa de 3 horas · {period}",
+      "tableCaption": "Plays por dia, em blocos de 3 horas · {period}",
       "fullCaption": "Plays por dia e hora · {period}",
       "fullLabel": "Tabela completa por hora; role para o lado",
       "dayHeader": "Dia",
@@ -459,9 +463,9 @@
       "body": "Tente outro período: o seu histórico vai de {from} a {to}."
     },
     "footer": {
-      "upload": "Do seu histórico estendido do Spotify, processado no seu aparelho.",
+      "upload": "Do seu histórico do Spotify, lido no seu aparelho.",
       "demo": "Modo demo · artistas e músicas fictícios.",
-      "report": "{music, plural, one {# registro de música} other {# registros de música}} de {files, plural, one {# arquivo} other {# arquivos}}, lidos em {seconds} s. {nonMusic, plural, =0 {Nenhum podcast ou audiolivro} one {# podcast, audiolivro ou faixa local ignorado} other {# podcasts, audiolivros e faixas locais ignorados}}."
+      "report": "{music, plural, one {# registro de música} other {# registros de música}} de {files, plural, one {# arquivo} other {# arquivos}}, lidos em {seconds} s. {nonMusic, plural, =0 {Nenhum podcast ou audiolivro} one {# podcast, audiolivro ou música do aparelho deixado de fora} other {# podcasts, audiolivros e músicas do aparelho deixados de fora}}."
     },
     "demoLoading": "Montando o histórico fictício…"
   },
@@ -469,68 +473,68 @@
     "title": "Conectar com o Spotify",
     "landing": {
       "overline": "Modo Conectar",
-      "lead": "Seu top ao vivo, direto da sua conta: artistas e músicas nas últimas 4 semanas, 6 meses e 1 ano, com tendências, tocadas recentemente, gêneros e de quem você tem mais músicas curtidas.",
+      "lead": "Seu top ao vivo, direto da sua conta: artistas e músicas das últimas 4 semanas, 6 meses e 1 ano, com o que está subindo, o que você ouviu por último, seus gêneros e de quem você tem mais músicas curtidas.",
       "login": "Entrar com o Spotify",
-      "loginHint": "Você vai ao Spotify autorizar e volta direto para cá.",
-      "scopesTitle": "O que pedimos ao Spotify",
+      "loginHint": "Você vai para o Spotify, dá a permissão e volta direto para cá.",
+      "scopesTitle": "O que o Encore pede para ver",
       "scopes": {
         "top": "Seus top artistas e músicas",
         "recent": "As últimas músicas que você ouviu",
         "library": "Suas músicas curtidas, só para contar por artista"
       },
-      "scopesNote": "Só leitura: nada é publicado nem alterado na sua conta. Para revogar, acesse spotify.com/account/apps.",
+      "scopesNote": "O Encore só vê: não publica nem muda nada na sua conta. Para tirar a permissão, acesse spotify.com/account/apps.",
       "limitedTitle": "Acesso por convite",
-      "limitedBody": "Enquanto o app está em modo de teste, o Spotify só libera 5 contas convidadas. Sem convite, o Upload do histórico e o Demo funcionam para todo mundo.",
-      "alternatives": "Sem convite? Veja suas stats de outro jeito:",
+      "limitedBody": "Enquanto o Encore está em fase de testes no Spotify, só 5 contas convidadas podem se conectar. Sem convite, dá para enviar seu histórico ou ver a demo normalmente.",
+      "alternatives": "Sem convite? Veja suas estatísticas de outro jeito:",
       "upload": "Enviar meu histórico",
       "demo": "Ver demo"
     },
-    "disabledTitle": "Indisponível nesta instalação",
-    "disabled": "O modo Conectar está indisponível neste ambiente. Upload e Demo continuam funcionando.",
-    "disabledWhy": "O dono do site não configurou o acesso ao Spotify.",
+    "disabledTitle": "Ainda não disponível neste site",
+    "disabled": "O modo Conectar ainda não está ligado neste site. Você pode enviar seu histórico ou ver a demo normalmente.",
+    "disabledWhy": "Quem cuida do site ainda não ligou a conexão com o Spotify.",
     "back": "Voltar ao início",
-    "loggedOut": "Você saiu. A sessão e o cache desta aba foram apagados.",
+    "loggedOut": "Você saiu. Sua conexão e o que veio do Spotify nesta aba foram apagados.",
     "errors": {
       "denied": {
-        "title": "Autorização cancelada",
-        "body": "Você cancelou a autorização no Spotify. Nada foi guardado; entre de novo quando quiser."
+        "title": "Você não deu a permissão",
+        "body": "Você cancelou no Spotify, então nada foi guardado. Entre de novo quando quiser."
       },
       "state": {
-        "title": "O login expirou",
-        "body": "A tentativa demorou demais ou foi aberta em outra aba. Tente de novo."
+        "title": "O tempo para entrar acabou",
+        "body": "Demorou demais ou a entrada foi aberta em outra aba. Tente de novo."
       },
       "oauth": {
-        "title": "O Spotify não concluiu o login",
-        "body": "Algo deu errado na troca com o Spotify. Tente de novo."
+        "title": "Não deu para entrar com o Spotify",
+        "body": "Algo deu errado na conversa com o Spotify. Tente de novo."
       },
       "scope": {
-        "title": "Faltaram permissões",
-        "body": "O Spotify não concedeu as permissões de leitura que o Encore precisa. Tente de novo e aceite todas."
+        "title": "Faltou permissão",
+        "body": "O Spotify não liberou tudo o que o Encore precisa ver. Tente de novo e aceite todas as permissões."
       },
       "upstream": {
         "title": "O Spotify não respondeu",
-        "body": "O serviço está instável agora. Tente de novo em instantes."
+        "body": "O Spotify está instável agora. Tente de novo daqui a pouco."
       }
     },
     "forbidden": {
-      "title": "Este app ainda está em modo de teste",
-      "body": "O Spotify só deixa 5 contas convidadas usarem o modo Conectar de um app novo, e a sua ainda não está na lista. O seu histórico funciona sem convite.",
-      "ownerPremium": "Se a sua conta já foi convidada, a causa pode estar no app: desde fevereiro de 2026, o Spotify só mantém um app em modo de teste funcionando se a conta dona dele tiver Premium. Nesse caso, avise quem mantém o Encore.",
+      "title": "O modo Conectar ainda é só para convidados",
+      "body": "Enquanto o Encore está em fase de testes, o Spotify só deixa 5 contas convidadas usarem o modo Conectar, e a sua ainda não está na lista. Enviar o seu histórico funciona sem convite.",
+      "ownerPremium": "Se você já foi convidado, o problema pode estar do nosso lado: desde fevereiro de 2026, o Spotify só deixa um app em fase de testes funcionar se a conta do dono dele tiver Premium. Nesse caso, avise quem mantém o Encore.",
       "upload": "Enviar meu histórico",
       "demo": "Ver demo",
       "otherAccount": "Já recebi o convite: tentar de novo"
     },
     "expired": {
-      "title": "Sua sessão expirou",
-      "body": "Por segurança, a conexão com o Spotify dura pouco. Conecte de novo para continuar.",
+      "title": "Sua conexão expirou",
+      "body": "Por segurança, a conexão com o Spotify vence de tempos em tempos. Conecte de novo para continuar.",
       "action": "Conectar de novo"
     },
     "quota": {
-      "title": "Limite de consultas do app atingido",
-      "body": "O Encore divide uma cota com todos os usuários. Volte em ~{minutes} min. Upload e Demo continuam funcionando.",
+      "title": "O Encore chegou ao limite do Spotify",
+      "body": "O Spotify limita quantas vezes o Encore pode buscar dados, e esse limite vale para todo mundo que usa o site. Volte daqui a uns {minutes} min. Enviar o histórico e ver a demo continuam funcionando.",
       "upload": "Enviar meu histórico",
       "demo": "Ver demo",
-      "sectionPaused": "Consultas pausadas por alguns minutos."
+      "sectionPaused": "Pausado por alguns minutos, a pedido do Spotify."
     },
     "rateLimited": {
       "title": "O Spotify pediu uma pausa",
@@ -540,12 +544,12 @@
       "now": "Tentar agora"
     },
     "sectionError": {
-      "title": "Não deu para carregar esta seção",
+      "title": "Não deu para carregar esta parte",
       "retry": "Tentar de novo"
     },
     "meError": {
       "title": "Não deu para falar com o Spotify",
-      "body": "A conexão está ativa, mas o Spotify não respondeu. Tente de novo em instantes."
+      "body": "Você está conectado, mas o Spotify não respondeu. Tente de novo daqui a pouco."
     },
     "dashboard": {
       "overline": "Modo Conectar · ao vivo",
@@ -553,24 +557,41 @@
       "greeting": "Oi, {name}",
       "greetingAnon": "Seu top ao vivo",
       "lead": "Lido agora da sua conta do Spotify e guardado só nesta aba.",
-      "leadDemo": "Artistas e músicas inventados, no formato do modo Conectar. Nada aqui vem do Spotify.",
-      "demoBanner": "Visão Conectar do demo: dados fictícios, sem conexão com o Spotify.",
-      "windowHeading": "Janela de tempo",
-      "windowLabel": "Janela do Spotify",
+      "leadDemo": "Artistas e músicas inventados, do jeito que o modo Conectar mostra. Nada aqui vem do Spotify.",
+      "demoBanner": "Visão Conectar da demo: dados fictícios, sem conexão com o Spotify.",
+      "windowHeading": "Período",
+      "windowLabel": "Período do Spotify",
       "windows": {
         "short_term": "4 semanas",
         "medium_term": "6 meses",
         "long_term": "1 ano"
       },
       "windowSummary": {
-        "short_term": "Últimas ~4 semanas, pelo cálculo do Spotify",
-        "medium_term": "Últimos ~6 meses, pelo cálculo do Spotify",
-        "long_term": "Último ~1 ano, pelo cálculo do Spotify"
+        "short_term": "Últimas ~4 semanas, pela conta do Spotify",
+        "medium_term": "Últimos ~6 meses, pela conta do Spotify",
+        "long_term": "Último ~1 ano, pela conta do Spotify"
       },
       "windowLive": "Mostrando: {label}",
-      "barLabel": "Janela: {label}. Trocar janela",
-      "footer": "Dados do Spotify lidos pela sua conta. O servidor não guarda nada; o cache fica só nesta aba.",
-      "footerDemo": "Demo: artistas e músicas inventados, gerados no seu navegador. Nenhuma conexão com o Spotify."
+      "barLabel": "Período: {label}. Trocar período",
+      "footer": "Dados do Spotify, lidos pela sua conta. O Encore não guarda nada disso: fica tudo só nesta aba.",
+      "footerDemo": "Demo: artistas e músicas inventados, criados no seu aparelho. Nenhuma conexão com o Spotify.",
+      "extras": {
+        "groupLabel": "Períodos do histórico completo",
+        "all_time": "Desde o começo",
+        "custom": "Selecionar período",
+        "title": {
+          "all_time": "“Desde o começo” pede o seu histórico completo",
+          "custom": "“Selecionar período” pede o seu histórico completo"
+        },
+        "body": "Pela conexão, o Spotify só mostra três períodos: 4 semanas, 6 meses e 1 ano. Para ver desde o seu primeiro play, ou um período à sua escolha, envie o seu histórico completo. Ele é lido aqui, no seu aparelho.",
+        "bodyDemo": "Na Visão Upload da demo, “Sempre” e “Intervalo” já funcionam com um histórico inventado.",
+        "keep": "Você continua vendo: {label}.",
+        "upload": "Enviar meu histórico",
+        "demoUpload": "Ver na Visão Upload",
+        "howTo": "Como pedir o histórico",
+        "close": "Fechar aviso",
+        "live": "{option} precisa do histórico completo. O período continua em {label}."
+      }
     },
     "top": {
       "title": "Seu top",
@@ -582,7 +603,7 @@
       "listLabel": "Top {count} {kind}",
       "more": "Ver top 50",
       "less": "Ver menos",
-      "empty": "O Spotify ainda não tem dados suficientes nessa janela.",
+      "empty": "O Spotify ainda não tem dados suficientes nesse período.",
       "open": "Abrir no Spotify",
       "play": "Ouvir no Spotify"
     },
@@ -609,18 +630,18 @@
     },
     "genres": {
       "title": "Seus gêneros",
-      "unstable": "instável",
-      "unstableTip": "O Spotify pode deixar de fornecer este dado. Se ele sumir, a seção some junto.",
-      "unstableLabel": "Por que instável",
-      "note": "Calculado a partir dos seus top artistas nesta janela.",
+      "unstable": "pode sumir",
+      "unstableTip": "O Spotify pode parar de mostrar os gêneros. Se isso acontecer, esta parte some junto.",
+      "unstableLabel": "Por que pode sumir",
+      "note": "Calculado a partir dos seus top artistas neste período.",
       "listLabel": "Gêneros mais ouvidos"
     },
     "liked": {
       "title": "De quem você tem mais músicas curtidas?",
-      "body": "Lemos sua biblioteca página por página. Pode levar ~1 min.",
+      "body": "Lemos todas as suas músicas curtidas, aos poucos. Pode levar cerca de 1 minuto.",
       "start": "Descobrir",
       "cancel": "Cancelar",
-      "progress": "Página {done} de {total}",
+      "progress": "Parte {done} de {total}",
       "progressStarting": "Começando a leitura…",
       "progressLabel": "Leitura das curtidas",
       "waiting": "O Spotify pediu uma pausa. Seguindo em {seconds} s.",
@@ -644,8 +665,8 @@
       "fallbackName": "Sua conta",
       "connectedAs": "Conectado como",
       "logout": "Sair",
-      "confirmTitle": "Sair do Conectar?",
-      "confirmBody": "Sair apaga a sessão e o cache desta aba. Para voltar, é só entrar de novo.",
+      "confirmTitle": "Sair do modo Conectar?",
+      "confirmBody": "Sair apaga a sua conexão e o que veio do Spotify nesta aba. Para voltar, é só entrar de novo.",
       "confirm": "Sair",
       "cancel": "Cancelar",
       "loggingOut": "Saindo…",
@@ -685,7 +706,9 @@
       "minutes": "{value} min",
       "plays": "{count, plural, one {# play} other {# plays}}",
       "artists": "{count, plural, one {# artista} other {# artistas}}",
-      "topArtists": "Top {count} artistas"
+      "tracks": "{count, plural, one {# música} other {# músicas}}",
+      "topArtists": "Top {count} artistas",
+      "topTracks": "Top {count} músicas"
     },
     "window": {
       "short_term": "Últimas 4 semanas",
@@ -694,13 +717,16 @@
     },
     "dialog": {
       "title": "Compartilhar",
-      "lead": "Um cartaz com o seu top, pronto para Stories, feed ou WhatsApp.",
+      "lead": "Um cartaz com o seu top, pronto para os Stories, o feed ou o WhatsApp.",
       "close": "Fechar",
-      "templateLabel": "Template",
+      "templateLabel": "Modelo",
       "templates": {
-        "festival": "Festival",
+        "festival": "Line-up",
+        "tracks": "Músicas",
+        "mix": "Mix",
         "basic": "Básico"
       },
+      "noTracks": "Este período não tem músicas, então Músicas e Mix ficam de fora.",
       "formatLabel": "Formato",
       "formats": {
         "story": "Stories 9:16",
@@ -708,7 +734,7 @@
       },
       "posterLabel": "Nome no cartaz",
       "posterPlaceholder": "Encore Fest",
-      "posterHelp": "Opcional. Fica só na imagem, não é enviado a lugar nenhum.",
+      "posterHelp": "Opcional. Aparece só na imagem e não é enviado para lugar nenhum.",
       "posterTooLong": "Use até {max} caracteres.",
       "posterInvalid": "Use só letras, números, espaços e . - ' & !",
       "previewLabel": "Prévia do card",
@@ -719,15 +745,15 @@
       "noteUpload": "Gerado no seu aparelho, sem enviar nada.",
       "share": "Compartilhar",
       "sharing": "Abrindo…",
-      "download": "Baixar PNG",
+      "download": "Baixar imagem",
       "downloadSecondary": "Baixar",
       "busy": "Gerando…",
       "errorTitle": "Não consegui gerar a imagem",
-      "errorBody": "Pode ter faltado memória ou a conexão caiu ao baixar as fontes.",
+      "errorBody": "O aparelho pode ter ficado sem memória, ou a internet caiu enquanto as letras do cartaz carregavam.",
       "retry": "Tentar de novo",
       "shared": "Card compartilhado",
-      "downloaded": "PNG baixado",
-      "shareFallback": "O compartilhamento não abriu, então baixamos o PNG.",
+      "downloaded": "Imagem baixada",
+      "shareFallback": "O compartilhamento não abriu, então baixamos a imagem.",
       "ready": "Card pronto: {template}, {format}.",
       "timing": "Gerado em {seconds} s"
     },
@@ -737,7 +763,7 @@
     "metaTitle": "Página não encontrada · Encore",
     "overline": "Erro 404",
     "title": "Esta página não existe",
-    "body": "O link pode estar quebrado ou o endereço foi digitado errado. Volte para o início ou explore o Demo, que funciona sem login.",
+    "body": "O link pode estar quebrado ou o endereço foi digitado errado. Volte para o início ou explore a demo, que funciona sem entrar em conta nenhuma.",
     "home": "Ir para o início",
     "demo": "Ver demo"
   }

@@ -132,6 +132,8 @@ describe('worker de cards', () => {
         topArtists: ['A'],
         topTracks: [],
         stats: [],
+        trackStats: [],
+        mixStats: [],
       },
     });
     await generateCard({
@@ -145,6 +147,8 @@ describe('worker de cards', () => {
         topArtists: ['A'],
         topTracks: [],
         stats: [],
+        trackStats: [],
+        mixStats: [],
       },
     });
     expect(FakeWorker.created).toBe(1);
@@ -177,6 +181,8 @@ describe('worker de cards', () => {
         topArtists: [],
         topTracks: [],
         stats: [],
+        trackStats: [],
+        mixStats: [],
       },
     };
     await expect(generateCard(request)).rejects.toThrow('asset 503');

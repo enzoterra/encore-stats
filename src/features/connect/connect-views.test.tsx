@@ -30,7 +30,7 @@ describe('<ConnectLanding />', () => {
     renderWithIntl(<ConnectLanding enabled={false} />);
     const button = screen.getByRole('button', { name: ptBR.Connect.landing.login });
     expect(button).toBeDisabled();
-    expect(button).toHaveAccessibleDescription(/indisponível neste ambiente/);
+    expect(button).toHaveAccessibleDescription(/ainda não está ligado neste site/);
     expect(screen.queryByRole('link', { name: ptBR.Connect.landing.login })).toBeNull();
   });
 
@@ -61,8 +61,8 @@ describe('<ConnectLanding />', () => {
   });
 
   it.each([
-    ['pt-BR', ptBR, /conta dona dele tiver Premium/],
-    ['en', en, /account that owns it has Premium/],
+    ['pt-BR', ptBR, /conta do dono dele tiver Premium/],
+    ['en', en, /owner's account has Premium/],
   ] as const)(
     'fora da allowlist (%s): cita a outra causa do 403, o dono do app sem Premium',
     (locale, messages, premium) => {
@@ -101,5 +101,60 @@ describe('Demo · visão Conectar', () => {
     expect(screen.queryAllByTestId('spotify-logo')).toHaveLength(0);
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(window.sessionStorage.length).toBe(0);
+  });
+
+  it('"Desde o começo" leva à Visão Upload da Demo, já em "Sempre", com o foco no seletor', async () => {
+    renderWithIntl(<DemoView />);
+    const tab = await screen.findByRole('tab', { name: ptBR.Dashboard.tabs.connect });
+    fireEvent.mouseDown(tab, { button: 0 });
+    await screen.findByTestId('connect-dashboard', {}, { timeout: 5000 });
+    const x = ptBR.Connect.dashboard.extras;
+    fireEvent.click(screen.getByRole('button', { name: x.all_time }));
+    const panel = screen.getByRole('region', { name: x.title.all_time });
+    expect(within(panel).getByText(x.bodyDemo, { exact: false })).toBeInTheDocument();
+    expect(within(panel).queryByRole('link', { name: x.upload })).toBeNull();
+    expect(within(panel).getByRole('link', { name: x.howTo })).toHaveAttribute(
+      'href',
+      '/onboarding',
+    );
+
+    fireEvent.click(within(panel).getByRole('button', { name: x.demoUpload }));
+    const dashboard = await screen.findByTestId('dashboard', {}, { timeout: 5000 });
+    expect(dashboard).toHaveAttribute('data-mode', 'demo');
+    expect(screen.getByRole('tab', { name: ptBR.Dashboard.tabs.upload })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.getByTestId('dashboard-title')).toHaveTextContent(ptBR.Dashboard.title.all);
+    const all = screen.getByRole('radio', { name: ptBR.Dashboard.period.modes.all });
+    expect(all).toHaveAttribute('aria-checked', 'true');
+    expect(all).toHaveFocus();
+  });
+
+  it('"Selecionar período" abre a Visão Upload no intervalo; trocar de aba à mão volta ao padrão', async () => {
+    renderWithIntl(<DemoView />, 'en');
+    fireEvent.mouseDown(await screen.findByRole('tab', { name: en.Dashboard.tabs.connect }), {
+      button: 0,
+    });
+    await screen.findByTestId('connect-dashboard', {}, { timeout: 5000 });
+    const x = en.Connect.dashboard.extras;
+    fireEvent.click(screen.getByRole('button', { name: x.custom }));
+    fireEvent.click(screen.getByRole('button', { name: x.demoUpload }));
+    await screen.findByTestId('dashboard', {}, { timeout: 5000 });
+    const range = screen.getByRole('radio', { name: en.Dashboard.period.modes.range });
+    expect(range).toHaveAttribute('aria-checked', 'true');
+    expect(range).toHaveFocus();
+    expect(screen.getByLabelText(en.Dashboard.period.from, { exact: true })).toBeInTheDocument();
+
+    fireEvent.mouseDown(screen.getByRole('tab', { name: en.Dashboard.tabs.connect }), {
+      button: 0,
+    });
+    await screen.findByTestId('connect-dashboard');
+    fireEvent.mouseDown(screen.getByRole('tab', { name: en.Dashboard.tabs.upload }), { button: 0 });
+    await screen.findByTestId('dashboard');
+    expect(screen.getByRole('radio', { name: en.Dashboard.period.modes.year })).toHaveAttribute(
+      'aria-checked',
+      'true',
+    );
   });
 });

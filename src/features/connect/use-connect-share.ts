@@ -24,7 +24,8 @@ export function useConnectShare(range: TimeRange): () => Promise<ShareInput | nu
   return useCallback(async () => {
     const [artists, tracks] = await Promise.all([
       readTop<Artist>(bundle, 'artists', range),
-      readTop<Track>(bundle, 'tracks', range),
+      // Sem o top de músicas, o card sai do mesmo jeito: Músicas e Mix ficam desabilitados.
+      readTop<Track>(bundle, 'tracks', range).catch(() => undefined),
     ]);
     if (!artists || artists.length === 0) return null;
 

@@ -11,6 +11,7 @@ import { renderWithIntl } from '../../../tests/support/intl';
 import { Dashboard } from './dashboard';
 import { HeatmapSection } from './heatmap';
 import { PeriodSelector } from './period-selector';
+import { totalSize } from './totals';
 import { datasetBounds } from './period-utils';
 import { type Format, useFormat } from './use-format';
 
@@ -91,6 +92,15 @@ describe('<Dashboard /> no modo Demo', () => {
     renderDemo('en');
     expect(screen.getByTestId('dashboard-title')).toHaveTextContent(/^Your \d{4}$/);
     expect(screen.getByRole('heading', { name: en.Dashboard.heatmap.title })).toBeInTheDocument();
+  });
+});
+
+describe('totalSize (Iteração 8b.3)', () => {
+  it('números de 7+ caracteres descem um degrau no mobile estreito e na coluna do lg', () => {
+    expect(totalSize('28.834')).toContain('text-[20px]');
+    expect(totalSize('28.834')).not.toContain('text-[18px]');
+    expect(totalSize('128.834')).toContain('text-[18px]');
+    expect(totalSize('128.834')).toContain('lg:text-[17px]');
   });
 });
 

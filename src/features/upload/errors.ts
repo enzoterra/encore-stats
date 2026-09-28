@@ -1,6 +1,6 @@
-import type { HistoryError, HistoryErrorCode } from '@/domain/history';
+import type { UploadError } from './use-history-upload';
 
-export type ShownErrorCode = Exclude<HistoryErrorCode, 'CANCELLED'>;
+export type ShownErrorCode = Exclude<UploadError['code'], 'CANCELLED'>;
 export type UploadAction = 'tryAnother' | 'tryAgain' | 'howTo' | 'report';
 
 /**
@@ -21,12 +21,13 @@ export const ERROR_ACTIONS: Readonly<Record<ShownErrorCode, readonly UploadActio
   UNEXPECTED_FORMAT: ['tryAnother', 'report'],
   INVALID_RECORDS: ['tryAnother', 'report'],
   INTERNAL: ['tryAgain'],
+  OFFLINE: ['tryAgain'],
 };
 
 const MB = 1024 * 1024;
 
 /** Valores interpolados na mensagem. Nomes vindos do arquivo são exibidos só como texto. */
-export function errorValues(error: HistoryError): Record<string, string | number> {
+export function errorValues(error: UploadError): Record<string, string | number> {
   switch (error.code) {
     case 'UNSUPPORTED_FILE':
     case 'INVALID_ZIP':

@@ -59,7 +59,7 @@ export default defineConfig([
     files: [
       'src/domain/**/*.ts',
       'src/workers/**/*.ts',
-      'src/features/cards/{model,text,templates,render,assets,share-input,harfbuzz-browser}.ts',
+      'src/features/cards/{model,text,templates,brand,render,assets,share-input,harfbuzz-browser}.ts',
       'src/features/{upload,dataset,dashboard,demo,onboarding,landing}/**/*.{ts,tsx}',
     ],
     ignores: ['**/*.test.{ts,tsx}'],

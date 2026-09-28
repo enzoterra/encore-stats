@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { Logo } from '@/components/brand/logo';
 import { DEMO_ARTISTS } from '@/domain/demo/catalog';
 
 /**
@@ -58,7 +59,10 @@ export function PosterTeaser({ locale }: { locale: string }) {
             {t('posterStats')}
           </span>
           <span className="flex w-full items-end justify-between text-left">
-            <span className="font-display text-[15px] font-extrabold">encore</span>
+            <span>
+              <Logo id="poster" height={12} />
+              <span className="sr-only">Encore</span>
+            </span>
             <span className="rounded-full bg-info px-2 text-[9px] font-bold tracking-[0.12em] text-on-vibrant">
               DEMO
             </span>

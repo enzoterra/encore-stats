@@ -29,7 +29,7 @@ export function SelfMetricsSection({ self, format }: { self: SelfMetrics; format
         </h2>
         <p className="text-body-sm text-fg-muted">{t('lead')}</p>
       </div>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4">
         <MetricCard
           {...common}
           wide

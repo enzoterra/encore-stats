@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 
+import { Logo } from '@/components/brand/logo';
 import { cn } from '@/components/ui/cn';
 import { Link } from '@/i18n/navigation';
 
@@ -13,7 +14,10 @@ export function SiteFooter({ repoUrl, className }: { repoUrl?: string; className
     <footer className={cn('border-t border-line', className)}>
       <div className="mx-auto flex max-w-page flex-col gap-4 px-4 py-8 text-body-sm sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
         <div className="flex flex-col gap-1">
-          <p className="font-display text-h4 font-extrabold text-primary">encore</p>
+          <p className="py-1">
+            <Logo id="footer" height={12} />
+            <span className="sr-only">Encore</span>
+          </p>
           <p className="text-fg-muted">{t('tagline')}</p>
           <p className="text-caption text-fg-subtle">{t('notAffiliated')}</p>
         </div>

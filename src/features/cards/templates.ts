@@ -1,5 +1,5 @@
 /**
- * Templates Básico e Line-up de festival (10-design.md §9), em árvores `{ type, props }` que o
+ * Templates Básico, Line-up (`festival`), Top músicas (`tracks`) e Mix (10-design.md §9), em árvores `{ type, props }` que o
  * satori aceita sem React. Só flexbox: todo `div` com mais de um filho tem `display: flex`, sem
  * grid nem `foreignObject`. Medidas, tokens e regras de truncamento seguem o protótipo validado
  * em `docs/projeto/design/cards/templates.mjs`. Funções puras: rodam no worker e nos testes.
@@ -12,7 +12,17 @@ import {
   type CardRequest,
   type CardTemplate,
 } from './model';
-import { cleanText, fit, keepTogether, truncate, type FontStep } from './text';
+import { brandMark } from './brand';
+import {
+  cleanText,
+  fit,
+  graphemeLength,
+  keepTogether,
+  tidyTrack,
+  truncate,
+  type Fitted,
+  type FontStep,
+} from './text';
 
 type Style = Record<string, string | number>;
 export type CardChild = CardNode | string;
@@ -32,6 +42,8 @@ export const COLORS = {
   orange: '#FF7A1A',
   cyan: '#3DE0FF',
   ink: '#0E0B1A',
+  /** `primary-fg`: artista das músicas nos cartazes (8,01:1 sobre o fundo, §9.8). */
+  pink: '#FF7AB0',
 } as const;
 
 export const FONT_FAMILY = {
@@ -95,6 +107,103 @@ export const STEPS = {
   },
 } satisfies Record<string, Record<CardFormat, FontStep[]>>;
 
+/** Último degrau das músicas longas: até 2 linhas nesse tamanho, truncado em `max` grafemas. */
+export type TwoLineStep = { max: number; size: number };
+
+/** Degraus do Top músicas (§9.9). Nº 1: 1 linha nos degraus, depois até 2 linhas. */
+export const TRACK_STEPS = {
+  story: {
+    head: [
+      { max: 14, size: 132 },
+      { max: 18, size: 112 },
+      { max: 24, size: 92 },
+      { max: 30, size: 76 },
+    ],
+    headTwo: { max: 52, size: 76 },
+    sub: [
+      { max: 18, size: 84 },
+      { max: 24, size: 68 },
+      { max: 32, size: 56 },
+    ],
+  },
+  square: {
+    head: [
+      { max: 14, size: 88 },
+      { max: 18, size: 74 },
+      { max: 24, size: 60 },
+      { max: 32, size: 50 },
+    ],
+    headTwo: { max: 44, size: 50 },
+    sub: [
+      { max: 20, size: 50 },
+      { max: 26, size: 42 },
+      { max: 34, size: 36 },
+    ],
+  },
+} satisfies Record<CardFormat, { head: FontStep[]; headTwo: TwoLineStep; sub: FontStep[] }>;
+
+/** Músicas no Top músicas: 10 nos dois formatos (nº 1, nº 2–3 e o setlist nº 4–10). */
+export const TRACKS_MAX = 10;
+
+/** Degraus e espaçamentos do Mix (§9.10). */
+export const MIX_STEPS = {
+  story: {
+    artist: STEPS.headliner.story,
+    track: [
+      { max: 14, size: 120 },
+      { max: 18, size: 100 },
+      { max: 24, size: 84 },
+      { max: 30, size: 70 },
+    ],
+    trackTwo: { max: 52, size: 70 },
+    trackSub: [
+      { max: 18, size: 76 },
+      { max: 24, size: 64 },
+      { max: 32, size: 52 },
+    ],
+    gap: 30,
+    artistGap: 16,
+    trackGap: 26,
+    artistSize: 30,
+    subArtistSize: 24,
+    topGap: 48,
+  },
+  square: {
+    artist: [
+      { max: 11, size: 100 },
+      { max: 15, size: 82 },
+      { max: 20, size: 64 },
+    ],
+    track: [
+      { max: 14, size: 76 },
+      { max: 18, size: 64 },
+      { max: 24, size: 54 },
+      { max: 32, size: 46 },
+    ],
+    trackTwo: { max: 44, size: 46 },
+    trackSub: [
+      { max: 18, size: 50 },
+      { max: 24, size: 42 },
+      { max: 32, size: 36 },
+    ],
+    gap: 16,
+    artistGap: 4,
+    trackGap: 10,
+    artistSize: 18,
+    subArtistSize: 16,
+    topGap: 24,
+  },
+} satisfies Record<
+  CardFormat,
+  {
+    artist: FontStep[];
+    track: FontStep[];
+    trackTwo: TwoLineStep;
+    trackSub: FontStep[];
+    [key: string]: unknown;
+  }
+>;
+
 /** Separador do line-up: a quebra de linha só acontece aqui. */
 export const LINEUP_SEPARATOR = '  •  ';
 
@@ -116,19 +225,6 @@ const oneLine: Style = { whiteSpace: 'nowrap', overflow: 'hidden', textOverflow:
 const upper = (value: string, locale: string) => value.toLocaleUpperCase(locale);
 
 // ---------- peças comuns ----------
-function wordmark(size: number, color: string = COLORS.magenta): CardNode {
-  return text(
-    {
-      fontFamily: FONT_FAMILY.display,
-      fontWeight: 800,
-      fontSize: size,
-      color,
-      letterSpacing: -1,
-    },
-    'encore',
-  );
-}
-
 function chip(label: string): CardNode {
   return text(
     {
@@ -170,8 +266,9 @@ function demoTag(d: CardData): CardNode {
 function footer(mode: CardMode, d: CardData, compact: boolean): CardNode {
   const left = h(
     'div',
-    { flexDirection: 'column', gap: 4 },
-    wordmark(compact ? 34 : 40, COLORS.text),
+    { flexDirection: 'column', gap: 8 },
+    // Lockup da logo: 30 px no Stories (LOGO.md) e 26 px no Quadrado.
+    brandMark(compact ? 26 : 30),
     d.siteLabel
       ? text({ fontFamily: FONT_FAMILY.body, fontSize: 22, color: COLORS.subtle }, d.siteLabel)
       : null,
@@ -210,23 +307,45 @@ type Rgb = readonly [number, number, number];
 type Radial = { x: number; y: number; color: Rgb; alpha: number; stop: number };
 type Layers = { linear: [string, number][]; radials: Radial[] };
 
+/** Base "noite de show" comum aos três cartazes (§9.4, §9.8). */
+const STAGE_LINEAR: [string, number][] = [
+  ['#0E0B1A', 0],
+  ['#140E28', 0.55],
+  ['#2A0F3D', 0.82],
+  ['#4A1247', 1],
+];
+const MAGENTA: Rgb = [255, 61, 139];
+const CYAN: Rgb = [61, 224, 255];
+const ORANGE: Rgb = [255, 122, 26];
+
 /**
- * Fundos (§9.3, §9.4) em camadas CSS: a primeira radial fica por cima. O satori transforma
+ * Fundos (§9.3, §9.4, §9.8) em camadas CSS: a primeira radial fica por cima. O satori transforma
  * `background-image` em `<pattern>` com máscara do tamanho do canvas, e o resvg leva ~2,5 s para
  * pintar isso num Stories. Por isso o fundo é desenhado direto em SVG (`backgroundSvg`), com
  * gradientes equivalentes, e injetado antes do conteúdo: ~0,3 s.
  */
 const BACKGROUNDS: Record<CardTemplate, Layers> = {
   festival: {
-    linear: [
-      ['#0E0B1A', 0],
-      ['#140E28', 0.55],
-      ['#2A0F3D', 0.82],
-      ['#4A1247', 1],
-    ],
+    linear: STAGE_LINEAR,
     radials: [
-      { x: 0.12, y: 0.06, color: [255, 61, 139], alpha: 0.55, stop: 0.38 },
-      { x: 0.9, y: 0.1, color: [61, 224, 255], alpha: 0.4, stop: 0.34 },
+      { x: 0.12, y: 0.06, color: MAGENTA, alpha: 0.55, stop: 0.38 },
+      { x: 0.9, y: 0.1, color: CYAN, alpha: 0.4, stop: 0.34 },
+    ],
+  },
+  // Top músicas: holofotes trocados de lado (ciano à esquerda, magenta à direita).
+  tracks: {
+    linear: STAGE_LINEAR,
+    radials: [
+      { x: 0.1, y: 0.06, color: CYAN, alpha: 0.4, stop: 0.34 },
+      { x: 0.9, y: 0.08, color: MAGENTA, alpha: 0.55, stop: 0.38 },
+    ],
+  },
+  // Mix: magenta à esquerda e laranja à direita (os dois "palcos").
+  mix: {
+    linear: STAGE_LINEAR,
+    radials: [
+      { x: 0.12, y: 0.06, color: MAGENTA, alpha: 0.55, stop: 0.38 },
+      { x: 0.9, y: 0.1, color: ORANGE, alpha: 0.38, stop: 0.34 },
     ],
   },
   basic: {
@@ -371,7 +490,7 @@ function basic(format: CardFormat, mode: CardMode, d: CardData): CardNode {
   const header = h(
     'div',
     { width: '100%', justifyContent: 'space-between', alignItems: 'center', gap: 24 },
-    wordmark(story ? 44 : 36),
+    brandMark(story ? 33 : 27),
     h(
       'div',
       { gap: 12, alignItems: 'center', flexShrink: 1 },
@@ -575,15 +694,14 @@ function basic(format: CardFormat, mode: CardMode, d: CardData): CardNode {
 }
 
 // =====================================================================
-// Template 2 — LINE-UP DE FESTIVAL (§9.4, sempre tipográfico, sem capas)
+// Família "cartaz de festival" (Line-up, Top músicas, Mix): peças comuns (§9.8)
 // =====================================================================
 
 /** Headliners nº 1–3: nº 2 e nº 3 a 80% do degrau e com o mesmo tamanho (o menor dos dois). */
-export function headliners(artists: readonly string[], format: CardFormat, locale: string) {
-  const steps = STEPS.headliner[format];
-  const fits = artists.slice(0, 3).map((name, i) =>
+function podium(names: readonly string[], steps: readonly FontStep[]): Fitted[] {
+  const fits = names.slice(0, 3).map((name, i) =>
     fit(
-      upper(name, locale),
+      name,
       steps.map((step) => ({ ...step, size: i === 0 ? step.size : Math.round(step.size * 0.8) })),
     ),
   );
@@ -595,6 +713,24 @@ export function headliners(artists: readonly string[], format: CardFormat, local
   return fits;
 }
 
+/** Nº 2 e nº 3 com o mesmo tamanho (o menor dos dois). */
+function sameSize(fits: Fitted[]): Fitted[] {
+  if (fits.length === 2) {
+    const size = Math.min(fits[0]!.size, fits[1]!.size);
+    fits[0]!.size = size;
+    fits[1]!.size = size;
+  }
+  return fits;
+}
+
+/** Headliners do Line-up (§9.4). */
+export function headliners(artists: readonly string[], format: CardFormat, locale: string) {
+  return podium(
+    artists.slice(0, 3).map((name) => upper(name, locale)),
+    STEPS.headliner[format],
+  );
+}
+
 /** Linha do line-up: nomes com espaços inquebráveis, separados por " • ". */
 export function lineup(names: readonly string[], locale: string): string {
   return names
@@ -602,48 +738,19 @@ export function lineup(names: readonly string[], locale: string): string {
     .join(LINEUP_SEPARATOR);
 }
 
-/** Título em linha única: "ENCORE FEST" ou "FESTIVAL {NOME}" (§9.4). */
+/** Título em linha única: "ENCORE FEST" ou "FESTIVAL {NOME}" (§9.4), igual nos três cartazes. */
 export function festivalTitle(d: CardData, format: CardFormat) {
   const name = d.posterName?.trim();
   const raw = name ? `${d.t.festOf} ${name}` : d.t.festDefault;
   return fit(upper(raw, d.locale), STEPS.festivalTitle[format]);
 }
 
-function festival(format: CardFormat, mode: CardMode, d: CardData): CardNode {
+/** Cabeçalho do cartaz: "ENCORE APRESENTA" (+ DEMO) · título magenta · chip do período. */
+function posterHeader(format: CardFormat, mode: CardMode, d: CardData): CardNode {
   const story = format === 'story';
-  const f = FORMATS[format];
-  const loc = d.locale;
-  const U = (value: string) => upper(value, loc);
-  const headColors = [COLORS.yellow, COLORS.text, COLORS.text];
-  const head = headliners(d.topArtists, format, loc).map((r, i) =>
-    text(
-      {
-        fontFamily: FONT_FAMILY.condensed,
-        fontWeight: 800,
-        fontSize: r.size,
-        color: headColors[i]!,
-        lineHeight: 0.92,
-        textAlign: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        ...oneLine,
-      },
-      r.text,
-    ),
-  );
-  const tier2 = lineup(d.topArtists.slice(3, 10), loc);
-  const tier3 = lineup(d.topArtists.slice(10, story ? 25 : 20), loc);
+  const U = (value: string) => upper(value, d.locale);
   const title = festivalTitle(d, format);
-
-  const divider = h(
-    'div',
-    { width: '100%', alignItems: 'center', gap: 20 },
-    h('div', { flexGrow: 1, height: 3, background: COLORS.magenta }),
-    h('div', { width: 14, height: 14, background: COLORS.yellow, transform: 'rotate(45deg)' }),
-    h('div', { flexGrow: 1, height: 3, background: COLORS.magenta }),
-  );
-
-  const header = h(
+  return h(
     'div',
     { flexDirection: 'column', alignItems: 'center', gap: story ? 14 : 8, width: '100%' },
     h(
@@ -688,12 +795,229 @@ function festival(format: CardFormat, mode: CardMode, d: CardData): CardNode {
       U(truncate(d.periodLabel, 28)),
     ),
   );
+}
+
+const rule = () => h('div', { flexGrow: 1, height: 3, background: COLORS.magenta });
+
+/** Divisor: linha magenta de 3 px + losango amarelo de 14 px no centro. */
+function posterDivider(): CardNode {
+  return h(
+    'div',
+    { width: '100%', alignItems: 'center', gap: 20 },
+    rule(),
+    h('div', { width: 14, height: 14, background: COLORS.yellow, transform: 'rotate(45deg)' }),
+    rule(),
+  );
+}
+
+/** "Placa de palco": rótulo da seção (ink sobre magenta, 5,82:1) no centro de um divisor. */
+function stageSign(label: string, format: CardFormat, d: CardData): CardNode {
+  const story = format === 'story';
+  return h(
+    'div',
+    { width: '100%', alignItems: 'center', gap: 20 },
+    rule(),
+    text(
+      {
+        fontFamily: FONT_FAMILY.body,
+        fontWeight: 700,
+        fontSize: story ? 26 : 20,
+        color: COLORS.ink,
+        background: COLORS.magenta,
+        padding: story ? '8px 22px' : '6px 16px',
+        borderRadius: 8,
+        letterSpacing: story ? 5 : 4,
+        flexShrink: 0,
+      },
+      upper(label, d.locale),
+    ),
+    rule(),
+  );
+}
+
+/** Linha de estatísticas laranja, em caixa alta; some se a lista vier vazia. */
+function posterStats(format: CardFormat, d: CardData, stats: readonly string[]): CardNode | null {
+  return stats.length > 0
+    ? text(
+        {
+          fontFamily: FONT_FAMILY.body,
+          fontWeight: 700,
+          fontSize: format === 'story' ? 28 : 22,
+          color: COLORS.orange,
+          letterSpacing: 3,
+          textAlign: 'center',
+          justifyContent: 'center',
+          width: '100%',
+        },
+        upper(stats.join('  ·  '), d.locale),
+      )
+    : null;
+}
+
+/** Moldura comum: conteúdo no topo; estatísticas + rodapé na base, dentro da área segura. */
+function posterFrame(
+  format: CardFormat,
+  mode: CardMode,
+  d: CardData,
+  top: CardNode[],
+  stats: readonly string[],
+  topGap: number,
+): CardNode {
+  const story = format === 'story';
+  const f = FORMATS[format];
+  return h(
+    'div',
+    {
+      width: f.width,
+      height: f.height,
+      flexDirection: 'column',
+      backgroundColor: 'transparent',
+      padding: `${f.padTop}px ${f.padX}px ${f.padBottom}px`,
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 32,
+    },
+    h('div', { flexDirection: 'column', alignItems: 'center', gap: topGap, width: '100%' }, ...top),
+    h(
+      'div',
+      { flexDirection: 'column', gap: story ? 40 : 20, width: '100%' },
+      posterStats(format, d, stats),
+      footer(mode, d, !story),
+    ),
+  );
+}
+
+/** Nome em destaque centralizado, em linha única (headliners e artistas do Mix). */
+function centered(value: string, size: number, color: string, lineHeight: number): CardNode {
+  return text(
+    {
+      fontFamily: FONT_FAMILY.condensed,
+      fontWeight: 800,
+      fontSize: size,
+      color,
+      lineHeight,
+      textAlign: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      ...oneLine,
+    },
+    value,
+  );
+}
+
+// ---------- nomes de música ----------
+type PosterTrack = { name: string; artist: string };
+
+/** Músicas para os cartazes: limpeza de feat./remaster (§9.11) e caixa alta pelo locale. */
+function posterTracks(d: CardData, max: number): PosterTrack[] {
+  return d.topTracks.slice(0, max).map((t) => ({
+    name: upper(tidyTrack(t.name), d.locale),
+    artist: t.artist ? upper(t.artist, d.locale) : '',
+  }));
+}
+
+export type FittedTrack = Fitted & { lines: 1 | 2 };
+
+/** Degraus de uma linha; acima do último orçamento, até 2 linhas no tamanho `twoLine`. */
+export function fitTrack(
+  value: string,
+  steps: readonly FontStep[],
+  twoLine: TwoLineStep,
+): FittedTrack {
+  if (graphemeLength(value) <= steps[steps.length - 1]!.max) {
+    return { ...fit(value, steps), lines: 1 };
+  }
+  return { text: truncate(value, twoLine.max), size: twoLine.size, lines: 2 };
+}
+
+/** Bloco "música + artista", centralizado; o artista vem em rosa (§9.8). */
+function trackBlock(
+  track: { text: string; size: number; lines: 1 | 2; artist: string; color: string },
+  artistSize: number,
+  gap: number,
+): CardNode {
+  return h(
+    'div',
+    { flexDirection: 'column', alignItems: 'center', gap, width: '100%' },
+    text(
+      {
+        fontFamily: FONT_FAMILY.condensed,
+        fontWeight: 800,
+        fontSize: track.size,
+        color: track.color,
+        lineHeight: 0.95,
+        textAlign: 'center',
+        justifyContent: 'center',
+        width: '100%',
+        ...(track.lines > 1
+          ? { lineClamp: track.lines, overflow: 'hidden', wordBreak: 'break-word' }
+          : oneLine),
+      },
+      track.text,
+    ),
+    track.artist
+      ? text(
+          {
+            fontFamily: FONT_FAMILY.body,
+            fontWeight: 700,
+            fontSize: artistSize,
+            color: COLORS.pink,
+            letterSpacing: 3,
+            textAlign: 'center',
+            justifyContent: 'center',
+            maxWidth: '100%',
+            ...oneLine,
+          },
+          truncate(track.artist, 32),
+        )
+      : null,
+  );
+}
+
+/**
+ * Nº 1 (amarelo, até 2 linhas) e nº 2–3 (brancos, mesmo tamanho) de uma lista de músicas.
+ * `sizes` = [artista do nº 1, artista dos nº 2–3]; `gaps` idem, entre o nome e o artista.
+ */
+function podiumTracks(
+  list: readonly PosterTrack[],
+  steps: { head: readonly FontStep[]; headTwo: TwoLineStep; sub: readonly FontStep[] },
+  sizes: readonly [number, number],
+  gaps: readonly [number, number],
+): CardNode[] {
+  const [first, ...rest] = list;
+  if (!first) return [];
+  const head = fitTrack(first.name, steps.head, steps.headTwo);
+  const subs = sameSize(rest.slice(0, 2).map((t) => fit(t.name, steps.sub)));
+  return [
+    trackBlock({ ...head, artist: first.artist, color: COLORS.yellow }, sizes[0], gaps[0]),
+    ...subs.map((r, i) =>
+      trackBlock(
+        { ...r, lines: 1, artist: rest[i]!.artist, color: COLORS.text },
+        sizes[1],
+        gaps[1],
+      ),
+    ),
+  ];
+}
+
+// =====================================================================
+// Template 2 — LINE-UP DE FESTIVAL (§9.4, sempre tipográfico, sem capas)
+// =====================================================================
+function festival(format: CardFormat, mode: CardMode, d: CardData): CardNode {
+  const story = format === 'story';
+  const loc = d.locale;
+  const headColors = [COLORS.yellow, COLORS.text, COLORS.text];
+  const head = headliners(d.topArtists, format, loc).map((r, i) =>
+    centered(r.text, r.size, headColors[i]!, 0.92),
+  );
+  const tier2 = lineup(d.topArtists.slice(3, 10), loc);
+  const tier3 = lineup(d.topArtists.slice(10, story ? 25 : 20), loc);
 
   const lineupBlock = h(
     'div',
     { flexDirection: 'column', alignItems: 'center', gap: story ? 28 : 16, width: '100%' },
     ...head,
-    tier2 ? divider : null,
+    tier2 ? posterDivider() : null,
     tier2
       ? text(
           {
@@ -727,53 +1051,202 @@ function festival(format: CardFormat, mode: CardMode, d: CardData): CardNode {
       : null,
   );
 
-  const stats =
-    d.stats.length > 0
-      ? text(
-          {
-            fontFamily: FONT_FAMILY.body,
-            fontWeight: 700,
-            fontSize: story ? 28 : 22,
-            color: COLORS.orange,
-            letterSpacing: 3,
-            textAlign: 'center',
-            justifyContent: 'center',
-            width: '100%',
-          },
-          U(d.stats.join('  ·  ')),
-        )
-      : null;
+  return posterFrame(
+    format,
+    mode,
+    d,
+    [posterHeader(format, mode, d), lineupBlock],
+    d.stats,
+    story ? 64 : 28,
+  );
+}
 
+// =====================================================================
+// Template 3 — TOP MÚSICAS (§9.9, "o setlist do festival"; sempre tipográfico, sem capas)
+// =====================================================================
+function setlistNumber(n: number, size: number, width: number): CardNode {
+  return text(
+    {
+      fontFamily: FONT_FAMILY.display,
+      fontWeight: 800,
+      fontSize: size,
+      color: COLORS.yellow,
+      width,
+      flexShrink: 0,
+    },
+    String(n),
+  );
+}
+
+/** Nº 4–10. Stories: uma coluna centralizada como bloco, com as linhas alinhadas à esquerda. */
+function storySetlist(tail: readonly PosterTrack[]): CardNode {
   return h(
     'div',
-    {
-      width: f.width,
-      height: f.height,
-      flexDirection: 'column',
-      backgroundColor: 'transparent',
-      padding: `${f.padTop}px ${f.padX}px ${f.padBottom}px`,
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      gap: 32,
-    },
-    h(
-      'div',
-      { flexDirection: 'column', alignItems: 'center', gap: story ? 64 : 28, width: '100%' },
-      header,
-      lineupBlock,
-    ),
-    h(
-      'div',
-      { flexDirection: 'column', gap: story ? 40 : 20, width: '100%' },
-      stats,
-      footer(mode, d, !story),
+    { flexDirection: 'column', alignItems: 'flex-start', gap: 10, maxWidth: '100%' },
+    ...tail.map((t, i) =>
+      h(
+        'div',
+        { alignItems: 'baseline', gap: 16, maxWidth: '100%' },
+        setlistNumber(i + 4, 33, 52),
+        text(
+          {
+            fontFamily: FONT_FAMILY.condensed,
+            fontWeight: 800,
+            fontSize: 46,
+            color: COLORS.text,
+            lineHeight: 1.05,
+            flexShrink: 1,
+            ...oneLine,
+          },
+          keepTogether(truncate(t.name, 30)),
+        ),
+        t.artist
+          ? text(
+              {
+                fontFamily: FONT_FAMILY.body,
+                fontWeight: 600,
+                fontSize: 24,
+                color: COLORS.muted,
+                flexShrink: 0,
+                ...oneLine,
+              },
+              truncate(t.artist, 20),
+            )
+          : null,
+      ),
     ),
   );
 }
 
+/** Nº 4–10 no 1:1: duas colunas (nº 4–7 | nº 8–10), nome em cima e artista embaixo. */
+function squareSetlist(tail: readonly PosterTrack[]): CardNode {
+  const item = (t: PosterTrack, i: number) =>
+    h(
+      'div',
+      { alignItems: 'baseline', gap: 10, width: '100%' },
+      setlistNumber(i + 4, 26, 38),
+      h(
+        'div',
+        { flexDirection: 'column', flexShrink: 1, minWidth: 0 },
+        text(
+          {
+            fontFamily: FONT_FAMILY.condensed,
+            fontWeight: 800,
+            fontSize: 32,
+            color: COLORS.text,
+            lineHeight: 1.05,
+            ...oneLine,
+          },
+          keepTogether(truncate(t.name, 28)),
+        ),
+        t.artist
+          ? text(
+              {
+                fontFamily: FONT_FAMILY.body,
+                fontWeight: 600,
+                fontSize: 17,
+                color: COLORS.muted,
+                lineHeight: 1.25,
+                ...oneLine,
+              },
+              truncate(t.artist, 30),
+            )
+          : null,
+      ),
+    );
+  const right = tail.slice(4, 7);
+  return h(
+    'div',
+    { width: '100%', gap: 32, alignItems: 'flex-start' },
+    h('div', { flexDirection: 'column', gap: 10, width: 452 }, ...tail.slice(0, 4).map(item)),
+    right.length > 0
+      ? h(
+          'div',
+          { flexDirection: 'column', gap: 10, width: 452 },
+          ...right.map((t, i) => item(t, i + 4)),
+        )
+      : null,
+  );
+}
+
+function tracks(format: CardFormat, mode: CardMode, d: CardData): CardNode {
+  const story = format === 'story';
+  const list = posterTracks(d, TRACKS_MAX);
+  const top = podiumTracks(
+    list,
+    TRACK_STEPS[format],
+    story ? [30, 24] : [22, 18],
+    story ? [12, 8] : [8, 4],
+  );
+  const tail = list.slice(3);
+  const setlist = tail.length === 0 ? null : story ? storySetlist(tail) : squareSetlist(tail);
+
+  const body = h(
+    'div',
+    { flexDirection: 'column', alignItems: 'center', gap: story ? 26 : 14, width: '100%' },
+    stageSign(d.t.tracks, format, d),
+    ...top,
+    setlist ? posterDivider() : null,
+    setlist,
+  );
+  return posterFrame(
+    format,
+    mode,
+    d,
+    [posterHeader(format, mode, d), body],
+    d.trackStats,
+    story ? 48 : 20,
+  );
+}
+
+// =====================================================================
+// Template 4 — MIX (§9.10, top 3 artistas + top 3 músicas; sempre tipográfico, sem capas)
+// =====================================================================
+function mix(format: CardFormat, mode: CardMode, d: CardData): CardNode {
+  const story = format === 'story';
+  const S = MIX_STEPS[format];
+  const artists = podium(
+    d.topArtists.slice(0, 3).map((name) => upper(name, d.locale)),
+    S.artist,
+  ).map((r, i) => centered(r.text, r.size, i === 0 ? COLORS.yellow : COLORS.text, 0.95));
+  const songs = podiumTracks(
+    posterTracks(d, 3),
+    { head: S.track, headTwo: S.trackTwo, sub: S.trackSub },
+    [S.artistSize, S.subArtistSize],
+    story ? [10, 6] : [4, 2],
+  );
+
+  const body = h(
+    'div',
+    { flexDirection: 'column', alignItems: 'center', gap: S.gap, width: '100%' },
+    stageSign(d.t.artists, format, d),
+    h(
+      'div',
+      { flexDirection: 'column', alignItems: 'center', gap: S.artistGap, width: '100%' },
+      ...artists,
+    ),
+    songs.length > 0 ? stageSign(d.t.tracks, format, d) : null,
+    songs.length > 0
+      ? h(
+          'div',
+          { flexDirection: 'column', alignItems: 'center', gap: S.trackGap, width: '100%' },
+          ...songs,
+        )
+      : null,
+  );
+  return posterFrame(format, mode, d, [posterHeader(format, mode, d), body], d.mixStats, S.topGap);
+}
+
+const TEMPLATES: Record<CardTemplate, (f: CardFormat, m: CardMode, d: CardData) => CardNode> = {
+  festival,
+  tracks,
+  mix,
+  basic,
+};
+
 /**
  * Árvore do card. Upload e Demo nunca levam capa nem logo, mesmo que venham nos dados
- * (§9.6 e §10, itens 16 e 17); o Festival nunca leva capa.
+ * (§9.6 e §10, itens 16 e 17); só o Básico leva capa, e só no Conectar.
  */
 export function buildCard({ template, format, mode, data }: CardRequest): CardNode {
   const d = normalize(data);
@@ -781,5 +1254,5 @@ export function buildCard({ template, format, mode, data }: CardRequest): CardNo
     mode === 'connect'
       ? { ...d, cover: template === 'basic' ? d.cover : undefined }
       : { ...d, cover: undefined, spotifyLogo: undefined };
-  return template === 'festival' ? festival(format, mode, safe) : basic(format, mode, safe);
+  return TEMPLATES[template](format, mode, safe);
 }

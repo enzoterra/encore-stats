@@ -10,6 +10,8 @@ import type { Artist, TimeRange, Track } from '@/domain/spotify-types';
 import type { CardMode, CardTrack } from './model';
 
 export const MAX_CARD_ARTISTS = 25;
+/** Top músicas: 10 músicas nos dois formatos (§9.9). O Básico usa só as primeiras. */
+export const MAX_CARD_TRACKS = 10;
 
 export type ShareInput = {
   mode: CardMode;
@@ -19,7 +21,12 @@ export type ShareInput = {
   topTracks: CardTrack[];
   heroSub?: string;
   stat?: { value: string; label: string };
+  /** Estatísticas do Line-up. */
   stats: string[];
+  /** Estatísticas do Top músicas. */
+  trackStats: string[];
+  /** Estatísticas do Mix; vazias no Conectar (a janela já está no chip). */
+  mixStats: string[];
   /** Capa da música nº 1 (só Conectar real; o Demo não tem capas). */
   coverUrl?: string;
 };
@@ -63,21 +70,28 @@ export function uploadShareInput({
         ? t('stat.minutesRange')
         : t('stat.minutesIn', { label: periodLabel });
   const minutes = format.minutes(stats.totals.ms);
+  const lineupStats = [
+    t('stats.minutes', { value: minutes }),
+    t('stats.plays', { count: stats.totals.plays }),
+    t('stats.artists', { count: stats.totals.artists }),
+  ];
   return {
     mode,
     periodLabel,
     topArtists: stats.top.artists.slice(0, MAX_CARD_ARTISTS).map((a) => a.name),
-    topTracks: stats.top.tracks.slice(0, 5).map((track) => ({
+    topTracks: stats.top.tracks.slice(0, MAX_CARD_TRACKS).map((track) => ({
       name: track.name,
       artist: track.artist,
     })),
     heroSub,
     stat: { value: minutes, label: statLabel },
-    stats: [
-      t('stats.minutes', { value: minutes }),
+    stats: lineupStats,
+    trackStats: [
       t('stats.plays', { count: stats.totals.plays }),
-      t('stats.artists', { count: stats.totals.artists }),
+      t('stats.tracks', { count: stats.totals.tracks }),
+      t('stats.minutes', { value: minutes }),
     ],
+    mixStats: lineupStats,
   };
 }
 
@@ -88,7 +102,8 @@ export type LikedTop = { id: string; name: string; count: number };
  * - Sub-herói: tendência do nº 1 (janela de 4 semanas contra 6 meses) ou os gêneros dele;
  * - destaque do Básico (§9.6): curtidas do nº 1 (se a varredura rodou), senão o gênero nº 1
  *   (se houver ≥ 3), senão nada;
- * - Festival: "TOP N ARTISTAS · {JANELA}".
+ * - Line-up: "TOP N ARTISTAS · {JANELA}"; Top músicas: "TOP N MÚSICAS · {JANELA}"; Mix: sem linha
+ *   (a janela já está no chip, e "TOP 25 ARTISTAS" seria falso ali).
  */
 export function connectShareInput({
   range,
@@ -130,17 +145,21 @@ export function connectShareInput({
       ? { value: topGenre, label: t('stat.genre') }
       : undefined;
   const top = artists.slice(0, MAX_CARD_ARTISTS);
+  const topTracks = tracks.slice(0, MAX_CARD_TRACKS);
   return {
     mode: demo ? 'demo' : 'connect',
     periodLabel: windowLabel,
     topArtists: top.map((a) => a.name),
-    topTracks: tracks.slice(0, 5).map((track) => ({
+    topTracks: topTracks.map((track) => ({
       name: track.name,
       artist: track.artists.map((a) => a.name).join(', '),
     })),
     heroSub,
     stat,
     stats: [t('stats.topArtists', { count: top.length }), windowLabel],
+    trackStats:
+      topTracks.length > 0 ? [t('stats.topTracks', { count: topTracks.length }), windowLabel] : [],
+    mixStats: [],
     coverUrl: demo ? undefined : tracks[0]?.album.image,
   };
 }

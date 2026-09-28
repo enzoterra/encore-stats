@@ -2,7 +2,7 @@
 
 import { useTranslations } from 'next-intl';
 import { Tabs } from 'radix-ui';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Skeleton } from '@/components/ui/skeleton';
 import { useHydrated } from '@/components/ui/use-hydrated';
@@ -10,6 +10,7 @@ import { createConnectBundle } from '@/features/connect/connect-client';
 import { ConnectDashboard } from '@/features/connect/connect-dashboard';
 import { ConnectProvider } from '@/features/connect/connect-provider';
 import { createDemoSource } from '@/features/connect/demo-source';
+import { EXTRA_PERIOD_KIND, type WindowExtra } from '@/features/connect/window-extras';
 import { Dashboard } from '@/features/dashboard/dashboard';
 import { useDatasetStore } from '@/features/dataset/store';
 
@@ -24,6 +25,10 @@ export function DemoView({ repoUrl }: { repoUrl?: string }) {
   const demo = useDatasetStore((state) => state.demo);
   const setDemo = useDatasetStore((state) => state.setDemo);
   const hydrated = useHydrated();
+  const [tab, setTab] = useState<DemoTab>('upload');
+  // Atalho "Desde o começo"/"Selecionar período" da Visão Conectar: abre a Visão Upload já no
+  // modo equivalente. Some ao trocar de aba à mão, para não roubar o foco depois.
+  const [uploadStart, setUploadStart] = useState<'all' | 'range' | null>(null);
   // Um cliente de queries por Demo carregado: trocar de aba e voltar reaproveita o cache.
   const connectBundle = useMemo(
     () => (demo ? createConnectBundle(createDemoSource(demo.api)) : null),
@@ -44,8 +49,17 @@ export function DemoView({ repoUrl }: { repoUrl?: string }) {
   // As abas só existem no cliente: o Radix Tabs gera `style` no SSR, que a CSP bloquearia.
   if (!hydrated) return <DemoSkeleton />;
 
+  const changeTab = (next: string) => {
+    setUploadStart(null);
+    setTab(next as DemoTab);
+  };
+  const openUpload = (extra: WindowExtra) => {
+    setUploadStart(EXTRA_PERIOD_KIND[extra]);
+    setTab('upload');
+  };
+
   return (
-    <Tabs.Root defaultValue="upload" className="flex flex-col">
+    <Tabs.Root value={tab} onValueChange={changeTab} className="flex flex-col">
       <div className="border-b border-line">
         <Tabs.List
           aria-label={t('tabs.label')}
@@ -69,6 +83,7 @@ export function DemoView({ repoUrl }: { repoUrl?: string }) {
             dataset={demo.dataset}
             timeZone={demo.timeZone}
             repoUrl={repoUrl}
+            initialPeriodKind={uploadStart ?? undefined}
           />
         ) : (
           <DemoSkeleton />
@@ -77,7 +92,7 @@ export function DemoView({ repoUrl }: { repoUrl?: string }) {
       <Tabs.Content value="connect" className="outline-none">
         {connectBundle ? (
           <ConnectProvider bundle={connectBundle}>
-            <ConnectDashboard repoUrl={repoUrl} />
+            <ConnectDashboard repoUrl={repoUrl} onOpenUpload={openUpload} />
           </ConnectProvider>
         ) : (
           <DemoSkeleton />
@@ -86,6 +101,8 @@ export function DemoView({ repoUrl }: { repoUrl?: string }) {
     </Tabs.Root>
   );
 }
+
+type DemoTab = 'upload' | 'connect';
 
 function DemoSkeleton() {
   const t = useTranslations('Dashboard');
@@ -100,7 +117,7 @@ function DemoSkeleton() {
       <Skeleton className="h-10 w-2/3 max-w-sm" />
       <Skeleton className="h-11 w-full max-w-2xl rounded-full" />
       <Skeleton className="h-36 w-full" />
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         <Skeleton className="h-16" />
         <Skeleton className="h-16" />
         <Skeleton className="h-16" />

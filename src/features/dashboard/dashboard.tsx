@@ -53,6 +53,17 @@ function periodLabel(period: Period, format: Format, allLabel: string): string {
   }
 }
 
+function initialPeriod(
+  fallback: Period,
+  bounds: { min: string; max: string },
+  kind: 'all' | 'range' | undefined,
+): Period {
+  if (kind === 'all') return { kind: 'all' };
+  if (kind === 'range')
+    return { kind: 'range', ...clampDates(periodDates(fallback, bounds), bounds) };
+  return fallback;
+}
+
 /**
  * Dashboard dos modos Upload e Demo (RF-07..RF-11, 10-design.md §8.3–§8.9 e mockup A).
  * Tudo é calculado no navegador por `computeStats` (função pura); a troca de período é um
@@ -67,6 +78,7 @@ export function Dashboard({
   onReset,
   repoUrl,
   focusOnMount = false,
+  initialPeriodKind,
 }: {
   dataset: Dataset;
   timeZone: string;
@@ -76,6 +88,11 @@ export function Dashboard({
   onReset?: () => void;
   repoUrl?: string;
   focusOnMount?: boolean;
+  /**
+   * Abre já em "Sempre" ou "Intervalo" e leva o foco ao seletor de período (Demo: atalho da
+   * Visão Conectar, Iteração 8b.4).
+   */
+  initialPeriodKind?: 'all' | 'range';
 }) {
   const t = useTranslations('Dashboard');
   const tUpload = useTranslations('Upload');
@@ -83,7 +100,9 @@ export function Dashboard({
   const format = useFormat(timeZone);
   const months = useMemo(() => availableMonths(dataset, timeZone), [dataset, timeZone]);
   const bounds = useMemo(() => datasetBounds(dataset, timeZone), [dataset, timeZone]);
-  const [period, setPeriod] = useState<Period>(() => defaultPeriod(months));
+  const [period, setPeriod] = useState<Period>(() =>
+    initialPeriod(defaultPeriod(months), bounds, initialPeriodKind),
+  );
   const [announcement, setAnnouncement] = useState('');
   const [bannerOpen, setBannerOpen] = useState(() => mode === 'demo' || !readDismissed());
   const title = useRef<HTMLHeadingElement>(null);
@@ -98,6 +117,17 @@ export function Dashboard({
   useEffect(() => {
     if (focusOnMount) title.current?.focus();
   }, [focusOnMount]);
+
+  // Só na montagem: quem chegou pelo atalho cai no seletor, no modo já escolhido.
+  const startedAt = useRef(initialPeriodKind);
+  useEffect(() => {
+    if (!startedAt.current) return;
+    const checked = periodBox.current?.querySelector<HTMLElement>(
+      '[role="radio"][aria-checked="true"]',
+    );
+    periodBox.current?.scrollIntoView({ block: 'center' });
+    checked?.focus({ preventScroll: true });
+  }, []);
 
   useEffect(() => {
     setRaised(true);
@@ -249,7 +279,7 @@ export function Dashboard({
           </p>
         </div>
       ) : (
-        <div className="grid gap-8 md:grid-cols-2 md:gap-x-6 lg:grid-cols-12 lg:items-start lg:gap-x-8 lg:gap-y-12 [&>*]:min-w-0">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-x-8 lg:grid-cols-12 lg:items-start lg:gap-x-8 lg:gap-y-12 xl:gap-x-10 [&>*]:min-w-0">
           <div className="md:col-span-2 lg:col-span-4 lg:col-start-9 lg:row-start-1">
             <TotalsSection totals={stats.totals} format={format} />
           </div>

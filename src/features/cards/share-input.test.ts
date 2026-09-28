@@ -42,7 +42,12 @@ describe('recorte do card no Upload/Demo', () => {
     expect(input.periodLabel).toBe('2024');
     expect(input.topArtists[0]).toBe(stats.top.artists[0]!.name);
     expect(input.topArtists.length).toBeLessThanOrEqual(25);
-    expect(input.topTracks).toHaveLength(5);
+    // Top músicas usa até 10 (§9.11); o Básico corta as dele no template.
+    expect(input.topTracks).toHaveLength(10);
+    expect(input.topTracks[0]).toEqual({
+      name: stats.top.tracks[0]!.name,
+      artist: stats.top.tracks[0]!.artist,
+    });
     expect(input.stat).toEqual({
       value: format.minutes(stats.totals.ms),
       label: 'stat.minutesIn(label=2024)',
@@ -53,6 +58,13 @@ describe('recorte do card no Upload/Demo', () => {
       `stats.plays(count=${stats.totals.plays})`,
       `stats.artists(count=${stats.totals.artists})`,
     ]);
+    expect(input.trackStats).toEqual([
+      `stats.plays(count=${stats.totals.plays})`,
+      `stats.tracks(count=${stats.totals.tracks})`,
+      `stats.minutes(value=${format.minutes(stats.totals.ms)})`,
+    ]);
+    // O Mix usa a mesma linha do Line-up.
+    expect(input.mixStats).toEqual(input.stats);
     // Upload/Demo nunca levam capa.
     expect(input.coverUrl).toBeUndefined();
   });
@@ -106,7 +118,7 @@ describe('recorte do card no Conectar', () => {
   const artists = Array.from({ length: 30 }, (_, i) =>
     artist(i + 1, i < 5 ? ['indie', 'rock'] : ['pop']),
   );
-  const tracks = Array.from({ length: 10 }, (_, i) => track(i + 1));
+  const tracks = Array.from({ length: 12 }, (_, i) => track(i + 1));
   const base = { range: 'medium_term' as const, artists, tracks, format, t };
 
   it('Conectar real: capa da música nº 1, top 25 e a janela', () => {
@@ -117,6 +129,19 @@ describe('recorte do card no Conectar', () => {
     expect(input.periodLabel).toBe('window.medium_term');
     expect(input.stats).toEqual(['stats.topArtists(count=25)', 'window.medium_term']);
     expect(input.topTracks[0]).toEqual({ name: 'Música 1', artist: 'Artista 1, Convidada' });
+    // Top músicas: até 10, com a janela; o Mix sai sem linha de estatísticas.
+    expect(input.topTracks).toHaveLength(10);
+    expect(input.trackStats).toEqual(['stats.topTracks(count=10)', 'window.medium_term']);
+    expect(input.mixStats).toEqual([]);
+  });
+
+  it('janela com poucas músicas ou sem nenhuma', () => {
+    const few = connectShareInput({ ...base, tracks: tracks.slice(0, 3), demo: false })!;
+    expect(few.trackStats).toEqual(['stats.topTracks(count=3)', 'window.medium_term']);
+    const none = connectShareInput({ ...base, tracks: [], demo: false })!;
+    expect(none.topTracks).toEqual([]);
+    expect(none.trackStats).toEqual([]);
+    expect(none.coverUrl).toBeUndefined();
   });
 
   it('visão Conectar do Demo: modo demo e sem capa', () => {

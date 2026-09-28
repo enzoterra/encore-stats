@@ -21,6 +21,7 @@ import {
 import {
   CARD_FORMATS,
   CARD_TEMPLATES,
+  TRACK_TEMPLATES,
   type CardData,
   type CardFormat,
   type CardStrings,
@@ -86,8 +87,22 @@ function downloadBlob(blob: Blob, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 30_000);
 }
 
+/** Nomes da prévia para o texto alternativo (§9.11), com "…" quando há mais. */
+function previewNames(template: CardTemplate, input: ShareInput): string {
+  const list = (items: readonly string[]) =>
+    `${items.slice(0, 3).join(', ')}${items.length > 3 ? '…' : ''}`;
+  const tracks = input.topTracks.map((t) => (t.artist ? `${t.name} (${t.artist})` : t.name));
+  if (template === 'tracks') return list(tracks);
+  if (template === 'mix') {
+    const artists = input.topArtists.slice(0, 3).join(', ');
+    const songs = input.topTracks.slice(0, 3).map((t) => t.name);
+    return songs.length > 0 ? `${artists}; ${songs.join(', ')}` : artists;
+  }
+  return list(input.topArtists);
+}
+
 /**
- * Modal de compartilhamento (10-design.md §8.14, US-11). Abre já gerando o Festival 9:16; cada
+ * Modal de compartilhamento (10-design.md §8.14, §9.11, US-11). Abre já gerando o Line-up 9:16; cada
  * troca de template, formato ou nome gera de novo (com cache por combinação). O PNG fica pronto
  * **antes** do toque em "Compartilhar", para o iOS manter o gesto do usuário na Web Share API.
  */
@@ -106,7 +121,11 @@ export default function ShareDialog({
   const locale = useLocale();
   const titleRef = useRef<HTMLHeadingElement>(null);
   const posterId = useId();
-  const [template, setTemplate] = useState<CardTemplate>('festival');
+  const noTracksId = useId();
+  const [chosen, setTemplate] = useState<CardTemplate>('festival');
+  // Sem músicas no período, Músicas e Mix ficam desabilitados e o card volta para o Line-up.
+  const noTracks = input.topTracks.length === 0;
+  const template: CardTemplate = noTracks && TRACK_TEMPLATES.includes(chosen) ? 'festival' : chosen;
   const [format, setFormat] = useState<CardFormat>('story');
   const [poster, setPoster] = useState('');
   const [posterApplied, setPosterApplied] = useState('');
@@ -142,7 +161,8 @@ export default function ShareDialog({
     () => Object.fromEntries(STRING_KEYS.map((key) => [key, t(`strings.${key}`)])) as CardStrings,
     [t],
   );
-  const effectivePoster = template === 'festival' ? posterApplied : '';
+  // "Nome no cartaz" vale para os três cartazes (Line-up, Músicas, Mix).
+  const effectivePoster = template !== 'basic' ? posterApplied : '';
   const key = `${template}|${format}|${effectivePoster}`;
   const filename = `encore-${template}-${format === 'story' ? 'stories' : 'square'}-${slug(input.periodLabel, 'periodo')}.png`;
 
@@ -173,6 +193,8 @@ export default function ShareDialog({
           heroSub: input.heroSub,
           stat: input.stat,
           stats: input.stats,
+          trackStats: input.trackStats,
+          mixStats: input.mixStats,
           posterName: effectivePoster || undefined,
           cover,
           spotifyLogo,
@@ -232,10 +254,9 @@ export default function ShareDialog({
     }
   };
 
-  const names = input.topArtists.slice(0, 3).join(', ');
   const alt = t('dialog.alt', {
     template: t(`dialog.templates.${template}`),
-    names: input.topArtists.length > 3 ? `${names}…` : names,
+    names: previewNames(template, input),
   });
   const note =
     input.mode === 'connect'
@@ -307,11 +328,18 @@ export default function ShareDialog({
                 label={t('dialog.templateLabel')}
                 value={template}
                 onChange={setTemplate}
+                describedBy={noTracks ? noTracksId : undefined}
                 options={CARD_TEMPLATES.map((value) => ({
                   value,
                   label: t(`dialog.templates.${value}`),
+                  disabled: noTracks && TRACK_TEMPLATES.includes(value),
                 }))}
               />
+              {noTracks ? (
+                <p id={noTracksId} className="-mt-2 text-caption text-fg-muted">
+                  {t('dialog.noTracks')}
+                </p>
+              ) : null}
               <Segmented
                 label={t('dialog.formatLabel')}
                 value={format}
@@ -321,7 +349,7 @@ export default function ShareDialog({
                   label: t(`dialog.formats.${value}`),
                 }))}
               />
-              {template === 'festival' ? (
+              {template !== 'basic' ? (
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor={posterId} className="text-body-sm font-semibold">
                     {t('dialog.posterLabel')}

@@ -5,18 +5,24 @@ import { ToastViewport, useToasts } from '@/components/ui/toast';
 import { generateDemo } from '@/domain/demo';
 import type { ProcessProgress, ProcessResult } from '@/domain/history';
 import { useDatasetStore } from '@/features/dataset/store';
+import en from '@/i18n/messages/en.json';
 import ptBR from '@/i18n/messages/pt-BR.json';
 import { renderWithIntl } from '../../../tests/support/intl';
 
 import { Dropzone } from './dropzone';
 import { UploadView } from './upload-view';
-import type { WorkerHandle } from './use-history-upload';
+import {
+  failureError,
+  workerFailure,
+  type WorkerFailure,
+  type WorkerHandle,
+} from './use-history-upload';
 
 type Controls = {
   handle: WorkerHandle;
   resolve: (result: ProcessResult) => void;
   progress: (p: ProcessProgress) => void;
-  crash: () => void;
+  crash: (cause?: WorkerFailure) => void;
   terminated: () => boolean;
   files: () => readonly File[];
 };
@@ -25,7 +31,7 @@ type Controls = {
 function fakeWorker(): Controls {
   let resolve: (r: ProcessResult) => void = () => undefined;
   let onProgress: ((p: ProcessProgress) => void) | undefined;
-  let crash: () => void = () => undefined;
+  let crash: (cause?: WorkerFailure) => void = () => undefined;
   let terminated = false;
   let received: readonly File[] = [];
   const handle: WorkerHandle = {
@@ -48,7 +54,7 @@ function fakeWorker(): Controls {
     handle,
     resolve: (r) => resolve(r),
     progress: (p) => onProgress?.(p),
-    crash: () => crash(),
+    crash: (cause) => crash(cause),
     terminated: () => terminated,
     files: () => received,
   };
@@ -151,7 +157,7 @@ describe('<UploadView />', () => {
       .getAllByRole('alert')
       .find((el) => el.textContent?.includes(ptBR.Upload.errors.COMPRESSION_RATIO.title))!;
     expect(alert).toHaveTextContent('Streaming_History_Audio_x.json');
-    expect(alert).toHaveTextContent('100×');
+    expect(alert).toHaveTextContent('100 vezes');
     fireEvent.click(within(alert).getByRole('button', { name: ptBR.Upload.actions.tryAnother }));
     expect(screen.queryByText(ptBR.Upload.errors.COMPRESSION_RATIO.title)).toBeNull();
   });
@@ -204,6 +210,35 @@ describe('<UploadView />', () => {
     expect(screen.getByRole('button', { name: ptBR.Upload.actions.tryAgain })).toBeInTheDocument();
   });
 
+  it('sem internet o leitor não baixa: aviso próprio, e não o de falta de memória', async () => {
+    const worker = setup();
+    pick([zip()]);
+    await screen.findByTestId('upload-progress');
+    await act(async () => worker.crash('load'));
+    expect(await screen.findByText(ptBR.Upload.errors.OFFLINE.title)).toBeInTheDocument();
+    const body = screen.getByText(ptBR.Upload.errors.OFFLINE.body);
+    expect(body).toHaveAttribute('data-error-code', 'OFFLINE');
+    expect(body).toHaveTextContent('seu arquivo continua sem sair do aparelho');
+    expect(screen.queryByText(ptBR.Upload.errors.INTERNAL.title)).toBeNull();
+    // "Tentar de novo" volta para a escolha do arquivo.
+    fireEvent.click(screen.getByRole('button', { name: ptBR.Upload.actions.tryAgain }));
+    expect(screen.queryByText(ptBR.Upload.errors.OFFLINE.title)).toBeNull();
+    expect(screen.getByLabelText(ptBR.Upload.dropzone.inputLabel)).toBeInTheDocument();
+  });
+
+  it('queda com o aparelho offline também vira o aviso de internet', async () => {
+    const online = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false);
+    try {
+      const worker = setup();
+      pick([zip()]);
+      await screen.findByTestId('upload-progress');
+      await act(async () => worker.crash());
+      expect(await screen.findByText(ptBR.Upload.errors.OFFLINE.title)).toBeInTheDocument();
+    } finally {
+      online.mockRestore();
+    }
+  });
+
   it('recusa extensão estranha antes de abrir o worker', async () => {
     const create = vi.fn();
     renderWithIntl(<UploadView createWorker={create} />);
@@ -245,5 +280,32 @@ describe('<Dropzone />', () => {
     const files = [zip(), zip()];
     fireEvent.change(screen.getByLabelText(ptBR.Upload.dropzone.inputLabel), { target: { files } });
     await waitFor(() => expect(onFiles).toHaveBeenCalledWith(files));
+  });
+});
+
+describe('falha do leitor (worker)', () => {
+  it('script que não baixou (Event simples) é "load"; erro de execução é "crash"', () => {
+    expect(workerFailure(new Event('error'), false)).toBe('load');
+    expect(workerFailure(new Event('error'), true)).toBe('load');
+    expect(workerFailure(new ErrorEvent('error', { message: 'boom' }), false)).toBe('crash');
+    expect(workerFailure(new ErrorEvent('error', { message: 'boom' }), true)).toBe('crash');
+    // Sem mensagem e antes de qualquer resposta: tratado como falha de carregamento.
+    expect(workerFailure(new ErrorEvent('error'), false)).toBe('load');
+    expect(workerFailure(new ErrorEvent('error'), true)).toBe('crash');
+  });
+
+  it('OFFLINE quando o leitor não carregou ou o aparelho está offline; senão INTERNAL', () => {
+    expect(failureError('load', true)).toEqual({ code: 'OFFLINE' });
+    expect(failureError('crash', false)).toEqual({ code: 'OFFLINE' });
+    expect(failureError(undefined, false)).toEqual({ code: 'OFFLINE' });
+    expect(failureError('crash', true)).toEqual({ code: 'INTERNAL' });
+    expect(failureError(undefined, true)).toEqual({ code: 'INTERNAL' });
+  });
+
+  it('a mensagem existe nas duas línguas, em linguagem simples', () => {
+    expect(ptBR.Upload.errors.OFFLINE.body).toMatch(/sem internet/);
+    expect(en.Upload.errors.OFFLINE.body).toMatch(/offline/);
+    expect(ptBR.Upload.errors.OFFLINE.body).not.toMatch(/mem[oó]ria|worker|chunk/i);
+    expect(en.Upload.errors.OFFLINE.body).not.toMatch(/memory|worker|chunk/i);
   });
 });

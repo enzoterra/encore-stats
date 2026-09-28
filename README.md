@@ -1,20 +1,119 @@
-# Encore
+<h1 align="center">
+  <img src="docs/readme/logo.svg" alt="Encore" width="280">
+</h1>
 
-Estatísticas pessoais do Spotify com **privacidade por arquitetura**. Três modos:
+<p align="center">
+  <strong>Suas estatísticas do Spotify quando você quiser: tops, horários e curiosidades de qualquer período, sem que o seu histórico saia do aparelho.</strong>
+</p>
 
-- **Upload** (público): você envia o `.zip` do "Histórico estendido de streaming" e tudo é
-  processado **no seu navegador**. O arquivo nunca sai do dispositivo.
-- **Conectar** (até 5 contas na allowlist): login OAuth no Spotify; um BFF mínimo e sem estado
-  guarda os tokens só num cookie JWE `HttpOnly`.
-- **Demo**: dados fictícios e determinísticos, sem rede e sem login.
+<p align="center">
+  <a href="https://encore-stats.vercel.app"><strong>encore-stats.vercel.app</strong></a>
+  ·
+  <a href="https://encore-stats.vercel.app/pt-BR/demo">ver a demo</a>
+</p>
+
+![Página inicial do Encore: "Seu ano em música. Quando você quiser.", com um cartaz de exemplo](docs/readme/landing.png)
+
+## Como é
+
+Todas as imagens abaixo são da **demo**, com artistas e músicas inventados.
+
+### Seu top, seus números e o seu período
+
+Escolha um mês, um ano, desde sempre ou um intervalo. O Encore mostra os artistas, as músicas e os
+álbuns que você mais ouviu, quanto tempo de música foi e quantos artistas diferentes apareceram.
+
+![Dashboard da demo: seletor de período, top de artistas e os minutos de música](docs/readme/demo-visao-upload.png)
+
+<table>
+  <tr>
+    <td width="60%" valign="top">
+      <img src="docs/readme/quando-voce-ouve.png" alt="Mapa de calor com os horários e os dias em que você mais ouve música">
+      <p><strong>Quando você ouve:</strong> os horários e os dias da semana em que a música toca mais.</p>
+    </td>
+    <td width="40%" valign="top">
+      <img src="docs/readme/voce-por-voce.png" alt="Cartões do Você por você: fã desde, dias diferentes, música mais pulada e dia mais musical">
+      <p><strong>Você por você:</strong> comparações com o seu próprio histórico, e não com outras pessoas.</p>
+    </td>
+  </tr>
+</table>
+
+### Modo Conectar: o que está tocando agora
+
+Entrando com a conta do Spotify, você vê os tops das últimas 4 semanas, dos últimos 6 meses e do
+último ano, quem subiu e quem caiu, e de quem você tem mais músicas curtidas.
+
+<table>
+  <tr>
+    <td width="62%" valign="top">
+      <img src="docs/readme/demo-visao-conectar.png" alt="Visão Conectar da demo: períodos, top de artistas e músicas curtidas">
+    </td>
+    <td width="38%" valign="top">
+      <img src="docs/readme/tendencias.png" alt="Tendências: artistas em alta e em queda">
+    </td>
+  </tr>
+</table>
+
+### Cartazes para compartilhar
+
+Quatro modelos, **Line-up**, **Músicas**, **Mix** e **Básico**, em Stories (9:16) ou quadrado
+(1:1). A imagem é feita no seu aparelho, com o período que está na tela, e vai direto para os
+Stories, o feed ou o WhatsApp.
+
+![Os quatro cartazes lado a lado: Line-up, Músicas, Mix e Básico](docs/readme/cards.png)
+
+![Janela de compartilhar: escolha do modelo e do formato, nome no cartaz e a prévia](docs/readme/compartilhar.png)
+
+### No celular
+
+<table>
+  <tr>
+    <td width="33%"><img src="docs/readme/celular-landing.png" alt="Página inicial no celular"></td>
+    <td width="33%"><img src="docs/readme/celular-dashboard.png" alt="Dashboard da demo no celular"></td>
+    <td width="33%"><img src="docs/readme/celular-compartilhar.png" alt="Janela de compartilhar no celular"></td>
+  </tr>
+</table>
+
+## Três jeitos de usar
+
+- **Enviar o histórico (modo Upload).** Você pede ao Spotify o arquivo com o seu histórico
+  completo (ele chega por e-mail em alguns dias) e escolhe esse arquivo aqui. A conta toda é feita
+  no seu aparelho, e dá para ver qualquer período, desde a primeira música. É o modo aberto a
+  todo mundo.
+- **Conectar com o Spotify (modo Conectar).** Você entra com a sua conta e vê na hora os tops dos
+  últimos meses. Ainda está em fase de testes no Spotify: por enquanto, só funciona para contas
+  convidadas.
+- **Demo.** Tudo inventado, para conhecer o Encore sem enviar nada e sem entrar com conta.
+
+## Privacidade, sem letra miúda
+
+- Seu arquivo é lido aqui, no seu aparelho, e não é enviado para lugar nenhum.
+- Sem cadastro, sem rastreamento e sem guardar as suas músicas com a gente.
+- No modo Conectar, a sua conexão com o Spotify fica salva neste navegador, trancada de um jeito
+  que só o Encore abre. O que vem da sua conta fica só nesta aba.
+- Os cartazes também são feitos no aparelho. O "Nome no cartaz" só aparece na imagem.
+- Os detalhes estão na [política de privacidade](https://encore-stats.vercel.app/pt-BR/privacy).
+
+O Encore não é afiliado ao Spotify.
+
+## Para quem desenvolve
 
 Stack: Next.js 16 (App Router, Turbopack) · React 19 · TypeScript 6 (`strict`) · Tailwind CSS 4 ·
 next-intl (PT-BR e EN) · Zod 4 · Vitest 5 · Playwright + axe. Deploy na Vercel. Sem banco.
 O plano completo está em [`docs/projeto/`](docs/projeto/).
 
-> Estado: MVP completo (Sprints 0–7: upload, demo, Conectar, cards e auditoria de segurança); a
-> Sprint 8 cuida da validação e do deploy na Vercel (veja `docs/projeto/PROGRESSO.md`). Contrato do
-> BFF: [`docs/api.md`](docs/api.md).
+> Estado: MVP completo (Sprints 0–7: upload, demo, Conectar, cards e auditoria de segurança) e no
+> ar em modo Upload + Demo. A Iteração 8b trouxe os cartazes Músicas e Mix, a logo nova e os textos
+> em linguagem do dia a dia; a Sprint 8 segue com a validação e o Conectar em produção (veja
+> `docs/projeto/PROGRESSO.md`). Contrato do BFF: [`docs/api.md`](docs/api.md).
+
+Por baixo, os três modos funcionam assim:
+
+- **Upload:** o `.zip` do "Histórico de streaming estendido" é processado num Web Worker, no
+  navegador, sem nenhuma requisição com o conteúdo.
+- **Conectar:** login OAuth no Spotify (até 5 contas na allowlist do Development Mode); um BFF
+  mínimo e sem estado guarda os tokens só num cookie JWE `HttpOnly`.
+- **Demo:** dados fictícios e determinísticos, sem rede e sem login.
 
 ## Pré-requisitos
 
@@ -59,8 +158,9 @@ credenciais de demonstração: o Demo não exige login.
 | `/{locale}/privacy`    | Política de privacidade (LGPD): o que é tratado, onde, por quanto tempo, como revogar |
 | `/{locale}/connect`    | Modo Conectar: entrada/login, erros do OAuth e dashboard ao vivo (tops, tendências…)  |
 
-O botão **Compartilhar** (Upload, Demo e Conectar) abre o modal de cards: Festival ou Básico,
-Stories 9:16 ou Quadrado 1:1, com o período/janela selecionado no dashboard. O PNG é gerado no
+O botão **Compartilhar** (Upload, Demo e Conectar) abre o modal de cards: Line-up, Músicas, Mix
+ou Básico, Stories 9:16 ou Quadrado 1:1, com o período/janela selecionado no dashboard (Músicas e
+Mix ficam desabilitados quando o período não tem músicas). A imagem (PNG) é gerada no
 navegador (Web Worker com satori + resvg-wasm, carregados só nesse toque) e compartilhado pela Web
 Share API quando o navegador aceita arquivos; senão, é baixado.
 
@@ -351,6 +451,7 @@ app/api/             BFF (auth e proxy do Spotify) + /api/health
 proxy.ts             nonce de CSP, cabeçalhos de segurança e negociação de idioma
 src/domain/          lógica pura (histórico, Dataset, stats, demo), testável em Node
 src/server/          env validado, cabeçalhos de segurança, sessão JWE, cliente Spotify, logger
+src/components/      layout (cabeçalho, rodapé, selo), UI base e a logo (`brand/`)
 src/features/        UI por área
 src/workers/         Web Workers (processamento do upload e geração dos cards), sem rede
 src/i18n/            rotas e mensagens do next-intl
@@ -358,6 +459,7 @@ e2e/                 testes Playwright + axe
 scripts/             fixtures (`pnpm fixtures`) e mock local do Spotify
 tests/               setup, stubs, fixtures, mocks do Spotify e benchmark (`tests/perf`)
 docs/api.md          contrato do BFF (rotas, parâmetros, erros, TTLs, OAuth)
+docs/readme/         logo e screenshots deste README (demo, dados fictícios)
 ```
 
 Alias de import: `@/…` aponta para `src/…`.

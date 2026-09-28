@@ -47,8 +47,8 @@ test.describe('Conectar desabilitado', () => {
     // O `main` evita o anunciador de rotas do Next, que também tem role=alert.
     await page.goto('/pt-BR/connect?error=denied');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Conectar com o Spotify');
-    await expect(page.getByRole('main').getByRole('alert')).toHaveText(/cancelou a autorização/);
-    await expect(page.getByText(/indisponível neste ambiente/)).toBeVisible();
+    await expect(page.getByRole('main').getByRole('alert')).toHaveText(/Você cancelou no Spotify/);
+    await expect(page.getByText(/ainda não está ligado neste site/)).toBeVisible();
     await expect(page.getByRole('button', { name: 'Entrar com o Spotify' })).toBeDisabled();
     const results = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa', 'wcag22aa'])
@@ -71,11 +71,11 @@ test.describe('Conectar desabilitado', () => {
     await page.setViewportSize({ width: 360, height: 800 });
     await page.goto('/pt-BR/connect?error=not_allowlisted');
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(
-      'Este app ainda está em modo de teste',
+      'O modo Conectar ainda é só para convidados',
     );
     await expect(page.getByText(/5 contas convidadas/)).toBeVisible();
     // A outra causa conhecida de 403: a conta dona do app sem Premium (Development Mode).
-    await expect(page.getByText(/conta dona dele tiver Premium/)).toBeVisible();
+    await expect(page.getByText(/conta do dono dele tiver Premium/)).toBeVisible();
     await expect(page.getByRole('link', { name: 'Enviar meu histórico' })).toHaveAttribute(
       'href',
       '/pt-BR/upload',

@@ -91,6 +91,8 @@ export const UPLOAD_DATA: CardData = {
   heroSub: '1.284 plays · fã desde mar. 2019',
   stat: { value: '48.213', label: 'minutos de música em 2024' },
   stats: ['48.213 min', '9.214 plays', '612 artistas'],
+  trackStats: ['9.214 plays', '1.873 músicas', '48.213 min'],
+  mixStats: ['48.213 min', '9.214 plays', '612 artistas'],
 };
 
 export const CONNECT_DATA: CardData = {
@@ -99,6 +101,77 @@ export const CONNECT_DATA: CardData = {
   heroSub: 'em alta: subiu 3 posições',
   stat: { value: '214', label: 'músicas curtidas de Lua Vermelha' },
   stats: ['Top 25 artistas', 'últimos 6 meses'],
+  trackStats: ['Top 5 músicas', 'últimos 6 meses'],
+  mixStats: [],
   cover: FAKE_COVER,
   posterName: 'Enzo',
+};
+
+/** Top músicas / Mix (Iteração 8b): 10 músicas com nomes longos e "ruído de catálogo" reais. */
+export const TRACKS_10 = [
+  { name: 'Farol Aceso às Três da Manhã', artist: 'Banda Farol' },
+  { name: 'Céu de Neon (feat. MC Brisa)', artist: 'Lua Vermelha' },
+  { name: 'Ventilador no Talo - Remasterizado 2019', artist: 'Os Ventiladores' },
+  { name: 'Maré Alta (Ao Vivo no Circo Voador)', artist: 'Tiago Maré' },
+  { name: 'Saudade Que Não Cabe no Peito', artist: 'Marina Sal' },
+  { name: 'Caju Maduro', artist: 'DJ Caju' },
+  { name: 'Carta Para Quem Ficou (Versão Acústica)', artist: 'Clara Nuvem' },
+  { name: 'Dança do Pelicano - Radio Edit', artist: 'Los Pelicanos' },
+  { name: 'Sereia Elétrica', artist: 'Sereia Elétrica' },
+  { name: 'Menina do Mangue, Moça da Maré', artist: 'Coletivo Samambaia' },
+];
+
+export const UPLOAD_8B: CardData = { ...UPLOAD_DATA, topTracks: TRACKS_10 };
+
+/** Conectar: artistas da faixa juntados por ", ", como vem da API; sem capa nos cartazes. */
+export const CONNECT_8B: CardData = {
+  ...CONNECT_DATA,
+  cover: undefined,
+  topTracks: TRACKS_10.map((track, i) =>
+    i === 1
+      ? { ...track, artist: 'Lua Vermelha, MC Brisa' }
+      : i === 5
+        ? { ...track, artist: 'DJ Caju, Neon Tropical, Ana Trovão' }
+        : track,
+  ),
+  trackStats: ['Top 10 músicas', 'últimos 6 meses'],
+  mixStats: [],
+};
+
+/** Pior caso: título longo, nº 1 de 84 grafemas, cirílico, `[feat. …]` e "- 2011 Remaster". */
+export const STRESS_8B: CardData = {
+  ...UPLOAD_8B,
+  posterName: 'Maria Eduarda',
+  topArtists: [
+    'Orquestra Sinfônica de Garagem do Bairro Alto',
+    'Ñandú & Los Çãopeões',
+    'Жанна Агузарова',
+    ...ARTISTS.slice(3),
+  ],
+  topTracks: [
+    {
+      name: 'Uma Música Com Título Realmente Muito Comprido Que Não Acaba Nunca (Remix Estendido)',
+      artist: 'Orquestra Sinfônica de Garagem do Bairro Alto',
+    },
+    { name: 'Звезда по имени Солнце', artist: 'Кино' },
+    {
+      name: 'Ñandú Bailando Sobre o Çãopeão [feat. Los Pelicanos & Quarteto Cometa]',
+      artist: 'Ñandú & Los Çãopeões',
+    },
+    ...TRACKS_10.slice(3, 9),
+    {
+      name: 'Coração de Estudante Que Mora Longe da Família - 2011 Remaster',
+      artist: 'Vitória Régia e Os Irmãos da Lua Cheia',
+    },
+  ],
+};
+
+/** Período com poucos dados: 2 artistas, 4 músicas (os blocos vazios somem). */
+export const SHORT_8B: CardData = {
+  ...UPLOAD_8B,
+  periodLabel: 'Mar. 2024',
+  topArtists: ARTISTS.slice(0, 2),
+  topTracks: TRACKS_10.slice(0, 4),
+  trackStats: ['38 plays', '4 músicas', '112 min'],
+  mixStats: ['112 min', '38 plays', '2 artistas'],
 };

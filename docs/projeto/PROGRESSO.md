@@ -3,12 +3,12 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: Sprint 8. **S8.0 ✅ concluído** (analista-de-infra, 2026-09-25): pnpm 10.34.5, Node 24.x, README "Deploy na Vercel", 404 localizado, 403 com Premium e validação do ambiente no `next build`. Próximo: Next 16.3.7 (após 30/09) e S8.1. Sprint 7 ✅ concluída e commitada (31d45e3): sem alta/crítica aberta no código; relatório em `docs/projeto/relatorio-seguranca.md`. Decisões do cliente de 2026-09-25: Developer Policy (risco aceito no MVP) e dados de privacidade (controlador e contato; vão só nas variáveis da Vercel)
+- Sprint em andamento: Sprint 8. Iteração 8b ✅ (cards Top músicas e Mix, logo Bis, textos simples, espaçamento, atalhos de período no Conectar, README com screenshots) publicada em produção em 2026-09-28
 - Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
 - Próximo passo ao retomar: produção no ar em `https://encore-stats.vercel.app` (Upload + Demo, 2026-09-28). Em 30/09: Next 16.3.7 → ligar o Conectar (S8.3.2) e o staging (S8.3.3) → ZAP → S8.1/S8.2 → go-live e UAT. Pendente com o cliente: aceite das Sprints 5 e 6 e o teste do login real
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-25 por analista-de-infra (S8.0 concluído)
+- Última atualização: 2026-09-28 pelo orquestrador (fim da Iteração 8b)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -528,6 +528,51 @@
   - `not-found` localizado (o 404 estático sai com o JS bloqueado pela CSP: falha fechada);
   - mensagem do 403 citando o Premium do dono
 - Próxima sprint: Sprint 8 (orquestrador + analista-de-infra), depois das decisões do cliente
+
+### Iteração 8b — Ajustes pedidos pelo cliente após testar a produção (2026-09-28) — ✅ · designer + dev-frontend
+- Decisões do cliente (2026-09-28):
+  - Cards: dois templates novos na identidade "festa" (Palco Neon/festival): **top músicas** e **mix** (top 3 artistas + top 3 músicas), além do lineup de artistas que já existe. Design aprovado pelo cliente antes de codar
+  - Grid de informações (totais, "você por você", colunas do dashboard) com mais espaço horizontal
+  - Conectar: a API do Spotify só tem 4 semanas / 6 meses / 1 ano. **Escolhido o "atalho para o Upload"**: o seletor ganha "Desde o começo" e "Selecionar período", que explicam o limite e levam ao envio do histórico (onde "Sempre" e "Intervalo" já funcionam). Sem modo combinado
+  - Push do commit `eeac6e8` (favicon + título) só junto com esta iteração
+  - Pedido extra: logo criativa (festival + cores dos cards) e reescrita dos textos para público não técnico
+- [x] 8b.1 Design dos cards novos (top músicas, mix) em story e square, com mockup — designer
+  - Entregue (2026-09-28): spec em `10-design.md` §9.8–§9.11.
+    - Peças comuns dos três cartazes, placa de palco, cor `pink` #FF7AB0 e fundos com os holofotes trocados.
+    - Top músicas: 10 músicas nos dois formatos. Mix: 3 artistas + 3 músicas, empilhados.
+    - Limpeza de feat./remaster (`tidyTrack`), contraste medido, dados que faltam no `share-input` (`MAX_CARD_TRACKS = 10`, `trackStats`, `mixStats`) e diálogo "Line-up | Músicas | Mix | Básico".
+    - i18n pt-BR/en.
+  - Protótipo: `design/cards/templates.mjs` (`tracksTpl`, `mixTpl`) + `render-preview.mjs --only=tracks,mix`.
+  - PNGs em `docs/projeto/design/cards/preview/`:
+    - `tracks-story-upload`, `tracks-square-upload`, `tracks-story-connect`, `tracks-square-demo`;
+    - `tracks-story-upload-stress`, `tracks-square-upload-stress`, `tracks-square-upload-short`;
+    - `mix-story-upload`, `mix-square-upload`, `mix-story-demo`, `mix-square-connect`, `mix-story-connect-en`;
+    - `mix-story-upload-stress`, `mix-square-upload-stress`.
+  - Próximo: cliente aprova (8b.2) → dev-frontend lê §9.8–§9.11 e porta para `src/features/cards/` (8b.5).
+- [x] 8b.2 Aprovação do design dos cards pelo cliente (2026-09-28): Top músicas e Mix aprovados como no preview; "Festival" → "Line-up" no diálogo; limpeza de "(feat. …)"/"- Remastered" só no card
+- Decisões do cliente sobre a revisão de textos (2026-09-28), todas conforme a recomendação: manter "modo Upload"; "Baixar PNG" → "Baixar imagem" (junto do 8b.5); manter a metáfora "trancada de um jeito que só o Encore abre"; "cookie" só na página de privacidade, explicado; sem internet: corrigir agora a mensagem de erro do envio (hoje fala em falta de memória) e deixar o modo offline de verdade para depois
+- Logo (2026-09-28): o cliente **não aprovou** o 1º ajuste do conceito 2. Quer a seta **fechando de volta no "e"**, como o "G" do Google, com larguras e espaçamentos que deixem a leitura clara (8b.8 reaberto)
+- [x] 8b.3 Espaçamento horizontal do grid — dev-frontend (2026-09-28)
+  - Mudou: gaps na escala do `10-design.md` §4 (atualizado). Totais 8→12 px no mobile, 16 no `sm`, 24 no `md`, 12/16 na coluna do `lg`/`xl`; "você por você" 12→16 a partir do `sm`; colunas 24→32 px no `md` e 32→40 no `xl` (Upload/Demo e Conectar); tendências 16→24/32. Números de 7+ caracteres descem um degrau de fonte (`totalSize`). Corrigido junto: em 1024 px, "28.834" (Demo, "Sempre") quebrava em 2 linhas
+  - Verificar: `e2e/iteration-8b.spec.ts` (360/768/1024/1440: gaps, números numa linha, sem scroll horizontal); antes/depois em `docs/projeto/screenshots/iteracao-8b/`
+- [x] 8b.4 Conectar: opções "Desde o começo" e "Selecionar período" como atalho para o Upload — dev-frontend (2026-09-28)
+  - Mudou: `window-extras.tsx`: dois chips de divulgação (`aria-expanded`) ao lado do segmented, que continua com a janela real marcada; aviso inline com o limite da API, "Enviar meu histórico" (`/upload`) e "Como pedir o histórico" (`/onboarding`). No Demo, "Ver na Visão Upload" troca de aba já em "Sempre"/"Intervalo", com o foco no rádio. `aria-live`, Esc/X devolvem o foco, barra inferior intacta, sem rede nova. i18n `Connect.dashboard.extras` (pt-BR/en)
+  - Verificar: `pnpm test` (connect.test, connect-views.test) e `e2e/iteration-8b.spec.ts` (Demo + mock do Conectar, axe, teclado, 360 px)
+- [x] 8b.5 Implementação dos cards novos (templates, seletor no diálogo de compartilhar, Upload/Demo/Conectar, testes) — dev-frontend (2026-09-28)
+  - Entregue: `templates.ts` com Top músicas (`tracks`) e Mix sobre as peças comuns dos cartazes (o Line-up foi refeito sobre elas e sai byte a byte igual em 36 combinações); `tidyTrack` em `text.ts`; marca do card num ponto único (`brand.ts`); `MAX_CARD_TRACKS = 10`, `trackStats`/`mixStats` (Mix sem linha no Conectar); diálogo Line-up | Músicas | Mix | Básico, "Nome no cartaz" nos três cartazes, Músicas/Mix desabilitados com legenda sem músicas (`SegmentedOption.disabled`), `encore-tracks-…`/`encore-mix-…`; "Baixar imagem"/"Imagem baixada". As 14 prévias aprovadas foram re-renderizadas pela produção sem nenhum pixel diferente. PNGs da app em `docs/projeto/screenshots/iteracao-8b/cards/`
+  - Verificar: `pnpm test` (templates, render com 6 snapshots novos, share-dialog, share-input) e `e2e/cards.spec.ts` (Demo, Upload e Conectar mockado: gerar e baixar, axe, 0 violações de CSP; `CARD_SHOTS=1` regrava os PNGs)
+  - [x] Erro de envio sem internet: se o leitor (worker) ou um pedaço dele não baixa, ou `navigator.onLine === false`, aparece "Sem internet" em linguagem simples (pt-BR/en), e não mais o de falta de memória. Modo offline de verdade continua para depois. Verificar: `upload-view.test.tsx` e `e2e/upload.spec.ts` ("upload sem internet", com `context.setOffline(true)`)
+- [x] 8b.7 Logo: 3 conceitos (identidade Palco Neon, cores dos cards, tema festival) — designer
+  - Entregue em `docs/projeto/design/logo/`: conceitos 1 Ingresso, 2 Bis e 3 Cartaz, cada um com lockup, símbolo (favicon) e ícone de app de 180 px em SVG só com paths; pranchas PNG por conceito e uma comparativa em `pranchas/`; regras de uso em `LOGO.md`; gerador em `build-logo.mjs`. Nada aplicado em `app/` nem `src/` (espera o 8b.8)
+- [x] 8b.8 Escolha do conceito de logo pelo cliente: **conceito 2 (Bis), variação 3 "Alinhada com a barra"** (2026-09-28). SVGs finais em `docs/projeto/design/logo/conceito-2*.svg` (+ `conceito-2-favicon-16.svg`, sem seta)
+- [x] 8b.9 Aplicar a logo escolhida (cabeçalho, favicon, cards, onde couber) — dev-frontend (2026-09-28)
+  - Entregue: arte única em `src/components/brand/logo-art.ts` (paths do `conceito-2.svg`, conferidos por teste) + `Logo` (SVG inline, só atributos, sem `style`) no cabeçalho (12 px), no rodapé e no cartaz da landing; cards com o lockup como `<img>` data URL no rodapé (30/26 px) e no cabeçalho do Básico (33/27 px), via `brand.ts`; `app/icon.svg` = símbolo, `favicon.ico` 16 (sem seta)/32/48, `apple-icon.png` 180; `10-design.md` §16 "Logo". Snapshots e PNGs dos cards regravados; cabeçalho em `docs/projeto/screenshots/iteracao-8b/cabecalho-logo-{390,1280}.png`
+  - Verificar: `pnpm test` (`logo-art.test.ts`, `logo.test.tsx`, templates "logo do Encore") e `e2e/home.spec.ts` ("logo (8b.9)": link para o início, 12 px, ids únicos, 0 violações de CSP, favicons)
+- [x] 8b.10 Revisão de textos em linguagem do dia a dia (títulos, subtítulos, explicações, selo/dropdown de privacidade), pt-BR e en, sem perder o conteúdo legal da LGPD nem as regras de marca do Spotify — dev-frontend (2026-09-28): só texto, mesmas chaves; antes/depois, checklist da LGPD e pontos para o cliente em `revisao-de-textos.md` (inclui: a frase "funciona offline" do selo era falsa e saiu)
+- [x] 8b.11 README com screenshots das partes interessantes (depois do 8b.9, com a UI final) — dev-frontend (2026-09-28)
+  - Entregue: topo do `README.md` reorganizado (logo, frase, link da produção, galeria com legendas, os três modos e a privacidade em linguagem simples, "Para quem desenvolve"); seções técnicas mantidas, com os cards novos e a logo atualizados. 11 screenshots da demo (Playwright, build de produção, 1280 e 390 px) + `logo.svg` em `docs/readme/`, 468 KB no total (PNG com paleta)
+  - Verificar: `pnpm format:check`; os caminhos das imagens são relativos (`docs/readme/…`)
+- [x] 8b.6 Verificação completa + commit + push em `main` (2026-09-28): lint, format, typecheck, 586 testes, build ok; e2e 154/154 (dev-frontend, 4 workers). Produção atualizada via Vercel
 
 ### Sprint 8 — Validação, UAT e deploy — 🔄 · orquestrador + analista-de-infra
 - [x] S8.0 Preparação para a Vercel: pnpm 10, Node 24.x fixo, README "Deploy na Vercel", `not-found` localizado, mensagem do 403 com Premium

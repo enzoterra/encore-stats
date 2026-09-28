@@ -24,6 +24,12 @@ import { RecentSection } from './recent-section';
 import { TopSection } from './top-section';
 import { TrendsSection } from './trends-section';
 import { useConnectShare } from './use-connect-share';
+import {
+  useWindowExtras,
+  type WindowExtra,
+  WindowExtraButtons,
+  WindowExtraPanel,
+} from './window-extras';
 
 const PAGE_ERRORS = new Set(['UNAUTHENTICATED', 'NOT_ALLOWLISTED', 'QUOTA']);
 
@@ -33,7 +39,14 @@ const PAGE_ERRORS = new Set(['UNAUTHENTICATED', 'NOT_ALLOWLISTED', 'QUOTA']);
  * tem os próprios estados; a falha de uma não derruba as outras (RNF-05). No Demo, a mesma tela
  * roda sobre as respostas fictícias, sem links nem marca do Spotify.
  */
-export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
+export function ConnectDashboard({
+  repoUrl,
+  onOpenUpload,
+}: {
+  repoUrl?: string;
+  /** Só no Demo: os atalhos "Desde o começo"/"Selecionar período" levam à Visão Upload. */
+  onOpenUpload?: (extra: WindowExtra) => void;
+}) {
   const t = useTranslations('Connect.dashboard');
   const tMe = useTranslations('Connect.meError');
   const tSection = useTranslations('Connect.sectionError');
@@ -43,6 +56,8 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
   const me = useMe();
   const [range, setRange] = useState<TimeRange>('short_term');
   const [announcement, setAnnouncement] = useState('');
+  const [extra, setExtra] = useState<WindowExtra | null>(null);
+  const extras = useWindowExtras();
   const windowBox = useRef<HTMLDivElement>(null);
   const setRaised = useToasts((state) => state.setRaised);
   const hydrated = useHydrated();
@@ -63,7 +78,21 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
   const changeRange = (next: TimeRange) => {
     if (next === range) return;
     setRange(next);
+    setExtra(null);
     setAnnouncement(t('windowLive', { label: t(`windows.${next}`) }));
+  };
+  const toggleExtra = (next: WindowExtra) => {
+    if (next === extra) {
+      setExtra(null);
+      return;
+    }
+    setExtra(next);
+    setAnnouncement(t('extras.live', { option: t(`extras.${next}`), label }));
+  };
+  const closeExtra = () => {
+    const opener = extra ? extras.buttonRefs.current[extra] : null;
+    setExtra(null);
+    opener?.focus();
   };
   const goToWindow = () => {
     windowBox.current?.scrollIntoView({ block: 'center' });
@@ -139,14 +168,31 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
             <h2 id="window-title" className="sr-only">
               {t('windowHeading')}
             </h2>
-            <div ref={windowBox} className="w-full max-w-md">
-              <Segmented
-                label={t('windowLabel')}
-                value={range}
-                onChange={changeRange}
-                options={TIME_RANGES.map((r) => ({ value: r, label: t(`windows.${r}`) }))}
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
+              <div ref={windowBox} className="w-full sm:max-w-md sm:min-w-80 sm:flex-1">
+                <Segmented
+                  label={t('windowLabel')}
+                  value={range}
+                  onChange={changeRange}
+                  options={TIME_RANGES.map((r) => ({ value: r, label: t(`windows.${r}`) }))}
+                />
+              </div>
+              <WindowExtraButtons
+                open={extra}
+                onToggle={toggleExtra}
+                panelId={extras.panelId}
+                buttonRefs={extras.buttonRefs}
               />
             </div>
+            {extra ? (
+              <WindowExtraPanel
+                extra={extra}
+                panelId={extras.panelId}
+                windowLabel={label}
+                onClose={closeExtra}
+                onOpenUpload={onOpenUpload}
+              />
+            ) : null}
             <p className="text-body-sm text-fg-muted" data-testid="window-summary">
               {t(`windowSummary.${range}`)}
             </p>
@@ -155,7 +201,7 @@ export function ConnectDashboard({ repoUrl }: { repoUrl?: string }) {
             </p>
           </section>
 
-          <div className="grid gap-10 lg:grid-cols-12 lg:gap-x-8 lg:gap-y-12 [&>*]:min-w-0">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-x-8 lg:gap-y-12 xl:gap-x-10 [&>*]:min-w-0">
             <div className="lg:col-span-7">
               <TopSection range={range} />
             </div>

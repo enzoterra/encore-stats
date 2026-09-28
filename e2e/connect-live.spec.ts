@@ -71,7 +71,9 @@ test.describe('Conectar com o mock do Spotify (US-08, US-09, US-10)', () => {
     await page.getByRole('button', { name: /Conta: Pessoa Fictícia/ }).click();
     await page.getByRole('menuitem', { name: 'Sair' }).click();
     const dialog = page.getByRole('alertdialog');
-    await expect(dialog).toContainText('Sair apaga a sessão e o cache desta aba');
+    await expect(dialog).toContainText(
+      'Sair apaga a sua conexão e o que veio do Spotify nesta aba',
+    );
     await dialog.getByRole('button', { name: 'Sair' }).click();
     await expect(page).toHaveURL(/\/pt-BR\/connect\?status=logged_out$/);
     await expect(page.getByRole('main').getByRole('status')).toContainText('Você saiu');
@@ -109,8 +111,8 @@ test.describe('Conectar com o mock do Spotify (US-08, US-09, US-10)', () => {
     );
     await login(page);
     const banner = page.getByTestId('quota-banner');
-    await expect(banner).toContainText('Limite de consultas do app atingido');
-    await expect(banner).toContainText('~15 min');
+    await expect(banner).toContainText('O Encore chegou ao limite do Spotify');
+    await expect(banner).toContainText('uns 15 min');
     await expect(banner.getByRole('link', { name: 'Enviar meu histórico' })).toBeVisible();
     await expect(page.getByTestId('connect-top-artists')).toBeVisible();
   });
@@ -125,7 +127,7 @@ test.describe('Conectar com o mock do Spotify (US-08, US-09, US-10)', () => {
       }),
     );
     await page.getByTestId('connect-top').getByRole('radio', { name: 'Músicas' }).click();
-    await expect(page.getByRole('heading', { name: 'Sua sessão expirou' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Sua conexão expirou' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Conectar de novo' })).toHaveAttribute(
       'href',
       '/api/auth/login?locale=pt-BR',

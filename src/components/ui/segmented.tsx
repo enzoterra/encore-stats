@@ -4,7 +4,12 @@ import { ToggleGroup } from 'radix-ui';
 
 import { cn } from './cn';
 
-export type SegmentedOption<T extends string> = { value: T; label: string };
+export type SegmentedOption<T extends string> = {
+  value: T;
+  label: string;
+  /** Opção indisponível: fica visível, sem foco nem clique (explique o motivo perto do controle). */
+  disabled?: boolean;
+};
 
 type Props<T extends string> = {
   label: string;
@@ -12,6 +17,8 @@ type Props<T extends string> = {
   options: readonly SegmentedOption<T>[];
   onChange: (value: T) => void;
   className?: string;
+  /** Id de um texto que explica o controle (ex.: por que uma opção está desabilitada). */
+  describedBy?: string;
 };
 
 /**
@@ -24,12 +31,14 @@ export function Segmented<T extends string>({
   options,
   onChange,
   className,
+  describedBy,
 }: Props<T>) {
   return (
     <ToggleGroup.Root
       type="single"
       value={value}
       aria-label={label}
+      aria-describedby={describedBy}
       onValueChange={(next) => {
         if (next) onChange(next as T);
       }}
@@ -39,10 +48,12 @@ export function Segmented<T extends string>({
         <ToggleGroup.Item
           key={option.value}
           value={option.value}
+          disabled={option.disabled}
           className={cn(
             'h-9 min-w-0 flex-1 truncate rounded-full px-2 text-body-sm font-semibold text-fg-muted',
             'transition-colors duration-(--duration-fast) ease-standard hover:text-fg',
             'data-[state=on]:bg-accent data-[state=on]:font-bold data-[state=on]:text-on-vibrant',
+            'disabled:cursor-not-allowed disabled:text-disabled-fg disabled:hover:text-disabled-fg',
           )}
         >
           {option.label}

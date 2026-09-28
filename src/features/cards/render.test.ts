@@ -7,11 +7,14 @@ import { createCardWorkerApi } from '@/workers/card-worker-api';
 
 import {
   ARTISTS,
+  CONNECT_8B,
   CONNECT_DATA,
   loadCardFonts,
   loadResvgWasm,
   spotifyLogoDataUrl,
+  STRESS_8B,
   TRACKS,
+  UPLOAD_8B,
   UPLOAD_DATA,
 } from '../../../tests/support/cards';
 import { decodePng, diffRatio, pngSize } from '../../../tests/support/png';
@@ -53,6 +56,13 @@ const CASES: [CardTemplate, CardFormat, CardMode, () => CardData, string?][] = [
   ['basic', 'square', 'upload', () => UPLOAD_DATA],
   ['basic', 'story', 'connect', () => ({ ...CONNECT_DATA, spotifyLogo: spotifyLogoDataUrl() })],
   ['festival', 'story', 'upload', () => STRESS, 'stress'],
+  // Iteração 8b: Top músicas e Mix (as mesmas prévias aprovadas em design/cards/preview/).
+  ['tracks', 'story', 'upload', () => UPLOAD_8B],
+  ['tracks', 'square', 'connect', () => ({ ...CONNECT_8B, spotifyLogo: spotifyLogoDataUrl() })],
+  ['tracks', 'story', 'upload', () => STRESS_8B, 'stress'],
+  ['mix', 'story', 'demo', () => UPLOAD_8B],
+  ['mix', 'square', 'upload', () => UPLOAD_8B],
+  ['mix', 'square', 'upload', () => STRESS_8B, 'stress'],
 ];
 
 describe('pipeline satori → resvg → PNG (Node)', () => {

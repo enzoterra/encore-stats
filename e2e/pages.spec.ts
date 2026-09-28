@@ -10,11 +10,11 @@ test.describe('privacidade (RF-24, US-13)', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Privacidade');
     for (const title of [
       'Quem cuida dos seus dados',
-      'O que é tratado',
+      'Quais dados usamos',
       'Onde os dados ficam',
       'Por quanto tempo',
-      'Base legal',
-      'Seus direitos e como revogar',
+      'Por que podemos usar esses dados',
+      'Seus direitos e como cancelar o acesso',
     ]) {
       await expect(page.getByRole('heading', { level: 2, name: title })).toBeVisible();
     }
@@ -27,7 +27,7 @@ test.describe('privacidade (RF-24, US-13)', () => {
   test('versão em inglês', async ({ page }) => {
     await page.goto('/en/privacy');
     await expect(
-      page.getByRole('heading', { level: 2, name: 'Your rights and how to revoke' }),
+      page.getByRole('heading', { level: 2, name: 'Your rights and how to cancel access' }),
     ).toBeVisible();
   });
 });
@@ -39,7 +39,7 @@ test.describe('onboarding (RF-02, US-02)', () => {
       'Peça seu histórico ao Spotify',
     );
     await expect(
-      page.getByText('O Spotify pode levar até 30 dias para enviar.', { exact: false }),
+      page.getByText('O Spotify pode levar até 30 dias para mandar.', { exact: false }),
     ).toBeVisible();
     await expect(page.getByRole('heading', { level: 3 })).toHaveCount(6);
     await expect(page.getByText('Histórico de streaming estendido', { exact: true })).toBeVisible();
@@ -69,7 +69,7 @@ test.describe('onboarding (RF-02, US-02)', () => {
         requests.push(`${request.method()} ${request.url()}`);
     });
     const downloadPromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: 'Baixar lembrete (.ics)' }).click();
+    await page.getByRole('button', { name: 'Baixar lembrete para a agenda' }).click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toBe('encore-lembrete.ics');
     expect(download.url()).toMatch(/^blob:/);
@@ -77,7 +77,7 @@ test.describe('onboarding (RF-02, US-02)', () => {
     expect(content).toContain('BEGIN:VCALENDAR');
     expect(content).toContain('RRULE:FREQ=WEEKLY;COUNT=5');
     expect(content).toMatch(/URL:http:\/\/127\.0\.0\.1:3000\/pt-BR\/upload/);
-    await expect(page.getByTestId('toast')).toContainText('Lembrete baixado — nada foi enviado.');
+    await expect(page.getByTestId('toast')).toContainText('Lembrete baixado. Nada foi enviado.');
     expect(requests).toEqual([]);
   });
 

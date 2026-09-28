@@ -4,10 +4,10 @@ import { useTranslations } from 'next-intl';
 
 import { Alert } from '@/components/ui/alert';
 import { Button, buttonClasses } from '@/components/ui/button';
-import type { HistoryError } from '@/domain/history';
 import { Link } from '@/i18n/navigation';
 
 import { ERROR_ACTIONS, errorValues, type ShownErrorCode } from './errors';
+import type { UploadError } from './use-history-upload';
 
 /** Alerta de erro do upload (10-design.md §8.10), com mensagem útil e próximas ações. */
 export function UploadErrorAlert({
@@ -15,7 +15,7 @@ export function UploadErrorAlert({
   onRetry,
   repoUrl,
 }: {
-  error: Exclude<HistoryError, { code: 'CANCELLED' }>;
+  error: Exclude<UploadError, { code: 'CANCELLED' }>;
   onRetry: () => void;
   repoUrl?: string;
 }) {

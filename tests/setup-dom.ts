@@ -22,6 +22,9 @@ class ResizeObserverStub {
 }
 globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObserver;
 
+// O jsdom não implementa rolagem; `scrollIntoView` vira um no-op nos testes.
+Element.prototype.scrollIntoView ??= function scrollIntoView() {};
+
 afterEach(() => {
   cleanup();
 });

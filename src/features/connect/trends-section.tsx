@@ -123,7 +123,7 @@ export function TrendsSection() {
       {result.status === 'error' ? (
         <SectionError error={result.error} onRetry={result.refetch} />
       ) : trends ? (
-        <div className="grid gap-6 sm:grid-cols-2 sm:gap-4 lg:gap-6">
+        <div className="grid gap-6 sm:grid-cols-2 sm:gap-x-6 lg:gap-x-8">
           <TrendList
             title={t('up')}
             items={[...trends.entered, ...trends.rising].slice(0, PER_COLUMN)}

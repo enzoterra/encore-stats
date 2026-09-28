@@ -94,6 +94,71 @@ describe('<ConnectDashboard /> com o BFF', () => {
     expect(shortCalls).toHaveLength(1);
   });
 
+  it('"Desde o começo"/"Selecionar período": explicam o limite da API, levam ao upload e não mudam a janela', async () => {
+    const { calls } = setup();
+    await screen.findByTestId('connect-top-artists');
+    await screen.findByTestId('trends-up');
+    const before = spotifyCalls(calls).length;
+    const x = t.dashboard.extras;
+    const shortTerm = screen.getByRole('radio', { name: t.dashboard.windows.short_term });
+
+    const allTime = screen.getByRole('button', { name: x.all_time });
+    expect(allTime).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(allTime);
+    expect(allTime).toHaveAttribute('aria-expanded', 'true');
+    const panel = screen.getByRole('region', { name: x.title.all_time });
+    expect(allTime).toHaveAttribute('aria-controls', panel.id);
+    expect(within(panel).getByText('Você continua vendo: 4 semanas.')).toBeInTheDocument();
+    expect(within(panel).getByRole('link', { name: x.upload })).toHaveAttribute('href', '/upload');
+    expect(within(panel).getByRole('link', { name: x.howTo })).toHaveAttribute(
+      'href',
+      '/onboarding',
+    );
+    // Fora da Demo não existe o atalho para a Visão Upload.
+    expect(within(panel).queryByRole('button', { name: x.demoUpload })).toBeNull();
+    // A janela real continua marcada, e o anúncio diz isso.
+    expect(shortTerm).toHaveAttribute('aria-checked', 'true');
+    const windowGroup = screen.getByRole('radiogroup', { name: t.dashboard.windowLabel });
+    expect(within(windowGroup).getAllByRole('radio', { checked: true })).toHaveLength(1);
+    expect(
+      screen.getByText(
+        'Desde o começo precisa do histórico completo. O período continua em 4 semanas.',
+      ),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId('window-summary')).toHaveTextContent(
+      t.dashboard.windowSummary.short_term,
+    );
+    expect(document.querySelector('[data-bottom-bar]')).toHaveTextContent(
+      t.dashboard.windows.short_term,
+    );
+
+    // A outra opção troca o conteúdo do mesmo aviso.
+    const custom = screen.getByRole('button', { name: x.custom });
+    fireEvent.click(custom);
+    expect(allTime).toHaveAttribute('aria-expanded', 'false');
+    expect(custom).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByRole('region', { name: x.title.custom })).toBeInTheDocument();
+
+    // Fechar devolve o foco a quem abriu; Esc também fecha.
+    fireEvent.click(screen.getByRole('button', { name: x.close }));
+    expect(screen.queryByTestId('window-upsell')).toBeNull();
+    expect(custom).toHaveFocus();
+    fireEvent.click(custom);
+    fireEvent.keyDown(screen.getByTestId('window-upsell'), { key: 'Escape' });
+    expect(screen.queryByTestId('window-upsell')).toBeNull();
+    expect(custom).toHaveFocus();
+
+    // Trocar para uma janela real fecha o aviso.
+    fireEvent.click(allTime);
+    fireEvent.click(screen.getByRole('radio', { name: t.dashboard.windows.long_term }));
+    expect(screen.queryByTestId('window-upsell')).toBeNull();
+    await screen.findByTestId('connect-top-artists');
+
+    // Nenhuma chamada nova por causa dos atalhos (só as da janela de 1 ano).
+    const extra = spotifyCalls(calls).slice(before);
+    expect(extra.every((c) => c.path.includes('long_term'))).toBe(true);
+  });
+
   it('top de músicas: capas do álbum, link "Ouvir no Spotify" e "Ver top 50"', async () => {
     setup({
       top: (url) =>
@@ -190,7 +255,7 @@ describe('<ConnectDashboard /> com o BFF', () => {
     });
     const banner = await screen.findByTestId('quota-banner');
     expect(banner).toHaveTextContent(t.quota.title);
-    expect(banner).toHaveTextContent('~15 min');
+    expect(banner).toHaveTextContent('uns 15 min');
     expect(within(banner).getByRole('link', { name: t.quota.upload })).toHaveAttribute(
       'href',
       '/upload',
@@ -266,7 +331,7 @@ describe('Varredura de curtidas', () => {
             }),
     });
     fireEvent.click(await screen.findByRole('button', { name: t.liked.start }));
-    expect(await screen.findByText('Página 1 de 10')).toBeInTheDocument();
+    expect(await screen.findByText('Parte 1 de 10')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: t.liked.cancel }));
     expect(await screen.findByRole('button', { name: t.liked.start })).toBeInTheDocument();
     expect(signals.length).toBeGreaterThan(0);

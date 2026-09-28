@@ -65,6 +65,30 @@ export function fit(value: string, steps: readonly FontStep[]): Fitted {
   return { text: truncate(value, last.max), size: last.size };
 }
 
+/**
+ * Limpa o "ruído de catálogo" do nome da música antes do orçamento de grafemas (10-design.md
+ * §9.11). Só no card: o dashboard continua mostrando o nome completo. Remove participações
+ * ("(feat. X)", "[ft. X]", "(with X)", "(part. X)", "(participação especial de X)", "- feat. X") e
+ * sufixos de catálogo depois de " - " ("Remastered 2011", "2011 Remaster", "Remasterizado",
+ * "Radio Edit", "Single Version", "Versão Single", "Edit"). Versões com sentido ("Ao Vivo",
+ * "Acústica", "Remix") ficam. Se sobrar vazio, volta o original.
+ */
+export function tidyTrack(name: string): string {
+  const tidy = name
+    .replace(
+      /\s*[([](?:feat\.?|ft\.?|with|part\.?|participação(?: especial)?(?: de)?)\s[^)\]]*[)\]]/giu,
+      '',
+    )
+    .replace(/\s+-\s+(?:feat\.?|ft\.?|part\.?)\s.*$/iu, '')
+    .replace(
+      /\s+-\s+(?:\d{4}\s+)?(?:remaster(?:ed|izad[oa])?|remasterização)(?:\s+\d{4})?(?:\s+(?:version|versão))?\s*$/iu,
+      '',
+    )
+    .replace(/\s+-\s+(?:radio edit|single version|versão single|edit)\s*$/iu, '')
+    .trim();
+  return tidy || name.trim();
+}
+
 /** Espaços inquebráveis dentro do nome: a quebra só acontece entre nomes (nos separadores). */
 export function keepTogether(value: string): string {
   return value.replace(/ /g, NBSP);

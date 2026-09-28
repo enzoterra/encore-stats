@@ -3,7 +3,10 @@
  * traduzidos e formatados pela UI; os templates só fazem layout, truncamento e caixa alta.
  */
 
-export const CARD_TEMPLATES = ['festival', 'basic'] as const;
+/** Ordem do seletor no diálogo (§9.11): Line-up (`festival`) | Músicas | Mix | Básico. */
+export const CARD_TEMPLATES = ['festival', 'tracks', 'mix', 'basic'] as const;
+/** Cartazes que dependem de músicas: ficam desabilitados quando o período não tem nenhuma. */
+export const TRACK_TEMPLATES: readonly CardTemplate[] = ['tracks', 'mix'];
 export const CARD_FORMATS = ['story', 'square'] as const;
 
 export type CardTemplate = (typeof CARD_TEMPLATES)[number];
@@ -49,14 +52,19 @@ export type CardData = {
   periodLabel: string;
   /** Até 25 artistas, do nº 1 em diante. */
   topArtists: string[];
+  /** Até 10 músicas, da nº 1 em diante (o Básico usa só as primeiras 5). */
   topTracks: CardTrack[];
   /** Linha abaixo do herói do Básico ("1.284 plays · fã desde mar. 2019"). */
   heroSub?: string;
   /** Bloco de destaque do Básico; sem ele, o bloco some. */
   stat?: { value: string; label: string };
-  /** Linha de estatísticas do Festival. */
+  /** Linha de estatísticas do Line-up (`festival`). */
   stats: string[];
-  /** "Nome no cartaz" do Festival (opcional, digitado no modal). */
+  /** Linha de estatísticas do Top músicas ("9.214 plays · 1.873 músicas · 48.213 min"). */
+  trackStats: string[];
+  /** Linha de estatísticas do Mix; vazia no Conectar (a linha some). */
+  mixStats: string[];
+  /** "Nome no cartaz" dos três cartazes (opcional, digitado no modal). */
   posterName?: string;
   /** Capa da música nº 1 (Conectar/Básico), como data URL. Sem ela, o card é tipográfico. */
   cover?: string;

@@ -5,7 +5,7 @@
 >
 > Arquivos da sprint (`docs/projeto/design/`):
 > - `mockup.html`: dashboard mobile (modo Upload) + prévia do card Festival 9:16. Abra direto no navegador.
-> - `cards/templates.mjs`: protótipo dos 4 templates, **validado no satori 0.33.5 + resvg-wasm 2.6.2**.
+> - `cards/templates.mjs`: protótipo dos 4 templates, **validado no satori 0.33.5 + resvg-wasm 2.6.2**. Na Iteração 8b ganhou Top músicas e Mix (§9.8–§9.11).
 > - `cards/preview/*.png`: PNGs gerados por esse protótipo, incluindo testes de estresse com nomes longos, cirílico e acentos.
 > - `fonts/`: TTF estáticos para o satori, WOFF2 variáveis para a web e as licenças OFL (§13).
 
@@ -169,6 +169,8 @@ Rampa estilo "inferno" na paleta da marca: violeta → magenta → coral → lar
 | Espaço entre seções do dashboard | 32 px mobile · 48 px desktop |
 | Padding interno de card | 16 px (< 640) · 24 px (≥ 640) |
 | Gap entre cards | 12 px mobile · 16 px tablet · 24 px desktop |
+| Gap entre cards de métrica (Iteração 8b) | Totais: 12 px (< 640) · 16 px (640–767) · 24 px (768–1023, largura toda) · 12 px (1024–1279) e 16 px (≥ 1280) na coluna lateral de 4/12. "Você por você": 12 px (< 640) · 16 px (≥ 640). Números de 7+ caracteres descem um degrau de tamanho no mobile estreito e na coluna do `lg`, para caber numa linha |
+| Gutter entre colunas do dashboard (Iteração 8b) | 32 px (768–1279) · 40 px (≥ 1280). Listas lado a lado (tendências): 24 px (640–1023) · 32 px (≥ 1024) |
 | Container | `max-width: 1200px`; texto corrido `max-width: 40rem` |
 
 | Breakpoint (Tailwind) | Min | Layout do dashboard |
@@ -329,6 +331,7 @@ Estados-padrão, que valem para **todo** controle interativo, salvo indicação:
   - selecionado: fundo `accent`, texto ink, peso 700 e `aria-checked`, ou seja, não é só a cor que muda;
   - hover: `fg`.
   - Usado em: período (Mês | Ano | Desde sempre | Intervalo), janela do Conectar (4 semanas | 6 meses | 1 ano), template e formato do card, idioma (PT | EN).
+  - Atalhos do Conectar ("Desde o começo" | "Selecionar período", Iteração 8b): **não** entram no segmented, porque não trocam a janela (§8.3).
 - **Chip de filtro** (anos 2019…2024):
   - altura 36 px, `radius-full`;
   - padrão: fundo `surface-2` com texto `fg-muted`;
@@ -355,6 +358,12 @@ Estados-padrão, que valem para **todo** controle interativo, salvo indicação:
   - período sem plays: estado vazio no dashboard ("Nenhuma música nesse período. Tente outro.").
 - **Troca:** sem spinner, porque a meta é < 200 ms. Uma região `aria-live="polite"` anuncia "Mostrando 2024".
 - **Posição:** no mobile, sticky logo abaixo do cabeçalho, colapsado no resumo com toque para expandir. No desktop, barra fixa acima do conteúdo.
+- **Conectar (Iteração 8b):** a API só tem 4 semanas / 6 meses / 1 ano. Ao lado do segmented da janela ficam dois atalhos, "Desde o começo" e "Selecionar período":
+  - visual de chip (36 px, `radius-full`, `surface-2`, `fg-muted`, ícone `history`/`calendar-range` de 16 px a partir do `sm`); aberto: `surface-3`, borda `line-strong`, texto `fg`. Nunca amarelo, que é a cor de "selecionado";
+  - semântica de **divulgação** (`button` com `aria-expanded`/`aria-controls`), não de rádio: a janela ativa continua marcada no segmented e na barra inferior;
+  - abre um aviso inline (`info`, borda esquerda de 4 px, `role="region"` com título `h4`) explicando o limite e com as ações "Enviar meu histórico" (`secondary`, leva a `/upload`) e "Como pedir o histórico" (`ghost`, `/onboarding`). No Demo, a ação principal vira "Ver na Visão Upload", que troca de aba já no modo "Sempre"/"Intervalo" e põe o foco nesse rádio;
+  - o `aria-live` anuncia "Desde o começo precisa do histórico completo. A janela continua em 4 semanas."; `Esc` ou o X fecham e devolvem o foco ao atalho; escolher uma janela real fecha o aviso;
+  - layout: < 640 px, segmented numa linha e os dois atalhos na linha de baixo (50% cada, sem cortar texto); a partir de 640 px, na mesma linha quando couber (`flex-wrap`).
 
 ### 8.4 Card de métrica ("você por você" e totais)
 - **Anatomia:**
@@ -494,9 +503,9 @@ A falha de uma seção nunca derruba as outras (RNF-05).
 - **Contêiner:** Radix `Dialog`. No mobile é um bottom sheet (altura de até 92 dvh, alça de 36 × 4 px, `radius-xl` só no topo); no desktop, modal de 880 px com duas colunas (prévia | controles).
 - **Conteúdo, nesta ordem:**
   1. `h2` "Compartilhar";
-  2. segmented **Template**: Festival | Básico. O padrão é **Festival**, o mais "compartilhável";
+  2. segmented **Template**: Festival | Básico. O padrão é **Festival**, o mais "compartilhável". **Iteração 8b:** passa a ser Line-up | Músicas | Mix | Básico, com o padrão no Line-up (§9.11);
   3. segmented **Formato**: Stories 9:16 | Quadrado 1:1;
-  4. [Festival] campo opcional "Nome no cartaz" (`maxlength=20`, placeholder "Encore Fest", ajuda "Fica só na imagem, não é enviado a lugar nenhum");
+  4. [Festival; na 8b, os três cartazes Line-up/Músicas/Mix] campo opcional "Nome no cartaz" (`maxlength=20`, placeholder "Encore Fest", ajuda "Fica só na imagem, não é enviado a lugar nenhum");
   5. **prévia**: `<img>` do PNG gerado, dentro de uma caixa com o `aspect-ratio` do formato e `radius-md`. No mobile ocupa até 56 dvh;
   6. nota em `caption`: Conectar → "Inclui a atribuição ao Spotify"; Demo → "Card marcado como DEMO";
   7. ações: primário largura total "Compartilhar" (ícone `share-2`) quando `navigator.canShare({files})`; senão, o primário é "Baixar PNG" (`download`). O secundário "Baixar" aparece sempre que o primário é Compartilhar.
@@ -544,7 +553,7 @@ A falha de uma seção nunca derruba as outras (RNF-05).
 
 ### 8.18 Navegação e cabeçalho
 - **Cabeçalho:** altura 56 px, sticky, `background` a 85% + `backdrop-filter: blur(12px)`, borda inferior `line`. Da esquerda para a direita:
-  - wordmark "encore" (Bricolage 800, 22 px, `primary`, com `letter-spacing` −0,02 em);
+  - logo (lockup do conceito 2, §16) com 12 px de altura, que equivale ao antigo wordmark de 22 px; o link tem `aria-label` "Encore, página inicial";
   - badge do modo (Upload / Conectado / DEMO em `info`);
   - espaçador;
   - selo compacto (≥ 640 px);
@@ -580,6 +589,8 @@ A falha de uma seção nunca derruba as outras (RNF-05).
 
 Implementação: satori → SVG → resvg-wasm → PNG. **Só flexbox**: todo `div` com mais de um filho precisa de `display: flex`, e não há grid nem `foreignObject`. As fontes são as TTF estáticas de §13. A referência executável é `design/cards/templates.mjs`, com as prévias em `design/cards/preview/`.
 
+Templates: Básico (§9.3), Line-up de festival (§9.4) e, desde a Iteração 8b, **Top músicas** (§9.9) e **Mix** (§9.10). Os três cartazes de festival compartilham as peças de §9.8, e os dados, o diálogo e o i18n dos novos estão em §9.11.
+
 ### 9.1 Canvas e áreas seguras
 | Formato | Canvas | Área segura (conteúdo) | Por quê |
 |---|---|---|---|
@@ -587,17 +598,17 @@ Implementação: satori → SVG → resvg-wasm → PNG. **Só flexbox**: todo `d
 | **Quadrado 1:1** | 1080 × 1080 | 72 px em todos os lados → 936 × 936 | Feed e WhatsApp; sem sobreposição de UI |
 
 ### 9.2 Hierarquia comum
-1. **Cabeçalho:** wordmark "encore" (magenta) + chip do período (ink sobre amarelo) + tag **DEMO** (ink sobre ciano) no modo Demo.
+1. **Cabeçalho:** logo "encore" (lockup, §16) + chip do período (ink sobre amarelo) + tag **DEMO** (ink sobre ciano) no modo Demo.
 2. **Herói:** nº 1 do período (artista), o maior texto do card.
 3. **Listas:** top artistas e top músicas (Básico) ou line-up em 3 níveis (Festival).
 4. **Destaque:** bloco magenta com texto ink (Básico) ou linha de estatísticas laranja (Festival).
-5. **Rodapé** (sempre dentro da área segura): wordmark branco + `encore.app` à esquerda; atribuição à direita (§9.6).
+5. **Rodapé** (sempre dentro da área segura): logo (lockup colorido, §16) + `encore.app` à esquerda; atribuição à direita (§9.6).
 
 ### 9.3 Template "Básico"
 | Elemento | 9:16 | 1:1 |
 |---|---|---|
 | Fundo | `linear-gradient(180deg,#0E0B1A,#17122A)` + brilho radial laranja a 35% no canto superior direito | igual |
-| Cabeçalho | wordmark Bricolage 800, 44 px · chip Inter 700, 28 px | 36 px · 28 px |
+| Cabeçalho | logo (lockup, §16) com 33 px de altura · chip Inter 700, 28 px | logo 27 px · chip 28 px |
 | Rótulo "Artista nº 1" | Inter 600, 32 px `fg-muted` | 24 px |
 | Herói (nome) | Bricolage 800, linha única, em degraus: ≤ 10 grafemas 128 px · ≤ 14 → 104 · ≤ 18 → 84 · ≤ 24 → 64 · acima disso, trunca em 24 com "…" | 96 · 80 · 64 · 52 |
 | Sub-herói | Inter 600, 30 px `neon-orange` (Upload: "1.284 plays · fã desde mar/2019"; Conectar: "em alta: subiu 3 posições") | 24 px |
@@ -650,6 +661,182 @@ Implementação: satori → SVG → resvg-wasm → PNG. **Só flexbox**: todo `d
 - Tamanho medido: ~190–410 kB. Tempo no Node, sem cache de fontes: 0,8–3 s. No navegador, gerar ao abrir o modal (§8.14).
 - Nome do arquivo: `encore-{template}-{formato}-{periodo}.png` (ex.: `encore-festival-stories-2024.png`), com o período sanitizado para `[a-z0-9-]`.
 
+### 9.8 Família "cartaz de festival": Line-up, Top músicas e Mix (Iteração 8b, 2026-09-28)
+Pedido do cliente: além do Line-up de artistas (§9.4), mais dois cartazes na mesma identidade de festa, **Top músicas** e **Mix** (top 3 artistas + top 3 músicas). **Status: aguardando aprovação do cliente (8b.2).**
+
+- **Referência executável:** `design/cards/templates.mjs` (funções `tracksTpl` e `mixTpl` e as peças comuns `posterHeader`, `posterDivider`, `stageSign`, `posterStats`, `posterFrame`, `tidyTrack`, `fitTrack`, `trackBlock`). O `festival()` do protótipo foi refatorado para usar as mesmas peças, com saída idêntica: diferença máxima de 2/255 por canal, que é o ruído de dithering do gradiente.
+- **Prévias:** `design/cards/preview/tracks-*.png` e `mix-*.png`, geradas com `node docs/projeto/design/cards/render-preview.mjs --only=tracks,mix` a partir da raiz do repositório.
+- **Restrições do satori mantidas:** só flexbox, sem grid, sem `foreignObject`. Ornamentos são `div`s, sem glifo ♪/★. Fontes: as TTF de §13, sem arquivo novo.
+
+**O que as três variações têm em comum, sem mudança em relação ao Line-up:**
+
+| Peça | Regra |
+|---|---|
+| Canvas e área segura | §9.1 (Stories: topo 250, base 280, laterais 72; Quadrado: 72 em volta) |
+| Cabeçalho | "ENCORE APRESENTA" (+ tag **DEMO** ao lado no modo Demo) · título magenta "ENCORE FEST" / "FESTIVAL {NOME}" com os degraus de §9.4 · chip do período (ink sobre `accent`, CAIXA ALTA, truncado em 28) |
+| Nome no cartaz | O mesmo campo do modal vale para os três cartazes (§9.11) |
+| Divisor | Linha de 3 px `primary` + losango de 14 px `accent` |
+| Estatísticas | Inter 700, `neon-orange`, CAIXA ALTA, `letter-spacing` 3, separadas por "  ·  "; 28 px (9:16) / 22 px (1:1). Some se a lista vier vazia |
+| Rodapé | §9.2 e §9.6: Upload com texto, Demo sem citar o Spotify, Conectar com o **logo oficial branco sozinho** (210 × 57, padding 16) |
+| Capas | **Nunca**, nos três modos (a capa continua exclusiva do Básico no Conectar) |
+| Layout | Coluna `space-between`: conteúdo no topo; estatísticas + rodapé na base; gap mínimo de 32 px |
+
+**Peças novas:**
+- **Placa de palco** (`stageSign`): rótulo da seção, ink sobre `primary` (5,82:1), Inter 700 CAIXA ALTA, raio 8 px (placa, e não pílula, para não confundir com o chip do período). Tamanhos: 26 px, padding 8 × 22, `letter-spacing` 5 (9:16) / 20 px, padding 6 × 16, `letter-spacing` 4 (1:1). Fica no centro de um divisor: linha de 3 px `primary` de cada lado, com gap de 20. Textos: `t.tracks` ("Top músicas" / "Top tracks") e `t.artists` ("Top artistas" / "Top artists"), strings que já existem.
+- **Bloco música + artista** (`trackBlock`), centralizado:
+  - nome: Bricolage **Condensed** 800, CAIXA ALTA, `lineHeight` 0,95;
+  - artista embaixo: Inter 700, CAIXA ALTA, `letter-spacing` 3, cor nova **`pink` = `primary-fg` #FF7AB0** (8,01:1 sobre o fundo; token que já existe na web, e só entra agora no canvas).
+- **Cor do artista:** rosa nas músicas em destaque (nº 1–3) e `fg-muted` na lista numerada (nº 4–10). Assim o olho lê primeiro o nome da música.
+
+**Fundos**, em camadas no mesmo formato do `BACKGROUNDS` de `templates.ts` (a primeira radial fica por cima). A base é a linear do Line-up: `#0E0B1A 0` · `#140E28 .55` · `#2A0F3D .82` · `#4A1247 1`. Cada cartaz muda só os holofotes, para o usuário distinguir os três no feed:
+
+| Template | Radial 1 (por cima) | Radial 2 |
+|---|---|---|
+| Line-up (§9.4, sem mudança) | magenta `(255,61,139)` em x .12 · y .06, alpha .55, stop .38 | ciano `(61,224,255)` em .90 · .10, .40, .34 |
+| **Top músicas** (`tracks`) | ciano `(61,224,255)` em .10 · .06, alpha .40, stop .34 | magenta `(255,61,139)` em .90 · .08, .55, .38 (holofotes trocados de lado) |
+| **Mix** (`mix`) | magenta `(255,61,139)` em .12 · .06, alpha .55, stop .38 | laranja `(255,122,26)` em .90 · .10, .38, .34 |
+
+**Contraste medido sobre o fundo composto**, no pior ponto da região real de cada texto (script de luminância, amostragem a cada 10 px):
+
+| Texto | Line-up (referência) | Top músicas | Mix |
+|---|---|---|---|
+| `accent` (nº 1) | 8,19 | 8,93 | 9,32 |
+| `fg` (nº 2–3, lista) | 12,12 | 12,54 | 13,02 |
+| `pink` (artista) | 5,69 | 5,82 | 5,88 |
+| `fg-muted` (artista da lista) | 8,33 | 8,33 | 8,33 |
+| `neon-cyan` (ENCORE APRESENTA) | 6,41 | 6,46 | 6,92 |
+| `neon-orange` (estatísticas) | 6,41 | 6,41 | 6,41 |
+| `fg-subtle` (rodapé) | 4,97 | 4,97 | 4,97 |
+| `primary` (título, ≥ 50 px, texto grande: 3:1) | 3,10 (título padrão) | 3,20 | 3,42 |
+
+- **Ressalva:** com um título longo ("FESTIVAL MARIA EDUARDA…", 30 grafemas), as primeiras e as últimas letras encostam no holofote e o contraste cai para 2,9:1 no Top músicas e 3,1:1 no Mix. É a mesma situação do Line-up já aprovado, que cai para 2,6:1.
+- **Por que manter assim:** o título tem sempre ≥ 50 px e o centro dele fica acima de 3:1. Não mexer.
+
+### 9.9 Template "Top músicas" (`tracks`, "o setlist do festival"; sempre tipográfico)
+Cabem **10 músicas nos dois formatos**, divididas em três níveis:
+- nº 1: headliner amarelo;
+- nº 2–3: brancas;
+- nº 4–10: setlist numerado.
+
+Com menos músicas, os blocos vazios somem. O divisor antes do setlist só aparece se houver a nº 4. O número de músicas sai nas estatísticas do Conectar ("TOP N MÚSICAS").
+
+| Elemento | 9:16 (Stories) | 1:1 (Quadrado) |
+|---|---|---|
+| Ordem | cabeçalho → (gap 48) → placa "TOP MÚSICAS" → nº 1 → nº 2 → nº 3 → divisor → setlist; gap de 26 entre os blocos | idem, gap 20 depois do cabeçalho e 14 entre os blocos |
+| **nº 1**: nome | Condensed 800 `accent`, **1 linha** nos degraus ≤ 14 → 132 px · ≤ 18 → 112 · ≤ 24 → 92 · ≤ 30 → 76; acima disso, **até 2 linhas** em 76 px (`lineClamp: 2`, `wordBreak: break-word`, `overflow: hidden`), truncado em 52 grafemas | 1 linha: ≤ 14 → 88 · ≤ 18 → 74 · ≤ 24 → 60 · ≤ 32 → 50; acima disso, até 2 linhas em 50 px, truncado em 44 |
+| nº 1: artista | Inter 700 30 px `pink`, gap 12, trunca em 32 | 22 px, gap 8, trunca em 32 |
+| **nº 2–3**: nome | Condensed 800 `fg`, 1 linha: ≤ 18 → 84 · ≤ 24 → 68 · ≤ 32 → 56, trunca em 32. **As duas ficam com o mesmo tamanho** (o menor dos dois), como os headliners | ≤ 20 → 50 · ≤ 26 → 42 · ≤ 34 → 36, trunca em 34 |
+| nº 2–3: artista | Inter 700 24 px `pink`, gap 8 | 18 px, gap 4 |
+| **Setlist nº 4–10** | **Uma coluna** centralizada como bloco, com as linhas alinhadas à esquerda (largura = a da linha mais longa, até 936). Cada linha é `row`/`baseline`, gap 16: nº (Bricolage 800, 33 px `accent`, coluna fixa de 52) · nome (Condensed 800, 46 px `fg`, trunca em 30, espaços inquebráveis, `flexShrink: 1` + reticências) · artista (Inter 600, 24 px `fg-muted`, trunca em 20, `flexShrink: 0`). Gap de 10 entre as linhas | **Duas colunas** de 452 px com gap de 32 (nº 4–7 à esquerda, nº 8–10 à direita). Cada item: nº (Bricolage 800, 26 px `accent`, coluna de 38) + [nome Condensed 800, 32 px `fg`, trunca em 28 / artista Inter 600, 17 px `fg-muted`, trunca em 30, embaixo]. Gap de 10 |
+| Estatísticas | Upload/Demo: **"9.214 PLAYS · 1.873 MÚSICAS · 48.213 MIN"**. Conectar: **"TOP 10 MÚSICAS · ÚLTIMOS 6 MESES"** | idem |
+
+- **Altura (pior caso):** medida no `tracks-story-upload-stress.png`, com o nº 1 em 2 linhas, cirílico e as 10 músicas longas. Cabe com ~40 px de folga antes das estatísticas, sem invadir a faixa segura.
+- **Fallback de fonte:** nomes fora da cobertura do Bricolage (ex.: "Звезда по имени Солнце") descem 1 degrau (`outsideDisplayCoverage`, §9.5) e caem no Inter.
+- **Numeração:** só o setlist leva número. No nº 1–3, a posição é dada pelo tamanho e pela cor, como no Line-up.
+
+### 9.10 Template "Mix" (`mix`, dois "palcos": top 3 artistas + top 3 músicas; sempre tipográfico)
+**3 artistas + 3 músicas nos dois formatos**, empilhados em duas seções, cada uma aberta por uma placa de palco. No quadrado foi testado um layout de duas colunas lado a lado: os nomes ficavam pequenos demais e sobrava 1/3 do card. Empilhado, o texto usa a largura inteira, o que é essencial para as músicas longas.
+
+| Elemento | 9:16 | 1:1 |
+|---|---|---|
+| Ordem | cabeçalho → (gap 48) → placa "TOP ARTISTAS" → 3 artistas → placa "TOP MÚSICAS" → 3 músicas; gap de 30 entre os blocos | gap 24 depois do cabeçalho e 16 entre os blocos |
+| **Artista nº 1** | Condensed 800 `accent`, CAIXA ALTA, 1 linha: ≤ 11 → 150 px · ≤ 15 → 120 · ≤ 20 → 96, trunca em 20 (os degraus do headliner do Line-up) | ≤ 11 → 100 · ≤ 15 → 82 · ≤ 20 → 64 |
+| Artistas nº 2–3 | Condensed 800 `fg`, 80% do degrau, **mesmo tamanho** entre os dois. Gap de 16 entre os nomes | idem, gap 4 |
+| **Música nº 1** | Condensed 800 `accent`, 1 linha: ≤ 14 → 120 · ≤ 18 → 100 · ≤ 24 → 84 · ≤ 30 → 70; acima disso, até 2 linhas em 70 px, trunca em 52 · artista Inter 700, 30 px `pink`, gap 10 | 1 linha: ≤ 14 → 76 · ≤ 18 → 64 · ≤ 24 → 54 · ≤ 32 → 46; acima disso, até 2 linhas em 46 px, trunca em 44 · artista 18 px, gap 4 |
+| Músicas nº 2–3 | Condensed 800 `fg`: ≤ 18 → 76 · ≤ 24 → 64 · ≤ 32 → 52, trunca em 32, **mesmo tamanho** entre as duas · artista 24 px `pink`, gap 6. Gap de 26 entre as músicas | ≤ 18 → 50 · ≤ 24 → 42 · ≤ 32 → 36 · artista 16 px, gap 2. Gap 10 |
+| Estatísticas | Upload/Demo: as mesmas do Line-up ("48.213 MIN · 9.214 PLAYS · 612 ARTISTAS"). **Conectar: sem linha**: a janela já está no chip, e "TOP 25 ARTISTAS" seria falso aqui | idem |
+
+- **Dados incompletos:**
+  - sem músicas: a seção "TOP MÚSICAS" some, mas o diálogo já desabilita o Mix nesse caso (§9.11);
+  - com 1 ou 2 itens: só esses aparecem.
+- **Pior caso medido:** `mix-story-upload-stress.png` e `mix-square-upload-stress.png` (artista de 45 grafemas truncado, cirílico, música de 84 grafemas em 2 linhas). Os dois cabem com folga.
+
+### 9.11 Regras de texto, dados, diálogo e i18n dos novos templates
+**Nome de música: limpeza antes do orçamento** (`tidyTrack`, vai para `text.ts`). Só no card; o dashboard continua mostrando o nome completo, o que atende à regra 14 de §10. Remove, sem diferenciar maiúsculas:
+- participações entre parênteses ou colchetes: `(feat. X)`, `(ft. X)`, `(with X)`, `(part. X)`, `(participação especial de X)`, `[feat. X]`;
+- participação depois de hífen: ` - feat. X`;
+- sufixos de catálogo depois de ` - `: `Remaster`, `Remastered`, `Remasterizado/a`, `Remasterização`, com ou sem ano ("- 2011 Remaster", "- Remastered 2009"), `Radio Edit`, `Single Version`, `Versão Single`, `Edit`.
+
+**O que fica:** versões com sentido, como "(Ao Vivo…)", "(Versão Acústica)", "(Remix …)".
+
+Se a limpeza deixar o nome vazio, volta o original. Depois da limpeza valem as regras de §9.5: truncamento por grafema com "…", degraus, `toLocaleUpperCase(locale)`, espaços inquebráveis no setlist, `cleanText` e fallback de fonte. Exemplos testados no protótipo:
+- "Ventilador no Talo - Remasterizado 2019" → "VENTILADOR NO TALO";
+- "Céu de Neon (feat. MC Brisa)" → "CÉU DE NEON";
+- "Dança do Pelicano - Radio Edit" → "DANÇA DO PELICANO".
+
+**Artista da música:**
+- Upload/Demo: `artist` (o artista principal do histórico);
+- Conectar: `track.artists.map(a => a.name).join(', ')`, como hoje, truncado pelo orçamento ("LUA VERMELHA, MC BRISA", "DJ CAJU, NEON TROPI…");
+- sem artista: a linha some.
+
+**Dados:** `share-input.ts` hoje corta `topTracks` em 5 e não tem as estatísticas dos novos cartazes. O que o dev-frontend acrescenta:
+
+| Onde | O que muda |
+|---|---|
+| `model.ts` | `CARD_TEMPLATES = ['festival', 'tracks', 'mix', 'basic']` (**ordem do diálogo**). Em `CardData`: `trackStats: string[]` e `mixStats: string[]`; o comentário de `topTracks` passa a dizer "até 10". `CardStrings` não muda (`artists` e `tracks` já existem) |
+| `share-input.ts` | `MAX_CARD_TRACKS = 10`. `ShareInput` ganha `trackStats` e `mixStats`. **Upload/Demo:** `topTracks: stats.top.tracks.slice(0, 10)`; `trackStats = [t('stats.plays', {count: totals.plays}), t('stats.tracks', {count: totals.tracks}), t('stats.minutes', {value: minutes})]`; `mixStats = stats` (o mesmo array do Line-up). **Conectar:** `topTracks: tracks.slice(0, 10)`; `trackStats = [t('stats.topTracks', {count: min(10, tracks.length)}), windowLabel]`; `mixStats = []` |
+| `share-dialog.tsx` | Passar `trackStats` e `mixStats` para o `CardData`. `effectivePoster = template !== 'basic' ? posterApplied : ''` e o campo "Nome no cartaz" aparece nos três cartazes. Cache por `template\|format\|poster`, como hoje |
+| `templates.ts` | `COLORS.pink = '#FF7AB0'`; `BACKGROUNDS.tracks`/`.mix` (tabela de §9.8); `STEPS.tracks`/`.mix` (§9.9/§9.10; o protótipo exporta `TRACK_STEPS` e `MIX_STEPS` com os valores); as peças comuns de §9.8; dispatch no `buildCard`. A regra de capa já vale: só o `basic` recebe `cover`, e Upload/Demo nunca recebem logo |
+| O Básico | Nada muda: ele já corta as músicas em 5 (9:16) e 4 (1:1) internamente |
+
+Os tamanhos disponíveis bastam: o Upload calcula com `limit: 50`, o Demo com 25 e a API devolve até 50.
+
+**Diálogo de compartilhar (§8.14):**
+- **Template (segmented, 4 opções, nesta ordem):** **Line-up | Músicas | Mix | Básico** (EN: **Line-up | Tracks | Mix | Basic**).
+  - O padrão continua sendo o cartaz de artistas (`festival`).
+  - Com três cartazes, o rótulo "Festival" ficaria ambíguo, e por isso passa a ser "Line-up". O id interno `festival` e o nome do arquivo (`encore-festival-…`) não mudam.
+  - Cabe na largura de 320 px da coluna do desktop e do sheet em 360 px: ~79 px por segmento, e o rótulo mais longo ("Músicas", 14 px/700) tem ~58 px. O `truncate` do `Segmented` continua como rede de segurança.
+- **Sem músicas na janela** (ex.: o top de músicas do Conectar falhou ou veio vazio):
+  - Músicas e Mix ficam **desabilitados** (Radix `ToggleGroup.Item disabled`; o `SegmentedOption` ganha `disabled?: boolean`), com `disabled-fg`;
+  - uma `caption` abaixo do segmented explica: `dialog.noTracks`;
+  - se um desses estiver selecionado, volta para Line-up.
+- **Formato:** sem mudança (Stories 9:16 | Quadrado 1:1).
+- **Arquivo:** `encore-tracks-stories-2024.png`, `encore-mix-square-ultimos-6-meses.png`.
+- **Texto alternativo da prévia:** continua `dialog.alt` ("Card {template}: {names}"), com `names` montado por template:
+  - Line-up/Básico: os 3 primeiros artistas, como hoje;
+  - Músicas: as 3 primeiras músicas no formato "Nome (Artista)", com o nome **completo**, sem `tidyTrack`, e "…" se houver mais;
+  - Mix: "Lua Vermelha, Os Ventiladores, Marina Sal; Farol Aceso às Três da Manhã, Céu de Neon, Ventilador no Talo".
+- **Notas por modo:** sem mudança ("Inclui a atribuição ao Spotify." / "Card marcado como DEMO." / "Gerado no seu aparelho…").
+
+**i18n (namespace `Cards`), chaves novas e alteradas:**
+
+| Chave | pt-BR | en |
+|---|---|---|
+| `dialog.templates.festival` (alterada) | Line-up | Line-up |
+| `dialog.templates.tracks` | Músicas | Tracks |
+| `dialog.templates.mix` | Mix | Mix |
+| `dialog.templates.basic` | Básico | Basic |
+| `dialog.noTracks` | Sem músicas neste período para os cards Músicas e Mix. | No tracks in this period for the Tracks and Mix cards. |
+| `stats.tracks` | `{count, plural, one {# música} other {# músicas}}` | `{count, plural, one {# track} other {# tracks}}` |
+| `stats.topTracks` | `Top {count} músicas` | `Top {count} tracks` |
+
+Textos do canvas já existentes que os novos cartazes usam: `strings.presents`, `festOf`, `festDefault`, `artists`, `tracks`, `demoTag`, `uploadFooter`, `demoFooter`. A caixa alta é aplicada no template. O inglês foi verificado em `mix-story-connect-en.png`.
+
+**Variações por modo (complementa §9.6):**
+
+| | Upload | Demo | Conectar |
+|---|---|---|---|
+| Top músicas | tipográfico · estatísticas "plays · músicas · min" · rodapé em texto | idem + tag **DEMO** ao lado de "ENCORE APRESENTA" + rodapé "Modo demo…" | tipográfico, **sem capa** · "TOP N MÚSICAS · {JANELA}" · **logo oficial do Spotify** sozinho no rodapé (metadado da API → atribuição obrigatória, §10 itens 4–9) |
+| Mix | tipográfico · estatísticas do Line-up | idem + **DEMO** | sem capa · sem linha de estatísticas · logo oficial |
+
+- **A visão Conectar do Demo** continua em modo `demo`: tag DEMO, sem capa e sem Spotify.
+
+**Prévias geradas (`design/cards/preview/`):**
+
+| Arquivo | O que mostra |
+|---|---|
+| `tracks-story-upload.png` · `tracks-square-upload.png` | Caso típico, nomes longos reais ("Farol Aceso às Três da Manhã", "Maré Alta (Ao Vivo no Circo Voador)") e limpeza de feat./remaster |
+| `tracks-story-connect.png` | Conectar: janela, artistas múltiplos, logo oficial |
+| `tracks-square-demo.png` | Tag DEMO + rodapé do demo |
+| `tracks-story-upload-stress.png` · `tracks-square-upload-stress.png` | Nome no cartaz longo, nº 1 de 84 grafemas (2 linhas no Stories), cirílico, `[feat. …]` e "- 2011 Remaster" |
+| `tracks-square-upload-short.png` | Período com só 4 músicas |
+| `mix-story-upload.png` · `mix-square-upload.png` | Caso típico |
+| `mix-story-demo.png` | Tag DEMO |
+| `mix-square-connect.png` · `mix-story-connect-en.png` | Conectar em pt-BR e **em inglês**, sem estatísticas e com o logo |
+| `mix-story-upload-stress.png` · `mix-square-upload-stress.png` | Pior caso de nomes |
+
+- **Medidas:** 220–420 kB por PNG. No Node, com o fundo em CSS (o protótipo): 1–3 s. Em produção o fundo vai por `backgroundSvg`, que é mais rápido (§9.7).
+
 ---
 
 ## 10. Checklist de branding do Spotify (S3.4)
@@ -660,7 +847,7 @@ Fonte: Spotify Design Guidelines (developer.spotify.com/documentation/design), c
 |---|---|---|---|
 | 1 | O nome do app não pode conter "Spotify" nem soar ou parecer com ele | **Encore**, que também não usa "Wrapped" | ✅ |
 | 2 | Não imitar a marca do Spotify nem a do Wrapped | Paleta própria sem o verde do Spotify (`success` é menta `#52F2C8`, e nunca aparece junto do logo). Nenhuma fonte, forma ou layout do Wrapped | ✅ |
-| 3 | Não combinar a marca do Spotify com outra marca | O logo do Spotify fica em área própria, separado do wordmark "encore" pelo espaço do rodapé; nunca em lockup | ✅ |
+| 3 | Não combinar a marca do Spotify com outra marca | O logo do Spotify fica em área própria, separado da logo do Encore pelo espaço do rodapé; nunca em lockup | ✅ |
 | 4 | Metadados do Spotify (artista, álbum, faixa, capa) vêm sempre acompanhados da marca | Toda seção com dado da API tem o **logo completo** no cabeçalho da seção (altura de 21 px na web, ≈ 70 px de largura); cards do Conectar levam o logo no rodapé | ✅ especificado (§8.5, §9.6) |
 | 5 | Usar o **logo completo** (ícone + wordmark); o ícone sozinho só se faltar espaço | Logo completo nos cabeçalhos de seção e nos cards. Ícone sozinho (≥ 21 px) só no link de cada linha do ranking | ✅ |
 | 6 | Tamanho mínimo: logo completo ≥ 70 px e ícone ≥ 21 px (digital) | Web: logo completo com ≥ 72 px de largura, ícone de 21–24 px. Card: 210 px no canvas de 1080 | ✅ |
@@ -907,3 +1094,24 @@ Uso de títulos responsivos: `text-h1 lg:text-h1-lg`, `text-h2 lg:text-h2-lg`, `
 3. **Fonte para CJK/árabe nos cards:** fora do MVP. Hoje esses nomes viram caixa vazia no PNG. Sugestão: Noto Sans (JP/KR/SC/Arabic) self-hosted, carregada sob demanda via `loadAdditionalAsset`.
 4. **Logo oficial do Spotify:** o dev-frontend baixa os SVGs oficiais (§10, item 10) na S5.5. O mockup e o protótipo usam espaço reservado.
 5. **Domínio:** o rodapé do card usa "encore.app" como espaço reservado. Troque pelo domínio real (`NEXT_PUBLIC_SITE_URL`) sem protocolo.
+6. **Iteração 8b (2026-09-28), aprovado pelo cliente (8b.2) e implementado (8b.5).** Itens aprovados:
+   - os cartazes **Top músicas** e **Mix** (`design/cards/preview/tracks-*.png` e `mix-*.png`, §9.8–§9.11);
+   - a troca do rótulo "Festival" por **"Line-up"** no seletor;
+   - a limpeza de "feat./remaster" nos nomes das músicas dentro do card.
+
+## 16. Logo (Iteração 8b, passo 8b.9)
+Escolhida pelo cliente em 2026-09-28: **conceito 2 "Bis", variação 3**. O último "e" de "encore" é um traço que dá a volta e fecha de novo na barra, com uma seta: o "de novo!" do fim do show, em degradê magenta → laranja → amarelo. Arquivos, medidas e o porquê em [`design/logo/LOGO.md`](design/logo/LOGO.md).
+
+- **Fonte única no código:** `src/components/brand/logo-art.ts` (os paths de `design/logo/conceito-2.svg`; um teste confere que são os mesmos). O site usa `Logo` (`logo.tsx`, SVG inline só com atributos, sem `style`, por causa da CSP) e os cards usam `brandMark` (`src/features/cards/brand.ts`, `<img>` com o SVG em data URL, sem rede).
+- **Onde entra:**
+  - cabeçalho do site: 12 px de altura (≈ 66 px de largura);
+  - rodapé do site e o cartaz da landing: 12 px;
+  - cards: rodapé com 30 px (Stories) e 26 px (Quadrado), cabeçalho do Básico com 33/27 px. O lockup é sempre colorido, sobre os fundos escuros dos cards.
+- **Favicon:** `app/icon.svg` = símbolo (`conceito-2-simbolo.svg`); `app/favicon.ico` com 16 px sem a seta (`conceito-2-favicon-16.svg`), 32 e 48 px do símbolo; `app/apple-icon.png` = ícone de app de 180 px, com fundo até a borda.
+- **Regras principais:**
+  - fundo sempre escuro (`background`, `surface`, `surface-2` ou os fundos dos cards);
+  - respiro mínimo de 1 x em volta (x = altura do "e");
+  - lockup com 64 px de largura no mínimo (abaixo disso, só o símbolo, que vai até 16 px);
+  - nunca recolorir fora da paleta, esticar, girar, pôr sombra ou brilho, nem usar sobre foto ou capa;
+  - nunca em lockup com o logo do Spotify, que fica sempre na área própria dele (§10, regra 3).
+- **Acessibilidade:** o SVG é decorativo (`aria-hidden`). O nome vem do link ("Encore, página inicial") ou de um texto `sr-only` "Encore" ao lado.
