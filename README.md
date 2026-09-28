@@ -1,6 +1,8 @@
-<h1 align="center">
-  <img src="docs/readme/logo.svg" alt="Encore" width="280">
-</h1>
+<p align="center">
+  <img src="docs/readme/logo.svg" alt="Logo do Encore" width="280">
+</p>
+
+<h1 align="center">Encore</h1>
 
 <p align="center">
   <strong>Suas estatísticas do Spotify quando você quiser: tops, horários e curiosidades de qualquer período, sem que o seu histórico saia do aparelho.</strong>
@@ -12,7 +14,7 @@
   <a href="https://encore-stats.vercel.app/pt-BR/demo">ver a demo</a>
 </p>
 
-![Página inicial do Encore: "Seu ano em música. Quando você quiser.", com um cartaz de exemplo](docs/readme/landing.png)
+![Página inicial do Encore: o título "Seu ano em música. Quando você quiser.", o selo "Tudo fica no seu aparelho" e um cartaz de exemplo com artistas inventados](docs/readme/landing.png)
 
 ## Como é
 
@@ -21,38 +23,56 @@ Todas as imagens abaixo são da **demo**, com artistas e músicas inventados.
 ### Seu top, seus números e o seu período
 
 Escolha um mês, um ano, desde sempre ou um intervalo. O Encore mostra os artistas, as músicas e os
-álbuns que você mais ouviu, quanto tempo de música foi e quantos artistas diferentes apareceram.
+álbuns que você mais ouviu, quantos minutos de música foram e quantos artistas diferentes
+apareceram.
 
-![Dashboard da demo: seletor de período, top de artistas e os minutos de música](docs/readme/demo-visao-upload.png)
+![Painel da demo: a escolha do período (mês, ano, sempre ou intervalo), o seu top de artistas e os minutos de música do ano](docs/readme/demo-visao-upload.png)
 
 <table>
   <tr>
     <td width="60%" valign="top">
-      <img src="docs/readme/quando-voce-ouve.png" alt="Mapa de calor com os horários e os dias em que você mais ouve música">
-      <p><strong>Quando você ouve:</strong> os horários e os dias da semana em que a música toca mais.</p>
+      <img src="docs/readme/quando-voce-ouve.png" alt="Quando você ouve: um mapa de calor com os dias da semana e as horas do dia, destacando o horário em que você mais ouve música">
+      <p><strong>Quando você ouve:</strong> os dias e os horários em que a música mais toca, com o seu pico e o horário mais quieto.</p>
     </td>
     <td width="40%" valign="top">
-      <img src="docs/readme/voce-por-voce.png" alt="Cartões do Você por você: fã desde, dias diferentes, música mais pulada e dia mais musical">
+      <img src="docs/readme/voce-por-voce.png" alt="Você por você: desde quando você é fã do seu artista nº 1, quanto dos seus plays foram dele, em quantos dias diferentes ele tocou, a música mais pulada e o dia mais musical">
       <p><strong>Você por você:</strong> comparações com o seu próprio histórico, e não com outras pessoas.</p>
     </td>
   </tr>
 </table>
 
+### Suas curtidas, também no modo Upload
+
+De quem você tem mais músicas curtidas? Junto do histórico, você pode enviar também o arquivo
+**"Dados da conta"** do Spotify. Ele é opcional e, dele, o Encore lê só as suas curtidas: o resto
+do arquivo nem é aberto. Dá para mandar os dois de uma vez ou mandar as curtidas depois, com o
+painel aberto. O quadro vale para qualquer época, porque o Spotify não informa quando você curtiu
+cada música.
+
+![Suas curtidas: o artista com mais músicas curtidas em destaque e, ao lado, os outros nove do seu top de curtidas, com quantas músicas de cada um](docs/readme/curtidas.png)
+
 ### Modo Conectar: o que está tocando agora
 
 Entrando com a conta do Spotify, você vê os tops das últimas 4 semanas, dos últimos 6 meses e do
-último ano, quem subiu e quem caiu, e de quem você tem mais músicas curtidas.
+último ano, quem subiu e quem caiu, e de quem você tem mais músicas curtidas (é só tocar em
+"Descobrir").
 
 <table>
   <tr>
     <td width="62%" valign="top">
-      <img src="docs/readme/demo-visao-conectar.png" alt="Visão Conectar da demo: períodos, top de artistas e músicas curtidas">
+      <img src="docs/readme/demo-visao-conectar.png" alt="Visão Conectar da demo: os períodos 4 semanas, 6 meses e 1 ano, os atalhos Desde o começo e Selecionar período, o seu top de artistas e o botão Descobrir das curtidas">
     </td>
     <td width="38%" valign="top">
-      <img src="docs/readme/tendencias.png" alt="Tendências: artistas em alta e em queda">
+      <img src="docs/readme/tendencias.png" alt="Tendências: artistas em alta, com os novos e os que subiram, e artistas em queda">
     </td>
   </tr>
 </table>
+
+Pela conexão, o Spotify só mostra esses três períodos. Os atalhos **"Desde o começo"** e
+**"Selecionar período"** explicam isso e levam você ao envio do histórico completo, que libera
+qualquer período.
+
+![Os períodos do modo Conectar e os atalhos "Desde o começo" e "Selecionar período"](docs/readme/conectar-atalhos.png)
 
 ### Cartazes para compartilhar
 
@@ -60,17 +80,17 @@ Quatro modelos, **Line-up**, **Músicas**, **Mix** e **Básico**, em Stories (9:
 (1:1). A imagem é feita no seu aparelho, com o período que está na tela, e vai direto para os
 Stories, o feed ou o WhatsApp.
 
-![Os quatro cartazes lado a lado: Line-up, Músicas, Mix e Básico](docs/readme/cards.png)
+![Os quatro cartazes lado a lado: Line-up, com os artistas como num festival; Músicas, com o top de músicas; Mix, com artistas e músicas; e Básico, com o artista nº 1, os tops e os minutos de música](docs/readme/cards.png)
 
-![Janela de compartilhar: escolha do modelo e do formato, nome no cartaz e a prévia](docs/readme/compartilhar.png)
+![Janela de compartilhar: a escolha do modelo e do formato, o nome no cartaz (opcional) e a prévia do cartaz Line-up](docs/readme/compartilhar.png)
 
 ### No celular
 
 <table>
   <tr>
-    <td width="33%"><img src="docs/readme/celular-landing.png" alt="Página inicial no celular"></td>
-    <td width="33%"><img src="docs/readme/celular-dashboard.png" alt="Dashboard da demo no celular"></td>
-    <td width="33%"><img src="docs/readme/celular-compartilhar.png" alt="Janela de compartilhar no celular"></td>
+    <td width="33%"><img src="docs/readme/celular-landing.png" alt="Página inicial no celular, com o título, o selo de privacidade e o cartaz de exemplo"></td>
+    <td width="33%"><img src="docs/readme/celular-dashboard.png" alt="Painel da demo no celular: período, minutos de música e a barra de baixo com o botão Compartilhar"></td>
+    <td width="33%"><img src="docs/readme/celular-compartilhar.png" alt="Compartilhar no celular: o cartaz Line-up no formato quadrado, pronto para baixar"></td>
   </tr>
 </table>
 
@@ -78,8 +98,8 @@ Stories, o feed ou o WhatsApp.
 
 - **Enviar o histórico (modo Upload).** Você pede ao Spotify o arquivo com o seu histórico
   completo (ele chega por e-mail em alguns dias) e escolhe esse arquivo aqui. A conta toda é feita
-  no seu aparelho, e dá para ver qualquer período, desde a primeira música. É o modo aberto a
-  todo mundo.
+  no seu aparelho, e dá para ver qualquer período, desde a primeira música. Se quiser, envie
+  também o "Dados da conta" para ver as suas curtidas. É o modo aberto a todo mundo.
 - **Conectar com o Spotify (modo Conectar).** Você entra com a sua conta e vê na hora os tops dos
   últimos meses. Ainda está em fase de testes no Spotify: por enquanto, só funciona para contas
   convidadas.
@@ -490,3 +510,7 @@ Feito por **Enzo Terra**. Fale comigo:
 - E-mail: [enzoterra18@gmail.com](mailto:enzoterra18@gmail.com)
 - GitHub: [github.com/enzoterra](https://github.com/enzoterra)
 - Site pessoal: [enzoterra.dev.br](https://enzoterra.dev.br)
+
+Os mesmos contatos ficam no rodapé de todas as páginas do site:
+
+![Rodapé do Encore: "Feito por Enzo Terra" e, ao lado, "Fale comigo" com os links de e-mail, GitHub e site pessoal](docs/readme/rodape.png)
