@@ -32,7 +32,14 @@
     "privacy": "Privacy",
     "howTo": "How to request your history",
     "code": "Site code",
-    "tagline": "Your Spotify stats, worked out on your device."
+    "tagline": "Your Spotify stats, worked out on your device.",
+    "author": {
+      "madeBy": "Made by <b>{name}</b>",
+      "contact": "Get in touch",
+      "email": "Email",
+      "github": "GitHub",
+      "site": "Website"
+    }
   },
   "Seal": {
     "compact": {
@@ -42,11 +49,11 @@
     },
     "openLabel": "{label}. See how we look after your data",
     "title": "Your data stays with you",
-    "local": "Your file is read right here, on your device, and isn't sent anywhere.",
+    "local": "The files you add are read right here, on your device, and aren't sent anywhere.",
     "localConnect": "Your Spotify connection is saved on this device, locked so only Encore can open it. What comes from your account stays in this tab only.",
     "localDemo": "The demo uses a made-up history, created right here on your device.",
     "noDatabase": "No sign-up, no tracking, and we don't keep your music.",
-    "offline": "Your history file never goes over the internet: all the counting happens on your device.",
+    "offline": "Your history and liked songs never go over the internet: all the counting happens on your device.",
     "openSource": "The site's code is public:",
     "openSourceLink": "check it yourself",
     "openSourceSoon": "The site's code will be public. The link shows up here once it's out.",
@@ -116,7 +123,7 @@
     "updated": "Updated on September 28, 2026.",
     "summaryTitle": "In a nutshell",
     "summary": [
-      "The history you add is read on your device and isn't sent to us or anyone else.",
+      "The files you add (your history and, if you want, your liked songs) are read on your device and aren't sent to us or anyone else.",
       "No sign-up, we don't keep your music, and we don't use tools that track your visits.",
       "In Connect mode, what comes from Spotify stays in this tab only, and your Spotify connection is saved on this device, protected so only Encore can read it."
     ],
@@ -133,6 +140,9 @@
       "uploadTitle": "Upload mode: the file you add",
       "upload": "From your history we only read: the day and time each song played, how long it played, the song, artist and album names, the song's Spotify code, where you listened (phone, computer…) and whether you skipped it or played it on shuffle.",
       "uploadDiscarded": "Your internet address (IP), the country you were connected from and everything else in the file are set aside while reading and never used.",
+      "uploadLikedTitle": "Upload mode: the \"Account data\" file (optional)",
+      "uploadLiked": "If you also add the \"Account data\" file, we only read your list of liked songs from it: the song, artist and album names, and the song's Spotify code, which is only used so the same song isn't counted twice. All that's kept is how many liked songs each artist has.",
+      "uploadLikedClosed": "The other files in that package, like your email, personal details, payments, searches and playlists, are never even opened. Everything still happens only on your device.",
       "connectTitle": "Connect mode: your Spotify account",
       "connect": "With your permission, we see your basic profile (account code, name and photo), your tops, what you played recently and your liked songs. Encore only asks to see: it can't change anything in your account.",
       "demoTitle": "Demo mode",
@@ -145,7 +155,7 @@
     "howLong": {
       "title": "For how long",
       "items": [
-        "Added history: only in this tab's memory, until you reload or close the page.",
+        "Added history and liked songs: only in this tab's memory, until you reload or close the page.",
         "What comes from Spotify (Connect mode): stays in this browser tab only, for at most 12 hours, and is deleted when you click Log out.",
         "Your Spotify connection (Connect mode): saved in this browser in a protected cookie, lasts at most 30 days and is deleted when you click Log out.",
         "Running records: Encore only notes which part of the site was used, whether it worked and how long it took, with nothing about your music or your account. Vercel, which hosts the site, also notes details of each visit (such as your internet address, the IP, and the page opened) and keeps them for a short time (about 1 hour on the plan in use), under its own privacy policy."
@@ -162,7 +172,7 @@
     "rights": {
       "title": "Your rights and how to cancel access",
       "items": [
-        "Delete the history you added: close or reload the tab.",
+        "Delete the history and liked songs you added: close or reload the tab.",
         "Leave Connect mode: click Log out. That deletes your saved connection and what came from Spotify in this tab.",
         "Under the LGPD (art. 18), you can ask us to confirm whether we use your data, see it, correct it, take it to another service, delete it and learn who it was shared with. Since we don't keep your data, there's no copy of ours to look up or export. You can still make any request through the contact above.",
         "You can also complain to Brazil's National Data Protection Authority (ANPD), the government body that enforces the LGPD.",
@@ -192,7 +202,7 @@
         "title": "Tick the extended streaming history",
         "bodyBefore": "Select",
         "bodyStrong": "Extended streaming history",
-        "bodyAfter": "and untick the rest. That's your full history, and it's all we need."
+        "bodyAfter": "and untick the rest. That's your full history, the only file Encore needs."
       },
       "confirm": {
         "title": "Confirm through the email Spotify sends you",
@@ -220,6 +230,18 @@
       "connectBody": "Your recent tops, straight from Spotify.",
       "connectCta": "Connect with Spotify",
       "connectDisabled": "Not available on this site yet."
+    },
+    "liked": {
+      "overline": "Optional",
+      "title": "Want to see your liked songs too?",
+      "lead": "Also request the \"Account data\" package. Encore only uses its list of liked songs, to show whose songs you like the most. The rest of the package is never even opened.",
+      "stepsLabel": "How to request \"Account data\"",
+      "steps": [
+        "On the same privacy page, under \"Download your data\", also tick \"Account data\". You can request it together with your full history.",
+        "Confirm through the email Spotify sends you, just like the history request.",
+        "It comes as a separate file and is usually ready in a few days, before the full history.",
+        "Add both files together on the upload page. If your history is already open, add just the \"Account data\" from the dashboard."
+      ]
     }
   },
   "Upload": {
@@ -234,6 +256,10 @@
       "dragValid": "Drop it",
       "dragInvalid": "Only the Spotify file (.zip or .json)",
       "inputLabel": "Choose your Spotify file (.zip or .json)"
+    },
+    "liked": {
+      "hint": "Want to see whose songs you like the most? Add Spotify's \"Account data\" file too (optional). You can pick both files at once.",
+      "hintLink": "How to request that file"
     },
     "noFile": "Don't have the file yet?",
     "noFileLink": "See how to request it from Spotify",
@@ -256,6 +282,7 @@
       "cancelled": "Cancelled. Nothing was kept."
     },
     "done": "Done! {music, plural, one {# track read} other {# tracks read}} in {seconds} s, without leaving your device.",
+    "doneLiked": "Done! {music, plural, one {# track read} other {# tracks read}} and {liked, plural, one {# like} other {# likes}} in {seconds} s, without leaving your device.",
     "reset": "Upload another file",
     "errors": {
       "UNSUPPORTED_FILE": {
@@ -313,13 +340,45 @@
       "OFFLINE": {
         "title": "No internet",
         "body": "Looks like you're offline. Connect and try again: your file still stays on your device."
+      },
+      "NO_LIBRARY_FILE": {
+        "title": "We couldn't find your liked songs in that file",
+        "body": "We looked for your list of liked songs (the \"YourLibrary.json\") and it wasn't there. Add the \"Account data\" file Spotify emailed you, just as it came."
       }
+    },
+    "libraryErrors": {
+      "WRONG_EXPORT": {
+        "title": "That file only has your liked songs",
+        "body": "It's the \"Account data\" package, which Encore only uses for your liked songs. Add your full history too (the \"Extended streaming history\"): both can go together."
+      },
+      "INVALID_JSON": {
+        "title": "The liked songs file is damaged",
+        "body": "We couldn't read \"{entry}\", from the \"Account data\" package. Download that package again from the link in Spotify's email."
+      },
+      "UNEXPECTED_FORMAT": {
+        "title": "We don't recognize the liked songs file",
+        "body": "\"{entry}\" doesn't have the list of liked songs the way Spotify usually sends it. It may be a different file, or Spotify changed the format."
+      },
+      "INVALID_RECORDS": {
+        "title": "Part of your liked songs can't be read",
+        "body": "Over 5% of the liked songs in \"{entry}\" ({invalid} of {total}) came in a format we don't recognize. The file may be damaged, or Spotify changed the format."
+      },
+      "ENTRY_TOO_LARGE": {
+        "title": "The liked songs file is too big",
+        "body": "\"{entry}\" grows past {limit} MB once opened. To stay safe, we don't read liked songs lists that big."
+      },
+      "COMPRESSION_RATIO": {
+        "title": "The liked songs file isn't what we expected",
+        "body": "\"{entry}\" grows more than {limit} times when opened, far more than a normal liked songs list. To stay safe, we stopped reading."
+      },
+      "optionalHint": "Liked songs are optional: if you prefer, add just your full history."
     },
     "actions": {
       "tryAnother": "Try another file",
       "tryAgain": "Try again",
       "howTo": "How to request your full history",
-      "report": "Report the problem on GitHub"
+      "report": "Report the problem on GitHub",
+      "howToLibrary": "How to request \"Account data\""
     }
   },
   "Dashboard": {
@@ -465,9 +524,36 @@
     "footer": {
       "upload": "From your Spotify history, read on your device.",
       "demo": "Demo mode · fictional artists and tracks.",
-      "report": "{music, plural, one {# music record} other {# music records}} from {files, plural, one {# file} other {# files}}, read in {seconds} s. {nonMusic, plural, =0 {No podcasts or audiobooks} one {# podcast, audiobook or on-device music file left out} other {# podcasts, audiobooks and on-device music files left out}}."
+      "report": "{music, plural, one {# music record} other {# music records}} from {files, plural, one {# file} other {# files}}, read in {seconds} s. {nonMusic, plural, =0 {No podcasts or audiobooks} one {# podcast, audiobook or on-device music file left out} other {# podcasts, audiobooks and on-device music files left out}}.",
+      "uploadLiked": "From your Spotify history and liked songs, read on your device."
     },
-    "demoLoading": "Building the fictional history…"
+    "demoLoading": "Building the fictional history…",
+    "liked": {
+      "title": "Your liked songs",
+      "badge": "From any time",
+      "lead": "All your liked songs, from any time. This board doesn't change with the period, because Spotify doesn't say when you liked each song.",
+      "total": "{total, plural, one {# liked song} other {# liked songs}} from {artists, plural, one {# artist} other {# artists}} in total.",
+      "empty": "We didn't find any liked songs in that file.",
+      "invite": {
+        "title": "Whose songs do you like the most?",
+        "body": "Add Spotify's \"Account data\" file to see your most liked artists. Your history stays here: only your liked songs are read, and nothing leaves your device.",
+        "choose": "Add \"Account data\"",
+        "inputLabel": "Choose Spotify's \"Account data\" file (.zip or .json)",
+        "help": "It can be the .zip just as it came, or the \"YourLibrary.json\" inside it.",
+        "dragValid": "Drop it",
+        "dragInvalid": "Only the Spotify file (.zip or .json)",
+        "howTo": "How to request that file"
+      },
+      "progress": {
+        "title": "Reading your liked songs…",
+        "label": "Reading your liked songs",
+        "records": "{records, plural, =0 {Opening the file} one {# like read} other {# likes read}}",
+        "announce": "Reading your liked songs: {percent}%",
+        "cancel": "Cancel",
+        "cancelled": "Stopped reading your liked songs. Your history is still here."
+      },
+      "done": "Done! {count, plural, one {# liked song read} other {# liked songs read}}, without leaving your device."
+    }
   },
   "Connect": {
     "title": "Connect with Spotify",

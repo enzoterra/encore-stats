@@ -1,4 +1,4 @@
-import { ArrowRight, ExternalLink } from 'lucide-react';
+import { ArrowRight, ExternalLink, Heart } from 'lucide-react';
 import type { Metadata } from 'next';
 import { hasLocale } from 'next-intl';
 import { getTranslations, setRequestLocale } from 'next-intl/server';
@@ -51,6 +51,7 @@ export default async function OnboardingPage({ params }: PageProps<'/[locale]/on
   const tc = await getTranslations('Common');
   const repoUrl = getServerEnv().repoUrl;
   const connectEnabled = getConnectStatus().enabled;
+  const likedSteps = t.raw('liked.steps') as string[];
 
   return (
     <>
@@ -109,6 +110,57 @@ export default async function OnboardingPage({ params }: PageProps<'/[locale]/on
           </section>
 
           <ReminderButton />
+
+          <section
+            id="dados-da-conta"
+            aria-labelledby="liked-title"
+            data-testid="onboarding-liked"
+            className="flex scroll-mt-20 flex-col gap-4 rounded-lg border border-t-[3px] border-line border-t-primary bg-surface p-5 sm:p-6"
+          >
+            <div className="flex flex-col gap-2">
+              <p className="inline-flex items-center gap-2 text-overline text-primary-fg uppercase">
+                <Heart aria-hidden="true" className="size-4" />
+                {t('liked.overline')}
+              </p>
+              <h2 id="liked-title" className="font-display text-h2">
+                {t('liked.title')}
+              </h2>
+              <p className="text-body text-fg-muted">{t('liked.lead')}</p>
+            </div>
+            <ol aria-label={t('liked.stepsLabel')} className="flex flex-col gap-3">
+              {likedSteps.map((step, index) => (
+                <li key={step} className="flex gap-3">
+                  <span
+                    aria-hidden="true"
+                    className="grid size-7 shrink-0 place-items-center rounded-full bg-surface-2 text-body-sm font-bold text-accent tabular-nums"
+                  >
+                    {index + 1}
+                  </span>
+                  <div className="flex min-w-0 flex-col gap-1 pt-0.5 text-body text-fg-muted">
+                    <p>{step}</p>
+                    {index === 0 ? (
+                      <a
+                        href="https://www.spotify.com/account/privacy/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={linkClass}
+                      >
+                        {t('steps.open.link')}
+                        <ExternalLink aria-hidden="true" className="size-4" />
+                        <span className="sr-only">{tc('externalLink')}</span>
+                      </a>
+                    ) : null}
+                    {index === likedSteps.length - 1 ? (
+                      <Link href="/upload" className={linkClass}>
+                        {t('steps.return.link')}
+                        <ArrowRight aria-hidden="true" className="size-4" />
+                      </Link>
+                    ) : null}
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
         </div>
 
         <aside aria-labelledby="meanwhile-title" className="flex flex-col gap-4 lg:pt-40">

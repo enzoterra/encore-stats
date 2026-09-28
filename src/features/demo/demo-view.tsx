@@ -12,11 +12,13 @@ import { ConnectProvider } from '@/features/connect/connect-provider';
 import { createDemoSource } from '@/features/connect/demo-source';
 import { EXTRA_PERIOD_KIND, type WindowExtra } from '@/features/connect/window-extras';
 import { Dashboard } from '@/features/dashboard/dashboard';
+import { LikedBoard, LikedSection } from '@/features/dashboard/liked-board';
 import { useDatasetStore } from '@/features/dataset/store';
 
 /**
  * Modo Demo (RF-12, US-07): `generateDemo()` é carregado sob demanda (chunk próprio) e roda no
- * navegador, sem rede. As abas separam as visões Upload e Conectar; a visão Conectar reaproveita
+ * navegador, sem rede. A Visão Upload mostra também o quadro de curtidas
+ * (`generateDemo().library`, as mesmas curtidas da Visão Conectar). As abas separam as visões Upload e Conectar; a visão Conectar reaproveita
  * o dashboard do modo Conectar sobre `generateDemo().api` (+ `demoSavedPage`/`demoArtist`), com
  * um cliente de queries próprio e sem nenhum link ou marca do Spotify (`api.demo === true`).
  */
@@ -84,6 +86,11 @@ export function DemoView({ repoUrl }: { repoUrl?: string }) {
             timeZone={demo.timeZone}
             repoUrl={repoUrl}
             initialPeriodKind={uploadStart ?? undefined}
+            liked={
+              <LikedSection>
+                <LikedBoard library={demo.library} />
+              </LikedSection>
+            }
           />
         ) : (
           <DemoSkeleton />

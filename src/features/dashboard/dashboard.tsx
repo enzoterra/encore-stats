@@ -2,7 +2,7 @@
 
 import { Info, RotateCcw, X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { PrivacySealCompact } from '@/components/layout/privacy-seal';
 import { Button } from '@/components/ui/button';
@@ -79,6 +79,8 @@ export function Dashboard({
   repoUrl,
   focusOnMount = false,
   initialPeriodKind,
+  liked,
+  hasLiked = false,
 }: {
   dataset: Dataset;
   timeZone: string;
@@ -93,6 +95,13 @@ export function Dashboard({
    * Visão Conectar, Iteração 8b.4).
    */
   initialPeriodKind?: 'all' | 'range';
+  /**
+   * Quadro "Curtidas por artista" (ou o convite para mandar o "Dados da conta"), Iteração 8c. Fica
+   * fora do grid do período: não muda com ele e aparece mesmo num período sem plays.
+   */
+  liked?: ReactNode;
+  /** As curtidas já foram lidas (muda a frase do rodapé no Upload). */
+  hasLiked?: boolean;
 }) {
   const t = useTranslations('Dashboard');
   const tUpload = useTranslations('Upload');
@@ -298,8 +307,16 @@ export function Dashboard({
         </div>
       )}
 
+      {liked ? <div className="min-w-0">{liked}</div> : null}
+
       <div className="flex flex-col gap-1 border-t border-line pt-4 text-center text-caption text-fg-subtle">
-        <p>{mode === 'upload' ? t('footer.upload') : t('footer.demo')}</p>
+        <p>
+          {mode === 'demo'
+            ? t('footer.demo')
+            : hasLiked
+              ? t('footer.uploadLiked')
+              : t('footer.upload')}
+        </p>
         {report && elapsedMs !== undefined ? (
           <p data-testid="upload-report">
             {t('footer.report', {

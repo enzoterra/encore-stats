@@ -16,7 +16,33 @@ import { SpotifyIcon } from './spotify-brand';
  * - no Demo não há link nem ícone (dado fictício, `api.demo === true`);
  * - capa ao lado, nunca sob o texto; nome em até 2 linhas, completo no `title`.
  */
-export function MediaRow({
+export function MediaRow(props: Omit<MediaRowProps, 'live'>) {
+  const { source } = useConnectBundle();
+  return <MediaRowView {...props} live={source.kind === 'live'} />;
+}
+
+type MediaRowProps = {
+  rank?: number;
+  name: string;
+  sub?: ReactNode;
+  image?: string;
+  /** Link do Spotify; só é usado quando `live`. */
+  url?: string;
+  /** "Abrir no Spotify" (artista) ou "Ouvir no Spotify" (faixa). */
+  action?: 'open' | 'play';
+  trailing?: ReactNode;
+  size?: 40 | 48;
+  /** Texto "Abrir/Ouvir no Spotify" visível em telas largas (listas com espaço). */
+  showLabel?: boolean;
+  /** Dado real da API (linha vira link do Spotify). No Upload e no Demo, `false`. */
+  live: boolean;
+};
+
+/**
+ * A linha sem depender do `<ConnectProvider>`: o Upload e a demo usam direto, com `live={false}`
+ * (quadro "Curtidas por artista", Iteração 8c).
+ */
+export function MediaRowView({
   rank,
   name,
   sub,
@@ -26,23 +52,10 @@ export function MediaRow({
   trailing,
   size = 48,
   showLabel = false,
-}: {
-  rank?: number;
-  name: string;
-  sub?: ReactNode;
-  image?: string;
-  url: string;
-  /** "Abrir no Spotify" (artista) ou "Ouvir no Spotify" (faixa). */
-  action?: 'open' | 'play';
-  trailing?: ReactNode;
-  size?: 40 | 48;
-  /** Texto "Abrir/Ouvir no Spotify" visível em telas largas (listas com espaço). */
-  showLabel?: boolean;
-}) {
+  live,
+}: MediaRowProps) {
   const t = useTranslations('Connect.top');
   const tCommon = useTranslations('Common');
-  const { source } = useConnectBundle();
-  const live = source.kind === 'live';
   const label = action === 'play' ? t('play') : t('open');
 
   const body = (
@@ -87,8 +100,8 @@ export function MediaRow({
 
   const rowClass = 'flex min-h-16 items-center gap-3 py-2';
   return (
-    <li className="border-b border-line">
-      {live ? (
+    <li className="break-inside-avoid border-b border-line">
+      {live && url ? (
         <a
           href={url}
           target="_blank"

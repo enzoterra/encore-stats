@@ -1,7 +1,13 @@
 import { strToU8, zipSync } from 'fflate';
 import { describe, expect, it } from 'vitest';
 
-import { processHistory, type HistoryInput, type ProcessResult } from '@/domain/history';
+import {
+  DEFAULT_LIMITS,
+  processHistory,
+  processLibrary,
+  type HistoryInput,
+  type ProcessResult,
+} from '@/domain/history';
 import { computeStats, type Period } from '@/domain/stats';
 
 import { syntheticRecords } from '../../scripts/make-fixtures';
@@ -89,6 +95,42 @@ describe('benchmark do upload (~50 MB sintéticos)', () => {
     const { result, elapsed } = await measure('zip', [new File([zipped], 'my_spotify_data.zip')]);
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.dataset.cols.ts.length).toBe(FILES * RECORDS_PER_FILE);
+    expect(elapsed).toBeLessThan(10_000);
+  });
+
+  it('curtidas: YourLibrary.json com 100 mil músicas em < 2 s (sozinho) e junto do zip', async () => {
+    const artists = Array.from({ length: 3000 }, (_, i) => `Artista Fictício ${i}`);
+    const library = {
+      tracks: Array.from({ length: 100_000 }, (_, i) => ({
+        artist: artists[(i * 7919) % artists.length],
+        album: `Álbum ${i % 5000}`,
+        track: `Faixa ${i}`,
+        uri: `spotify:track:${String(i).padStart(22, '0')}`,
+      })),
+      albums: [],
+      artists: [],
+      shows: [],
+      episodes: [],
+      bannedTracks: [],
+    };
+    const bytes = strToU8(JSON.stringify(library, null, 2));
+    expect(bytes.length).toBeLessThan(DEFAULT_LIMITS.maxLibraryBytes);
+    const file = () => new File([bytes], 'YourLibrary.json');
+
+    const start = performance.now();
+    const alone = await processLibrary([file()]);
+    const libraryMs = performance.now() - start;
+    expect(alone.ok && alone.library.total).toBe(100_000);
+    console.log(
+      `[bench] ${JSON.stringify({ label: 'library', mib: +(bytes.length / MiB).toFixed(1), seconds: +(libraryMs / 1000).toFixed(2) })}`,
+    );
+    expect(libraryMs).toBeLessThan(2_000);
+
+    const { result, elapsed } = await measure('zip+library', [
+      new File([zipped], 'my_spotify_data.zip'),
+      file(),
+    ]);
+    expect(result.ok && result.library?.total).toBe(100_000);
     expect(elapsed).toBeLessThan(10_000);
   });
 

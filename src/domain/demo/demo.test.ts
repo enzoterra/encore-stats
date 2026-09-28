@@ -18,6 +18,7 @@ import {
   DEMO_START_DAY,
   DEMO_TIME_ZONE,
   demoArtist,
+  demoLibrary,
   demoSavedPage,
   generateDemo,
 } from './generate';
@@ -123,6 +124,24 @@ describe('generateDemo', () => {
     expect(demoArtist(api, top!.id)?.name).toBe(top!.name);
     expect(demoArtist(api, 'x'.repeat(22))).toBeUndefined();
     expect(demoSavedPage(api, 10, 5).items).toEqual(api.saved.slice(10, 15));
+  });
+
+  it('curtidas da Visão Upload: mesmo formato do YourLibrary.json e mesmos números do Conectar', () => {
+    const { api, library } = demo;
+    expect(library).toEqual(demoLibrary(api));
+    expect(library.total).toBe(api.saved.length);
+    expect(library.artists.reduce((sum, a) => sum + a.count, 0)).toBe(library.total);
+    const counter = new LikedArtistsCounter();
+    for (let offset = 0; offset < api.saved.length; offset += 50) {
+      counter.addPage(demoSavedPage(api, offset));
+    }
+    const connect = counter.top(library.artists.length).map(({ name, count }) => ({ name, count }));
+    expect(library.artists).toEqual(connect);
+    // Coerente com os artistas do catálogo fictício e com um top que vale mostrar.
+    const catalog = new Set(DEMO_ARTISTS.map((a) => a.name));
+    for (const artist of library.artists) expect(catalog.has(artist.name)).toBe(true);
+    expect(library.artists.length).toBeGreaterThanOrEqual(10);
+    expect(library.artists[0]!.count).toBeGreaterThan(library.artists.at(-1)!.count);
   });
 
   it('aceita duração customizada', () => {

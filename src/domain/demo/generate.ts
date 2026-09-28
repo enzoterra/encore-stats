@@ -1,4 +1,5 @@
 import { DatasetBuilder, FLAG_VALID, type Dataset } from '../history/dataset';
+import { likedByArtist, type LikedByArtist } from '../history/library';
 import { PLATFORMS, type PlatformCode } from '../history/platform';
 import type { Artist, Me, Recent, SavedItem, SavedPage, TimeRange, Track } from '../spotify-types';
 import { computeStats, type Period } from '../stats';
@@ -36,7 +37,17 @@ export type DemoApi = {
   artists: Artist[];
 };
 
-export type DemoData = { dataset: Dataset; api: DemoApi; timeZone: string };
+export type DemoData = {
+  dataset: Dataset;
+  api: DemoApi;
+  timeZone: string;
+  /**
+   * Curtidas por artista da Visão Upload do Demo, no mesmo formato do `YourLibrary.json` lido
+   * no upload (`ProcessResult.library`). Vem das mesmas curtidas de `api.saved` (Visão
+   * Conectar): os dois quadros mostram os mesmos números.
+   */
+  library: LikedByArtist;
+};
 
 type CatalogTrack = {
   id: string;
@@ -318,7 +329,15 @@ export function generateDemo(options: DemoOptions = {}): DemoData {
   const { artists, tracks } = buildCatalog(random, days);
   const dataset = simulate(random, artists, tracks, days);
   const api = buildApi(createRandom(seed ^ 0x9e3779b9), dataset, artists, tracks);
-  return { dataset, api, timeZone: DEMO_TIME_ZONE };
+  return { dataset, api, timeZone: DEMO_TIME_ZONE, library: demoLibrary(api) };
+}
+
+/**
+ * Curtidas do Demo como se viessem do `YourLibrary.json` (um artista por música, como no
+ * export; as faixas fictícias têm um artista só).
+ */
+export function demoLibrary(api: DemoApi): LikedByArtist {
+  return likedByArtist(api.saved.map((item) => ({ artist: item.track.artists[0]?.name ?? '' })));
 }
 
 /** Uma página de curtidas do Demo, no formato de `/api/spotify/saved?offset`. */

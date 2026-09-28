@@ -41,6 +41,7 @@ function fakeWorker(): Controls {
         onProgress = cb;
         return new Promise<ProcessResult>((r) => (resolve = r));
       }) as unknown as WorkerHandle['api']['processHistory'],
+      processLibrary: vi.fn() as unknown as WorkerHandle['api']['processLibrary'],
       cancel: vi.fn() as unknown as WorkerHandle['api']['cancel'],
     },
     terminate: () => {

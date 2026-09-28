@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Heart } from 'lucide-react';
 import { useLocale, useTranslations } from 'next-intl';
 import { useCallback, useState } from 'react';
 
@@ -12,8 +12,12 @@ import { Link } from '@/i18n/navigation';
 
 import { Dropzone } from './dropzone';
 import { ProgressPanel } from './progress-panel';
-import { UploadErrorAlert } from './upload-error';
+import { LIBRARY_HOW_TO_HREF, UploadErrorAlert } from './upload-error';
+import { UploadLiked } from './upload-liked';
 import { type UploadSuccess, useHistoryUpload, type WorkerHandle } from './use-history-upload';
+
+const linkClass =
+  'inline-flex items-center gap-1 font-semibold text-primary-fg underline decoration-1 underline-offset-[3px] hover:decoration-2';
 
 /**
  * Tela do modo Upload (US-03, US-04): dropzone → progresso → dashboard. O Dataset fica só
@@ -41,7 +45,12 @@ export function UploadView({
       const seconds = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 }).format(
         result.elapsedMs / 1000,
       );
-      toast(t('done', { music: result.report.music, seconds }), 'success');
+      toast(
+        result.library
+          ? t('doneLiked', { music: result.report.music, liked: result.library.total, seconds })
+          : t('done', { music: result.report.music, seconds }),
+        'success',
+      );
     },
     [locale, setUpload, t],
   );
@@ -58,6 +67,8 @@ export function UploadView({
         elapsedMs={upload.elapsedMs}
         repoUrl={repoUrl}
         focusOnMount={justLoaded}
+        hasLiked={upload.library !== undefined}
+        liked={<UploadLiked repoUrl={repoUrl} createWorker={createWorker} />}
         onReset={() => {
           clearUpload();
           setJustLoaded(false);
@@ -83,6 +94,16 @@ export function UploadView({
             <UploadErrorAlert error={status.error} onRetry={reset} repoUrl={repoUrl} />
           ) : null}
           <Dropzone onFiles={(files) => void start(files)} />
+          <p className="flex items-start gap-2 text-body-sm text-fg-muted" data-testid="liked-hint">
+            <Heart aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-primary-fg" />
+            <span>
+              {t('liked.hint')}{' '}
+              <Link href={LIBRARY_HOW_TO_HREF} className={linkClass}>
+                {t('liked.hintLink')}
+                <ArrowRight aria-hidden="true" className="size-4" />
+              </Link>
+            </span>
+          </p>
         </div>
       )}
 
@@ -90,10 +111,7 @@ export function UploadView({
         <PrivacySealCompact mode="upload" repoUrl={repoUrl} />
         <p className="text-body-sm text-fg-muted">
           {t('noFile')}{' '}
-          <Link
-            href="/onboarding"
-            className="inline-flex items-center gap-1 font-semibold text-primary-fg underline decoration-1 underline-offset-[3px] hover:decoration-2"
-          >
+          <Link href="/onboarding" className={linkClass}>
             {t('noFileLink')}
             <ArrowRight aria-hidden="true" className="size-4" />
           </Link>

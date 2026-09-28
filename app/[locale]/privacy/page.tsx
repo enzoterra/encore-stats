@@ -111,6 +111,9 @@ export default async function PrivacyPage({ params }: PageProps<'/[locale]/priva
             <h3 className="text-h4 text-fg">{t('what.uploadTitle')}</h3>
             <p>{t('what.upload')}</p>
             <p>{t('what.uploadDiscarded')}</p>
+            <h3 className="text-h4 text-fg">{t('what.uploadLikedTitle')}</h3>
+            <p>{t('what.uploadLiked')}</p>
+            <p>{t('what.uploadLikedClosed')}</p>
             <h3 className="text-h4 text-fg">{t('what.connectTitle')}</h3>
             <p>{t('what.connect')}</p>
             <h3 className="text-h4 text-fg">{t('what.demoTitle')}</h3>

@@ -1,5 +1,6 @@
 export { computeGenres, type GenreOptions, type GenreShare, type GenreSummary } from './genres';
 export {
+  compareLikedCounts,
   LikedArtistsCounter,
   missingArtistIds,
   savedPageOffsets,

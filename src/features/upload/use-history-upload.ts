@@ -3,7 +3,13 @@
 import { proxy, wrap, type Remote } from 'comlink';
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { HistoryError, ProcessProgress, ProcessReport, ProcessResult } from '@/domain/history';
+import type {
+  LibraryError,
+  LikedByArtist,
+  ProcessProgress,
+  ProcessReport,
+  ProcessResult,
+} from '@/domain/history';
 import { resolveTimeZone } from '@/domain/time';
 import type { HistoryWorkerApi } from '@/workers/history-worker-api';
 
@@ -17,7 +23,7 @@ export type WorkerFailure = 'load' | 'crash';
 
 /** Worker isolado atrás de uma interface, para trocar por um falso nos testes de componente. */
 export type WorkerHandle = {
-  api: Pick<Remote<HistoryWorkerApi>, 'processHistory' | 'cancel'>;
+  api: Pick<Remote<HistoryWorkerApi>, 'processHistory' | 'processLibrary' | 'cancel'>;
   terminate(): void;
   /** Chamado se o worker não carregar ou morrer. */
   onCrash(listener: (cause?: WorkerFailure) => void): void;
@@ -63,8 +69,9 @@ export function createHistoryWorker(): WorkerHandle {
 /**
  * Erros do envio: os do leitor (domínio) e `OFFLINE`, quando o leitor não pôde ser baixado (sem
  * internet). O arquivo continua sem sair do aparelho; só o programa que lê é que não chegou.
+ * Inclui `NO_LIBRARY_FILE`, que só aparece no envio das curtidas depois (`processLibrary`).
  */
-export type UploadError = HistoryError | { code: 'OFFLINE' };
+export type UploadError = LibraryError | { code: 'OFFLINE' };
 
 export type UploadStatus =
   | { kind: 'idle' }
@@ -76,6 +83,8 @@ export type UploadSuccess = {
   report: ProcessReport;
   timeZone: string;
   elapsedMs: number;
+  /** Curtidas por artista, quando o envio trouxe também o export "Dados da conta". */
+  library?: LikedByArtist;
 };
 
 const STAGE_ORDER = { unzip: 0, parse: 1, aggregate: 2, done: 3 } as const;
@@ -89,30 +98,50 @@ export function progressPercent(progress: ProcessProgress | null): number {
   return Math.min(90, Math.floor((progress.bytesRead / progress.bytesTotal) * 90));
 }
 
+type JobResult<T> = { ok: true; value: T } | { ok: false; error: UploadError };
+
 /**
- * Orquestra o upload (RF-03, RF-04): um worker por envio, progresso via `Comlink.proxy`,
- * cancelamento imediato (`cancel` + `terminate`) e erros tipados. Nada sai do aparelho: o
- * arquivo vai do `<input>` direto ao worker, que não faz rede.
+ * Um job no worker (RF-03, RF-04): um worker por envio, progresso via `Comlink.proxy`,
+ * cancelamento imediato (`cancel` + `terminate`) e erros tipados. Um envio novo cancela o
+ * anterior (o worker só roda um job por vez). Nada sai do aparelho: o arquivo vai do `<input>`
+ * direto ao worker, que não faz rede.
  */
-export function useHistoryUpload({
+function useWorkerJob<T>({
+  run,
   onSuccess,
   onCancel,
-  createWorker = createHistoryWorker,
+  createWorker,
 }: {
-  onSuccess: (result: UploadSuccess) => void;
+  run: (
+    api: WorkerHandle['api'],
+    files: File[],
+    onProgress: (progress: ProcessProgress) => void,
+  ) => Promise<JobResult<T>>;
+  onSuccess: (value: T, elapsedMs: number) => void;
   onCancel?: () => void;
-  createWorker?: () => WorkerHandle;
+  createWorker: () => WorkerHandle;
 }) {
   const [status, setStatus] = useState<UploadStatus>({ kind: 'idle' });
   const job = useRef(0);
   const handle = useRef<WorkerHandle | null>(null);
+  // `run` costuma ser uma função nova a cada render: a mais recente fica num ref.
+  const runRef = useRef(run);
+  useEffect(() => {
+    runRef.current = run;
+  }, [run]);
 
   const stop = useCallback(() => {
     handle.current?.terminate();
     handle.current = null;
   }, []);
 
-  useEffect(() => () => stop(), [stop]);
+  useEffect(
+    () => () => {
+      job.current++;
+      stop();
+    },
+    [stop],
+  );
 
   const start = useCallback(
     async (files: File[]) => {
@@ -129,7 +158,7 @@ export function useHistoryUpload({
       setStatus({ kind: 'processing', progress: null, maxStage: 0 });
       const startedAt = performance.now();
 
-      const crashed = new Promise<{ ok: false; error: UploadError }>((resolve) =>
+      const crashed = new Promise<JobResult<T>>((resolve) =>
         worker.onCrash((cause) => resolve({ ok: false, error: failureError(cause) })),
       );
       // O progresso chega por mensagens assíncronas do Comlink: a última pode chegar depois do
@@ -147,9 +176,9 @@ export function useHistoryUpload({
         }));
       });
 
-      let result: ProcessResult | { ok: false; error: UploadError };
+      let result: JobResult<T>;
       try {
-        result = await Promise.race([worker.api.processHistory(files, onProgress), crashed]);
+        result = await Promise.race([runRef.current(worker.api, files, onProgress), crashed]);
       } catch {
         result = { ok: false, error: failureError('crash') };
       }
@@ -158,14 +187,8 @@ export function useHistoryUpload({
       stop();
 
       if (result.ok) {
-        const timeZone = resolveTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
         setStatus({ kind: 'idle' });
-        onSuccess({
-          dataset: result.dataset,
-          report: result.report,
-          timeZone,
-          elapsedMs: performance.now() - startedAt,
-        });
+        onSuccess(result.value, performance.now() - startedAt);
       } else if (result.error.code === 'CANCELLED') {
         setStatus({ kind: 'idle' });
         onCancel?.();
@@ -191,4 +214,67 @@ export function useHistoryUpload({
   const reset = useCallback(() => setStatus({ kind: 'idle' }), []);
 
   return { status, start, cancel, reset };
+}
+
+type HistoryValue = Omit<UploadSuccess, 'timeZone' | 'elapsedMs'>;
+
+async function runHistory(
+  api: WorkerHandle['api'],
+  files: File[],
+  onProgress: (progress: ProcessProgress) => void,
+): Promise<JobResult<HistoryValue>> {
+  const result: ProcessResult = await api.processHistory(files, onProgress);
+  if (!result.ok) return result;
+  const value: HistoryValue = { dataset: result.dataset, report: result.report };
+  if (result.library) value.library = result.library;
+  return { ok: true, value };
+}
+
+async function runLibrary(
+  api: WorkerHandle['api'],
+  files: File[],
+  onProgress: (progress: ProcessProgress) => void,
+): Promise<JobResult<LikedByArtist>> {
+  const result = await api.processLibrary(files, onProgress);
+  return result.ok ? { ok: true, value: result.library } : result;
+}
+
+/**
+ * Envio do histórico completo, opcionalmente com o export "Dados da conta" no mesmo envio (o
+ * sucesso traz `library`).
+ */
+export function useHistoryUpload({
+  onSuccess,
+  onCancel,
+  createWorker = createHistoryWorker,
+}: {
+  onSuccess: (result: UploadSuccess) => void;
+  onCancel?: () => void;
+  createWorker?: () => WorkerHandle;
+}) {
+  const done = useCallback(
+    (value: HistoryValue, elapsedMs: number) => {
+      const timeZone = resolveTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+      onSuccess({ ...value, timeZone, elapsedMs });
+    },
+    [onSuccess],
+  );
+  return useWorkerJob({ run: runHistory, onSuccess: done, onCancel, createWorker });
+}
+
+/**
+ * Só as curtidas (`YourLibrary.json`, solto ou no zip "Dados da conta"), enviadas com o painel
+ * já aberto: o histórico na memória não é relido.
+ */
+export function useLibraryUpload({
+  onSuccess,
+  onCancel,
+  createWorker = createHistoryWorker,
+}: {
+  onSuccess: (library: LikedByArtist) => void;
+  onCancel?: () => void;
+  createWorker?: () => WorkerHandle;
+}) {
+  const done = useCallback((library: LikedByArtist) => onSuccess(library), [onSuccess]);
+  return useWorkerJob({ run: runLibrary, onSuccess: done, onCancel, createWorker });
 }

@@ -10,11 +10,32 @@ export {
   type DatasetAlbum,
   type DatasetTrack,
 } from './dataset';
-export { HistoryProcessingError, type HistoryError, type HistoryErrorCode } from './errors';
+export {
+  HistoryProcessingError,
+  type HistoryError,
+  type HistoryErrorCode,
+  type LibraryError,
+  type LibraryErrorCode,
+} from './errors';
+export {
+  LibraryAccumulator,
+  libraryTrackSchema,
+  likedByArtist,
+  normalizeArtistName,
+  parseLibraryJson,
+  topLikedArtists,
+  type LibraryParseCounts,
+  type LibraryTrack,
+  type LikedArtist,
+  type LikedByArtist,
+  type LikedSummary,
+} from './library';
 export { parseHistoryJson, type ParseCounts } from './parse';
 export { PLATFORMS, normalizePlatform, type PlatformCode } from './platform';
 export {
   processHistory,
+  processLibrary,
+  type LibraryResult,
   type ProcessOptions,
   type ProcessProgress,
   type ProcessReport,

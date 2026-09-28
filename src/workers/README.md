@@ -4,7 +4,10 @@ Web Workers. O worker **não** faz `fetch` (regra de lint): o upload nunca sai d
 
 - `history.worker.ts`: expõe `HistoryWorkerApi` via Comlink (`processHistory(files, onProgress)`
   e `cancel()`). A lógica fica em `history-worker-api.ts`, testável em Node; o resultado é
-  `{ ok: true, dataset, report }` com as colunas transferidas, ou `{ ok: false, error: { code } }`.
+  `{ ok: true, dataset, report, library? }` com as colunas transferidas, ou `{ ok: false, error: { code } }`.
+  `processLibrary(files, onProgress)` lê só as curtidas (`YourLibrary.json` do export "Dados da
+  conta") para um histórico já carregado: `{ ok: true, library }` ou `{ ok: false, error }`
+  (`NO_LIBRARY_FILE` se não houver `YourLibrary.json`). Um job por vez: um novo envio cancela o anterior.
 
 Uso na UI:
 

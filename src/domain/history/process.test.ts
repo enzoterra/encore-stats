@@ -209,9 +209,15 @@ describe('processHistory — rejeições (erros tipados)', () => {
   });
 
   it('zip sem histórico → NO_HISTORY_FILES', async () => {
-    expect(errorCode(await processHistory([fixtureInput('not-history.zip')]))).toBe(
-      'NO_HISTORY_FILES',
-    );
+    const bytes = zip({ 'fotos/praia.txt': 'x', 'notas.json': '[]' });
+    expect(errorCode(await processHistory([fileInput('a.zip', bytes)]))).toBe('NO_HISTORY_FILES');
+  });
+
+  it('zip do "Dados da conta" sem curtidas nem histórico → WRONG_EXPORT', async () => {
+    expect(await processHistory([fixtureInput('not-history.zip')])).toEqual({
+      ok: false,
+      error: { code: 'WRONG_EXPORT' },
+    });
   });
 
   it('export "Dados da conta" → WRONG_EXPORT (zip e JSON solto)', async () => {
@@ -301,7 +307,7 @@ describe('processHistory — rejeições (erros tipados)', () => {
   });
 
   it('JSON solto que não é histórico → UNEXPECTED_FORMAT', async () => {
-    const result = await processHistory([fileInput('Userdata.json', '{"username":"x"}')]);
+    const result = await processHistory([fileInput('perfil.json', '{"username":"x"}')]);
     expect(errorCode(result)).toBe('UNEXPECTED_FORMAT');
   });
 

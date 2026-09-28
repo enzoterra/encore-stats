@@ -3,7 +3,7 @@ import { join } from 'node:path';
 
 import { describe, expect, it } from 'vitest';
 
-import { buildFixtures, FIXTURES_DIR } from '../scripts/make-fixtures';
+import { accountDataFiles, buildFixtures, FIXTURES_DIR } from '../scripts/make-fixtures';
 
 describe('tests/fixtures', () => {
   const fixtures = buildFixtures();
@@ -16,6 +16,17 @@ describe('tests/fixtures', () => {
 
   it('a zip bomb é pequena no disco', () => {
     expect(fixtures['zip-bomb.zip']!.length).toBeLessThan(300 * 1024);
+  });
+
+  it('o export "Dados da conta" fictício só tem e-mails de domínio reservado', () => {
+    const files = accountDataFiles();
+    const text = Object.values(files)
+      .map((bytes) => new TextDecoder().decode(bytes))
+      .join('\n');
+    const emails = text.match(/[\w.+-]+@[\w.-]+/g) ?? [];
+    expect(emails.length).toBeGreaterThan(0);
+    for (const email of emails) expect(email.endsWith('@example.invalid')).toBe(true);
+    expect(text).not.toMatch(/\b\d{13,19}\b/); // nada parecido com número de cartão
   });
 
   it('não contém IPs fora da faixa de documentação', () => {

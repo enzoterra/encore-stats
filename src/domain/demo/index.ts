@@ -4,6 +4,7 @@ export {
   DEMO_START_DAY,
   DEMO_TIME_ZONE,
   demoArtist,
+  demoLibrary,
   demoSavedPage,
   generateDemo,
   type DemoApi,

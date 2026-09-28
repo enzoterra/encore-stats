@@ -204,6 +204,231 @@ function zipBomb(): Uint8Array {
   return out;
 }
 
+const ACCOUNT_DIR = 'Spotify Account Data';
+
+/**
+ * Marca posta em todo dado do export "Dados da conta" que o Encore **não** pode ler (arquivos
+ * sensíveis e as partes do `YourLibrary.json` fora de `tracks`). Os testes provam que ela nunca
+ * aparece no resultado.
+ */
+export const SENSITIVE_CANARY = 'ENCORE-CANARIO-NAO-LER';
+
+type LibraryItem = { artist?: string | null; album?: string; track?: string; uri?: string };
+
+/**
+ * `YourLibrary.json` fictício no formato atual do export (chaves `tracks`, `albums`,
+ * `artists`, `shows`, `episodes`, `bannedTracks`, `bannedArtists`, `other`; cada curtida com
+ * `artist`, `album`, `track` e `uri`). Casos de borda de propósito: música repetida (mesmo
+ * `uri`), itens antigos sem `uri` (um repetido), nome com espaços extras e em NFD, o mesmo nome
+ * em minúsculas (outro artista), faixa local e item sem artista.
+ */
+export function libraryFixture(): Record<string, unknown> {
+  const random = mulberry32(51);
+  const track = (artist: string, i: number): LibraryItem => ({
+    artist,
+    album: `Álbum ${1 + (i % 3)} de ${artist.trim()}`,
+    track: `Faixa ${i + 1} (${artist.trim().split(' ')[0]})`,
+    uri: `spotify:track:${fakeId(random)}`,
+  });
+  const many = (artist: string, count: number, from = 0) =>
+    Array.from({ length: count }, (_, i) => track(artist, from + i));
+  const capivara = many('Capivara Cósmica', 7);
+  const noUri = (i: number): LibraryItem => {
+    const item = track('Velvet Static Choir', i);
+    delete item.uri; // formato dos exports antigos, sem `uri`
+    return item;
+  };
+  const tracks: LibraryItem[] = [
+    ...capivara,
+    { ...capivara[2]! }, // repetida (mesmo uri): conta uma vez
+    ...many('Lua de Vinil', 5),
+    ...many('Neon Harbor Club', 5),
+    ...many('Maré de Fevereiro', 2),
+    track('Maré de Fevereiro', 10), // NFD: junta com "Maré de Fevereiro"
+    track('  Maré   de Fevereiro ', 11), // espaços extras: junta também
+    ...many('The Paper Satellites', 3),
+    track('lua de vinil', 20), // outra caixa: não junta (pode ser outro artista)
+    noUri(0),
+    noUri(1),
+    noUri(1), // repetida sem uri (mesmo artista, álbum e faixa): conta uma vez
+    track('Os Faróis de Néon', 0),
+    track('Midnight Cartographers', 0),
+    { artist: 'Artista Local', album: '', track: 'Gravação Caseira', uri: 'spotify:local:::x:1' },
+    {
+      artist: '',
+      album: 'Sem Artista',
+      track: 'Faixa Órfã',
+      uri: `spotify:track:${fakeId(random)}`,
+    },
+  ];
+  return {
+    tracks,
+    albums: [
+      {
+        artist: `Artista de Álbum ${SENSITIVE_CANARY}`,
+        album: 'Álbum Salvo',
+        uri: 'spotify:album:x',
+      },
+    ],
+    shows: [
+      { name: `Podcast Salvo ${SENSITIVE_CANARY}`, publisher: 'Editora', uri: 'spotify:show:x' },
+    ],
+    episodes: [{ name: `Episódio ${SENSITIVE_CANARY}`, show: 'Podcast', uri: 'spotify:episode:x' }],
+    bannedTracks: [
+      {
+        artist: `Artista Banido ${SENSITIVE_CANARY}`,
+        album: 'A',
+        track: 'B',
+        uri: 'spotify:track:y',
+      },
+    ],
+    artists: [{ name: `Artista Seguido ${SENSITIVE_CANARY}`, uri: 'spotify:artist:x' }],
+    bannedArtists: [{ name: `Banido ${SENSITIVE_CANARY}`, uri: 'spotify:artist:y' }],
+    other: [SENSITIVE_CANARY],
+  };
+}
+
+/**
+ * Export "Dados da conta" completo e fictício: além do `YourLibrary.json`, os arquivos
+ * sensíveis que o Encore nunca descompacta (perfil, identidade, pagamento, seguidores,
+ * inferências, buscas, histórico de 1 ano, playlists, Marquee). Nenhum dado real: e-mail em
+ * `example.invalid`, país "ZZ", sem número de cartão.
+ */
+export function accountDataFiles(library: unknown = libraryFixture()): Record<string, Uint8Array> {
+  const fixture = { _fixture: SENSITIVE_CANARY };
+  const fakePdf = strToU8('%PDF-1.4\n% leia-me fictício do export Dados da conta\n%%EOF\n');
+  return {
+    [`${ACCOUNT_DIR}/Userdata.json`]: json({
+      username: 'usuario-ficticio',
+      email: 'pessoa.ficticia@example.invalid',
+      country: 'ZZ',
+      createdFromFacebook: false,
+      birthdate: '1990-01-01',
+      gender: 'neutral',
+      postalCode: null,
+      mobileNumber: null,
+      creationTime: '2015-01-01',
+      ...fixture,
+    }),
+    [`${ACCOUNT_DIR}/Identity.json`]: json({
+      displayName: 'Pessoa Fictícia',
+      firstName: 'Pessoa',
+      lastName: 'Fictícia',
+      tasteMaker: false,
+      imageUrl: '',
+      verified: false,
+      ...fixture,
+    }),
+    [`${ACCOUNT_DIR}/Payments.json`]: json({
+      payment_method: 'Cartão fictício de teste',
+      creation_date: '2020-01-01',
+      country: 'ZZ',
+      postal_code: '00000',
+      ...fixture,
+    }),
+    [`${ACCOUNT_DIR}/Follow.json`]: json({
+      followerCount: 0,
+      followingUsersCount: 1,
+      dismissingUsersCount: 0,
+      ...fixture,
+    }),
+    [`${ACCOUNT_DIR}/Inferences.json`]: json({
+      inferences: ['1P_Custom_Segmento_Ficticio', SENSITIVE_CANARY],
+    }),
+    [`${ACCOUNT_DIR}/SearchQueries.json`]: json([
+      {
+        platform: 'ANDROID',
+        searchTime: '2024-01-01T10:00:00.000Z[UTC]',
+        searchQuery: `busca fictícia ${SENSITIVE_CANARY}`,
+        searchInteractionURIs: [],
+      },
+    ]),
+    [`${ACCOUNT_DIR}/StreamingHistory_music_0.json`]: json([
+      {
+        endTime: '2024-01-01 10:00',
+        artistName: `Artista do Histórico Curto ${SENSITIVE_CANARY}`,
+        trackName: 'Faixa 1',
+        msPlayed: 200000,
+      },
+    ]),
+    [`${ACCOUNT_DIR}/StreamingHistory_podcast_0.json`]: json([
+      {
+        endTime: '2024-01-01 11:00',
+        podcastName: `Podcast ${SENSITIVE_CANARY}`,
+        episodeName: 'Episódio 1',
+        msPlayed: 900000,
+      },
+    ]),
+    [`${ACCOUNT_DIR}/Playlist1.json`]: json({
+      playlists: [
+        {
+          name: `Playlist Fictícia ${SENSITIVE_CANARY}`,
+          lastModifiedDate: '2024-01-01',
+          items: [],
+          description: null,
+          numberOfFollowers: 0,
+        },
+      ],
+    }),
+    [`${ACCOUNT_DIR}/Marquee.json`]: json([
+      { artistName: `Artista ${SENSITIVE_CANARY}`, segment: 'Super Listeners' },
+    ]),
+    [`${ACCOUNT_DIR}/YourLibrary.json`]: json(library),
+    [`${ACCOUNT_DIR}/Read_Me_First.pdf`]: fakePdf,
+  };
+}
+
+/**
+ * Percorre os cabeçalhos locais de um zip do `zipSync` (sem data descriptor) e chama `patch`
+ * com a posição do cabeçalho e dos dados de cada entrada. Usado para montar zips hostis.
+ */
+function patchLocalEntries(
+  zip: Uint8Array,
+  patch: (entry: {
+    name: string;
+    bytes: Uint8Array;
+    header: number;
+    start: number;
+    length: number;
+  }) => void,
+): Uint8Array {
+  const out = zip.slice();
+  const view = new DataView(out.buffer);
+  let offset = 0;
+  while (offset + 30 <= out.length && view.getUint32(offset, true) === 0x04034b50) {
+    const compressed = view.getUint32(offset + 18, true);
+    const nameLength = view.getUint16(offset + 26, true);
+    const extraLength = view.getUint16(offset + 28, true);
+    const name = new TextDecoder().decode(out.subarray(offset + 30, offset + 30 + nameLength));
+    const dataStart = offset + 30 + nameLength + extraLength;
+    patch({ name, bytes: out, header: offset, start: dataStart, length: compressed });
+    offset = dataStart + compressed;
+  }
+  return out;
+}
+
+/**
+ * Prova de que os arquivos sensíveis nunca são descompactados: no mesmo export, os dados
+ * DEFLATE de **toda** entrada que não é o `YourLibrary.json` viram lixo (`0xFF`, bloco de tipo
+ * reservado). Se o leitor tentasse inflar qualquer uma delas, o resultado seria `INVALID_ZIP`.
+ */
+function poisonedAccountData(): Uint8Array {
+  return patchLocalEntries(zipFiles(accountDataFiles()), ({ name, bytes, start, length }) => {
+    if (!name.endsWith('/YourLibrary.json')) bytes.fill(0xff, start, start + length);
+  });
+}
+
+/**
+ * Export "Dados da conta" cujo `YourLibrary.json` declara no cabeçalho local 64 MiB
+ * descompactados, acima do limite das curtidas (32 MiB). Deve ser rejeitado antes de inflar.
+ */
+function oversizedLibrary(): Uint8Array {
+  const files = { [`${ACCOUNT_DIR}/YourLibrary.json`]: json(libraryFixture()) };
+  return patchLocalEntries(zipFiles(files), ({ bytes, header }) => {
+    new DataView(bytes.buffer).setUint32(header + 22, 64 * 1024 * 1024, true);
+  });
+}
+
 const T2023 = Date.UTC(2023, 0, 5, 8, 0, 0);
 const T2024 = Date.UTC(2024, 0, 3, 8, 0, 0);
 
@@ -271,6 +496,24 @@ export function buildFixtures(): Record<string, Uint8Array> {
         },
       ]),
     }),
+    // Export "Dados da conta" completo (curtidas + arquivos sensíveis que não podem ser lidos).
+    'account-data-full.zip': zipFiles(accountDataFiles()),
+    // O mesmo, com os dados de toda entrada que não é o YourLibrary.json corrompidos.
+    'account-data-poisoned.zip': poisonedAccountData(),
+    // Os dois exports num zip só (a pessoa juntou as pastas).
+    'history-and-account-data.zip': zipFiles({
+      [`${HISTORY_DIR}/Streaming_History_Audio_2023_0.json`]: json(first),
+      [`${HISTORY_DIR}/Streaming_History_Audio_2024_1.json`]: json(second),
+      ...accountDataFiles(),
+    }),
+    'library-invalid.zip': zipFiles({
+      [`${ACCOUNT_DIR}/YourLibrary.json`]: json({
+        tracks: Array.from({ length: 10 }, (_, i) => ({ artist: { nome: i }, track: 42 })),
+      }),
+      [`${ACCOUNT_DIR}/Userdata.json`]: json({ username: 'usuario-ficticio' }),
+    }),
+    'library-too-large.zip': oversizedLibrary(),
+    'loose/YourLibrary.json': json(libraryFixture()),
     'loose/Streaming_History_Audio_2025_0.json': json(
       syntheticRecords({ count: 30, seed: 41, start: Date.UTC(2025, 1, 1, 9), tracks: 10 }),
     ),

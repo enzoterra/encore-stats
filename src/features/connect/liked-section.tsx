@@ -9,11 +9,10 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from '@/components/ui/toast';
 import { missingArtistIds, type LikedArtistCount } from '@/domain/api-stats';
 import type { Artist } from '@/domain/spotify-types';
+import { type LikedEntry, LikedOthers, LikedWinner } from '@/features/liked/liked-artists';
 
 import { connectKeys } from './connect-client';
 import { useConnectBundle } from './connect-provider';
-import { Cover } from './cover';
-import { MediaRow } from './media-row';
 import { useArtists, useNow } from './queries';
 import { ConnectSection, SectionError } from './section';
 import { SpotifyIcon } from './spotify-brand';
@@ -58,34 +57,35 @@ function Result({
   if (summary.top.length === 0) {
     return <p className="text-body-sm text-fg-muted">{t('empty')}</p>;
   }
-  const [winner, ...others] = summary.top;
-  const winnerInfo = info(winner!.id);
+  const entries: LikedEntry[] = summary.top.map((entry) => {
+    const artist = info(entry.id);
+    return {
+      key: entry.id,
+      name: entry.name,
+      count: entry.count,
+      image: artist?.image,
+      url: artistUrl(entry, artist),
+    };
+  });
+  const [winner, ...others] = entries;
   const live = source.kind === 'live';
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-4" data-testid="liked-winner">
-        <Cover src={winnerInfo?.image} name={winner!.name} size={96} />
-        <div className="flex min-w-0 flex-col gap-1">
-          <p className="text-overline text-info uppercase">{t('winner')}</p>
-          <p className="font-display text-metric [overflow-wrap:anywhere] lg:text-metric-lg">
-            {winner!.name}
-          </p>
-          <p className="text-body-strong">{t('count', { count: winner!.count })}</p>
-          {live ? (
-            <a
-              href={artistUrl(winner!, winnerInfo)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-fit items-center gap-2 rounded-sm py-1 text-caption font-semibold text-fg-muted uppercase hover:text-fg"
-            >
-              <SpotifyIcon />
-              {tTop('open')}
-              <span className="sr-only">{tCommon('externalLink')}</span>
-            </a>
-          ) : null}
-        </div>
-      </div>
+      <LikedWinner entry={winner!}>
+        {live ? (
+          <a
+            href={winner!.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-2 rounded-sm py-1 text-caption font-semibold text-fg-muted uppercase hover:text-fg"
+          >
+            <SpotifyIcon />
+            {tTop('open')}
+            <span className="sr-only">{tCommon('externalLink')}</span>
+          </a>
+        ) : null}
+      </LikedWinner>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <p className="text-caption text-fg-subtle">
           {t('updated', { when: format.ago(summary.scannedAt, now) })}
@@ -102,33 +102,7 @@ function Result({
           {t('changed')}
         </p>
       ) : null}
-      {others.length > 0 ? (
-        <div className="flex flex-col gap-1">
-          <h3 className="text-overline text-fg-muted uppercase">{t('othersTitle')}</h3>
-          <ol aria-label={t('othersLabel')} start={2} className="flex flex-col">
-            {others.map((entry, index) => {
-              const artist = info(entry.id);
-              return (
-                <MediaRow
-                  key={entry.id}
-                  rank={index + 2}
-                  name={entry.name}
-                  image={artist?.image}
-                  url={artistUrl(entry, artist)}
-                  size={40}
-                  trailing={
-                    <span className="inline-flex items-center gap-1">
-                      <Heart aria-hidden="true" className="size-3.5 text-primary-fg" />
-                      <span aria-hidden="true">{format.number(entry.count)}</span>
-                      <span className="sr-only">{t('count', { count: entry.count })}</span>
-                    </span>
-                  }
-                />
-              );
-            })}
-          </ol>
-        </div>
-      ) : null}
+      <LikedOthers entries={others} live={live} />
     </div>
   );
 }

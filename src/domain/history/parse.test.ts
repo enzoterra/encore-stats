@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { HistoryProcessingError, type HistoryError } from './errors';
+import { HistoryProcessingError, type LibraryError } from './errors';
 import { parseHistoryJson } from './parse';
 import type { MusicRecord } from './schema';
 
@@ -18,7 +18,7 @@ const record = (i: number, patch: Record<string, unknown> = {}) => ({
   ...patch,
 });
 
-function errorOf(fn: () => unknown): HistoryError {
+function errorOf(fn: () => unknown): LibraryError {
   try {
     fn();
   } catch (error) {

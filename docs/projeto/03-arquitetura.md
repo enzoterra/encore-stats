@@ -15,11 +15,11 @@
 | `app/api/spotify/*` | Servidor | Proxy tipado para `/me`, `/me/top/{artists,tracks}`, `/me/player/recently-played`, `/me/tracks` (uma página por chamada) e `/artists/{id}` (sob demanda). Faz refresh transparente, trata 429/`QUOTA_EXCEEDED`/`invalid_grant`, reduz a resposta e aplica `Cache-Control: private` |
 | `src/server/session.ts` | Servidor | Selar/abrir o cookie JWE (`jose`, `dir` + `A256GCM`, `kid` para rotação) |
 | `src/server/spotify-client.ts` | Servidor | Cliente HTTP com timeout, retry e mapeamento de erros |
-| `src/domain/history/*` | Worker (browser) + Node (testes) | Leitura do zip (fflate, streaming), validação Zod, filtro música/podcast, construção do **Dataset** colunar |
+| `src/domain/history/*` | Worker (browser) + Node (testes) | Leitura do zip (fflate, streaming), validação Zod, filtro música/podcast, construção do **Dataset** colunar; curtidas por artista do `YourLibrary.json` (export "Dados da conta", opcional) |
 | `src/domain/stats/*` | Browser + Node | Funções puras sobre o Dataset: tops, totais, heatmap, plataforma e métricas "você por você" |
 | `src/domain/api-stats/*` | Browser + Node | Funções puras sobre respostas da API: tendências, gêneros, contagem de curtidas por artista |
 | `src/domain/demo/*` | Browser + Node | Gerador determinístico (seed fixa) do dataset e das respostas fictícias da API |
-| `src/workers/history.worker.ts` | Web Worker | Expõe `processHistory(files, onProgress, signal)` via Comlink e transfere o Dataset por *transferables* |
+| `src/workers/history.worker.ts` | Web Worker | Expõe `processHistory(files, onProgress)`, `processLibrary(files, onProgress)` e `cancel()` via Comlink e transfere o Dataset por *transferables* |
 | `src/features/cards/*` | Browser (lazy) | Templates JSX → satori → SVG → resvg-wasm → PNG; Web Share / download |
 | `src/features/*` (UI) | Browser | Upload, dashboards, seletor de período, gráficos em SVG próprio |
 
@@ -89,6 +89,13 @@ type Dataset = {
 };
 ```
 Todas as stats de `src/domain/stats` recebem `(dataset, period, tz)` e são **funções puras**. A troca de período é um filtro por busca binária em `ts`.
+
+**Curtidas do upload (Iteração 8c, opcional):** a pessoa pode mandar, junto do histórico completo ou depois, o export "Dados da conta". Fluxo no worker:
+1. Pelo nome da entrada, no streaming do fflate, só `Streaming_History_Audio_*.json` e `YourLibrary.json` são descompactados. Os demais arquivos do export (`Userdata.json`, `Identity.json`, `Payments.json`, `Follow.json`, `Inferences.json`, `SearchQueries.json`, `StreamingHistory_*.json`, `Playlist*.json`, `Marquee.json`…) nunca recebem `start()`: o fflate descarta os bytes sem inflar. Soltos, esses JSONs nem são abertos.
+2. O `YourLibrary.json` passa pelos mesmos limites do histórico (32 MiB descompactados somando todos os `YourLibrary.json`, razão de compressão, caminho seguro, ≤ 5% de itens inválidos) e só é interpretado depois de confirmar que há histórico.
+3. Do JSON, só `tracks[]` é validada (Zod, strip); de cada curtida fica só o nome do artista (álbum, faixa e `uri` servem só para não contar a mesma música duas vezes). Álbuns, artistas seguidos, podcasts, episódios e banidos são descartados com o objeto do `JSON.parse`.
+4. Resultado: `LikedByArtist = { total, artists: { name, count }[] }`, ordenado por contagem e nome, em `ProcessResult.library` (ou `LibraryResult.library`, quando as curtidas chegam depois por `processLibrary`). Fica na memória, como o Dataset. **Não depende do período:** o `YourLibrary.json` não tem data. Sem ID de artista no arquivo, o agrupamento é pelo nome exato (NFC, espaços colapsados); homônimos exatos se juntam, como no top de artistas do histórico.
+5. Só o export "Dados da conta", sem o histórico, é recusado (`WRONG_EXPORT` com `source: 'library'`). O `StreamingHistory_music_*.json` (1 ano) continua fora do Dataset.
 
 **Respostas reduzidas do BFF** (tipos Zod em `src/domain/spotify-types.ts`):
 - `Artist { id, name, genres[], image?, url }`

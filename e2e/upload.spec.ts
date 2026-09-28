@@ -65,11 +65,8 @@ test.describe('upload (RF-03..RF-05, US-03)', () => {
       code: 'UNEXPECTED_FORMAT',
       title: 'Não reconhecemos esse arquivo',
     },
-    {
-      file: 'not-history.zip',
-      code: 'NO_HISTORY_FILES',
-      title: 'Esse arquivo não tem o histórico completo',
-    },
+    // Userdata + Playlist: desde a Iteração 8c é reconhecido como o pacote "Dados da conta".
+    { file: 'not-history.zip', code: 'WRONG_EXPORT', title: 'Esse é o pacote "Dados da conta"' },
     { file: 'account-data.zip', code: 'WRONG_EXPORT', title: 'Esse é o pacote "Dados da conta"' },
   ]) {
     test(`recusa ${file} com mensagem útil (${code})`, async ({ page }) => {

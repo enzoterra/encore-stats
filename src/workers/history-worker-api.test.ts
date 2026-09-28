@@ -3,7 +3,12 @@ import { strToU8 } from 'fflate';
 import { describe, expect, it, vi } from 'vitest';
 
 import { fileInput, fixtureInput } from '../../tests/support/history';
-import type { ProcessOptions, ProcessProgress, ProcessResult } from '@/domain/history';
+import type {
+  LibraryResult,
+  ProcessOptions,
+  ProcessProgress,
+  ProcessResult,
+} from '@/domain/history';
 
 import { createHistoryWorkerApi } from './history-worker-api';
 
@@ -77,6 +82,50 @@ describe('createHistoryWorkerApi', () => {
     expect(signals[0]!.aborted).toBe(true);
   });
 
+  it('processLibrary: devolve só as curtidas, sem transferir nada', async () => {
+    let transfers = 0;
+    const transfer = <T>(value: T): T => {
+      transfers++;
+      return value;
+    };
+    const api = createHistoryWorkerApi({ transfer });
+    const progress: ProcessProgress[] = [];
+    const result = await api.processLibrary([fixtureInput('account-data-full.zip')], (p) => {
+      progress.push(p);
+    });
+    expect(result.ok && result.library.total).toBe(30);
+    expect(progress.at(-1)?.stage).toBe('done');
+    expect(transfers).toBe(0);
+    expect(await api.processLibrary([fixtureInput('valid-two-files.zip')])).toEqual({
+      ok: false,
+      error: { code: 'NO_LIBRARY_FILE' },
+    });
+  });
+
+  it('processHistory com o export "Dados da conta" devolve `library`', async () => {
+    const api = createHistoryWorkerApi({ transfer: <T>(value: T): T => value });
+    const result = await api.processHistory([fixtureInput('history-and-account-data.zip')]);
+    expect(result.ok && result.library?.artists[0]).toEqual({ name: 'Capivara Cósmica', count: 7 });
+  });
+
+  it('processLibrary cancela o job anterior e é cancelável', async () => {
+    const signals: { aborted: boolean }[] = [];
+    const fake = vi.fn(
+      async (_files: unknown, options?: ProcessOptions): Promise<LibraryResult> => {
+        signals.push(options!.signal!);
+        await Promise.resolve();
+        return { ok: false, error: { code: options!.signal!.aborted ? 'CANCELLED' : 'INTERNAL' } };
+      },
+    );
+    const api = createHistoryWorkerApi({ processLibrary: fake });
+    const first = api.processLibrary([]);
+    const second = api.processLibrary([]);
+    api.cancel();
+    await expect(first).resolves.toMatchObject({ error: { code: 'CANCELLED' } });
+    await expect(second).resolves.toMatchObject({ error: { code: 'CANCELLED' } });
+    expect(signals.every((signal) => signal.aborted)).toBe(true);
+  });
+
   it('ignora falhas do callback de progresso (proxy liberado)', async () => {
     const api = createHistoryWorkerApi({ limits: {} });
     const throwing = () => {
@@ -102,6 +151,7 @@ describe('history.worker', () => {
     expect(expose).toHaveBeenCalledTimes(1);
     const api = expose.mock.calls[0]![0] as Record<string, unknown>;
     expect(typeof api.processHistory).toBe('function');
+    expect(typeof api.processLibrary).toBe('function');
     expect(typeof api.cancel).toBe('function');
     vi.doUnmock('comlink');
   });

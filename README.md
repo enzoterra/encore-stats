@@ -454,6 +454,7 @@ src/server/          env validado, cabeçalhos de segurança, sessão JWE, clien
 src/components/      layout (cabeçalho, rodapé, selo), UI base e a logo (`brand/`)
 src/features/        UI por área
 src/workers/         Web Workers (processamento do upload e geração dos cards), sem rede
+src/config/          dados públicos e fixos (contatos do autor, `author.ts`)
 src/i18n/            rotas e mensagens do next-intl
 e2e/                 testes Playwright + axe
 scripts/             fixtures (`pnpm fixtures`) e mock local do Spotify
@@ -481,3 +482,11 @@ Alias de import: `@/…` aponta para `src/…`.
 - Dependabot semanal e agrupado (npm e GitHub Actions), com espera de 3 dias.
 - pnpm: scripts de install bloqueados (`allowBuilds`) e `minimumReleaseAge` de 1 dia em
   `pnpm-workspace.yaml`.
+
+## Autor
+
+Feito por **Enzo Terra**. Fale comigo:
+
+- E-mail: [enzoterra18@gmail.com](mailto:enzoterra18@gmail.com)
+- GitHub: [github.com/enzoterra](https://github.com/enzoterra)
+- Site pessoal: [enzoterra.dev.br](https://enzoterra.dev.br)

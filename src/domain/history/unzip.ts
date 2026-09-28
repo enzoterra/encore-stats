@@ -3,6 +3,7 @@ import { Unzip, UnzipInflate, type UnzipFile } from 'fflate';
 import {
   ACCOUNT_DATA_FILE_PATTERN,
   HISTORY_FILE_PATTERN,
+  LIBRARY_FILE_PATTERN,
   UNZIP_PUSH_BYTES,
   type HistoryLimits,
 } from './constants';
@@ -15,8 +16,14 @@ export type HistoryInput = {
   stream(): ReadableStream<Uint8Array>;
 };
 
-/** Um arquivo de histórico já descompactado, entregue um por vez. */
-export type HistoryEntry = { name: string; bytes: Uint8Array };
+/**
+ * Tipos de arquivo que o motor lê: `history` (`Streaming_History_Audio_*.json`, histórico
+ * completo) e `library` (`YourLibrary.json`, curtidas do export "Dados da conta").
+ */
+export type EntryKind = 'history' | 'library';
+
+/** Um arquivo já descompactado, entregue um por vez. */
+export type HistoryEntry = { kind: EntryKind; name: string; bytes: Uint8Array };
 
 /** Estado compartilhado entre todos os arquivos de uma mesma execução. */
 export type ReadContext = {
@@ -24,8 +31,10 @@ export type ReadContext = {
   readonly signal?: { readonly aborted: boolean };
   /** Bytes (compactados) lidos das entradas, para o progresso. */
   bytesRead: number;
-  /** Soma descompactada dos arquivos de histórico (limite total). */
-  historyBytes: number;
+  /** Soma descompactada de tudo o que foi lido (histórico + curtidas), para o limite total. */
+  totalBytes: number;
+  /** Soma descompactada dos `YourLibrary.json` (limite `maxLibraryBytes`). */
+  libraryBytes: number;
   /** Viu um arquivo do export "Dados da conta" (para o erro `WRONG_EXPORT`). */
   sawAccountData: boolean;
   onChunk?: () => void;
@@ -36,7 +45,15 @@ export function createReadContext(
   signal?: { readonly aborted: boolean },
   onChunk?: () => void,
 ): ReadContext {
-  return { limits, signal, bytesRead: 0, historyBytes: 0, sawAccountData: false, onChunk };
+  return {
+    limits,
+    signal,
+    bytesRead: 0,
+    totalBytes: 0,
+    libraryBytes: 0,
+    sawAccountData: false,
+    onChunk,
+  };
 }
 
 /**
@@ -60,9 +77,26 @@ export function isHistoryFileName(name: string): boolean {
   return HISTORY_FILE_PATTERN.test(baseName(name));
 }
 
+export function isLibraryFileName(name: string): boolean {
+  return LIBRARY_FILE_PATTERN.test(baseName(name));
+}
+
+/** Arquivo conhecido do export "Dados da conta" que **não** é lido (tudo menos o `YourLibrary`). */
 export function isAccountDataFileName(name: string): boolean {
   return ACCOUNT_DATA_FILE_PATTERN.test(baseName(name));
 }
+
+/** Classifica pelo nome; `null` = o arquivo nunca é descompactado nem lido. */
+export function entryKind(name: string): EntryKind | null {
+  if (isHistoryFileName(name)) return 'history';
+  if (isLibraryFileName(name)) return 'library';
+  return null;
+}
+
+/** Quais tipos a execução quer ler; o resto não é descompactado. */
+export type WantedKinds = Readonly<Record<EntryKind, boolean>>;
+
+export const READ_ALL: WantedKinds = Object.freeze({ history: true, library: true });
 
 function checkCancelled(ctx: ReadContext): void {
   if (ctx.signal?.aborted) fail({ code: 'CANCELLED' });
@@ -87,10 +121,55 @@ function hasZipSignature(header: Uint8Array): boolean {
   return ZIP_SIGNATURES.includes(sig);
 }
 
+/** Limite de tamanho descompactado de cada tipo de arquivo. */
+function entryLimit(kind: EntryKind, limits: HistoryLimits): number {
+  return kind === 'history' ? limits.maxEntryBytes : limits.maxLibraryBytes;
+}
+
+function tooLarge(kind: EntryKind, file: string, entry: string, limit: number): HistoryError {
+  return kind === 'library'
+    ? { code: 'ENTRY_TOO_LARGE', file, entry, limit, source: 'library' }
+    : { code: 'ENTRY_TOO_LARGE', file, entry, limit };
+}
+
+function badRatio(kind: EntryKind, file: string, entry: string, limit: number): HistoryError {
+  return kind === 'library'
+    ? { code: 'COMPRESSION_RATIO', file, entry, limit, source: 'library' }
+    : { code: 'COMPRESSION_RATIO', file, entry, limit };
+}
+
 /**
- * Descompacta um .zip em streaming (fflate `Unzip`) e entrega, um por vez, só os
- * `Streaming_History_Audio_*.json` (em qualquer subpasta). As demais entradas nunca são
- * descompactadas. Os limites são verificados **durante** o streaming:
+ * Soma `length` bytes descompactados de um arquivo do tipo `kind` e devolve o erro de limite,
+ * se houver: por arquivo, total e, nas curtidas, a soma de todos os `YourLibrary.json`.
+ */
+function countBytes(
+  ctx: ReadContext,
+  kind: EntryKind,
+  entryBytes: number,
+  length: number,
+  file: string,
+  entry: string,
+): HistoryError | null {
+  const { limits } = ctx;
+  ctx.totalBytes += length;
+  if (kind === 'library') ctx.libraryBytes += length;
+  const limit = entryLimit(kind, limits);
+  if (entryBytes > limit || (kind === 'library' && ctx.libraryBytes > limit)) {
+    return tooLarge(kind, file, entry, limit);
+  }
+  if (ctx.totalBytes > limits.maxTotalBytes) {
+    return { code: 'TOTAL_TOO_LARGE', limit: limits.maxTotalBytes };
+  }
+  return null;
+}
+
+/**
+ * Descompacta um .zip em streaming (fflate `Unzip`) e entrega, um por vez, só os arquivos dos
+ * tipos pedidos em `want`: `Streaming_History_Audio_*.json` e/ou `YourLibrary.json`, em
+ * qualquer subpasta. **As demais entradas nunca são descompactadas** (sem `start()`, o fflate
+ * descarta os bytes sem inflar): `Userdata.json`, `Identity.json`, `Payments.json`,
+ * `StreamingHistory_*` etc. do export "Dados da conta" passam pelo leitor só como nome.
+ * Os limites são verificados **durante** o streaming:
  * - entradas > `maxEntries` e nomes inseguros: no cabeçalho de cada entrada;
  * - tamanho e razão declarados no cabeçalho: antes de descompactar;
  * - tamanho real por arquivo, total e razão real (por entrada e acumulada do arquivo): a cada
@@ -99,6 +178,7 @@ function hasZipSignature(header: Uint8Array): boolean {
 export async function* readZipEntries(
   input: HistoryInput,
   ctx: ReadContext,
+  want: WantedKinds = READ_ALL,
 ): AsyncGenerator<HistoryEntry> {
   const { limits } = ctx;
   const file = displayName(input.name);
@@ -123,14 +203,18 @@ export async function* readZipEntries(
       failure = { code: 'UNSAFE_PATH', file, entry: displayName(name) };
       return;
     }
-    if (isAccountDataFileName(name)) ctx.sawAccountData = true;
-    if (!isHistoryFileName(name)) return; // não chamar start(): o fflate descarta sem inflar
+    const kind = entryKind(name);
+    if (kind === 'library' || (kind === null && isAccountDataFileName(name))) {
+      ctx.sawAccountData = true;
+    }
+    if (kind === null || !want[kind]) return; // não chamar start(): o fflate descarta sem inflar
 
     const shown = displayName(name);
+    const limit = entryLimit(kind, limits);
     const declaredSize = entry.size;
     const declaredOriginal = entry.originalSize;
-    if (declaredOriginal !== undefined && declaredOriginal > limits.maxEntryBytes) {
-      failure = { code: 'ENTRY_TOO_LARGE', file, entry: shown, limit: limits.maxEntryBytes };
+    if (declaredOriginal !== undefined && declaredOriginal > limit) {
+      failure = tooLarge(kind, file, shown, limit);
       return;
     }
     if (
@@ -139,12 +223,7 @@ export async function* readZipEntries(
       declaredOriginal >= limits.ratioCheckMinBytes &&
       declaredOriginal > declaredSize * limits.maxCompressionRatio
     ) {
-      failure = {
-        code: 'COMPRESSION_RATIO',
-        file,
-        entry: shown,
-        limit: limits.maxCompressionRatio,
-      };
+      failure = badRatio(kind, file, shown, limits.maxCompressionRatio);
       return;
     }
 
@@ -159,22 +238,14 @@ export async function* readZipEntries(
       }
       bytes += data.length;
       inflated += data.length;
-      ctx.historyBytes += data.length;
-      if (bytes > limits.maxEntryBytes) {
-        failure = { code: 'ENTRY_TOO_LARGE', file, entry: shown, limit: limits.maxEntryBytes };
-      } else if (ctx.historyBytes > limits.maxTotalBytes) {
-        failure = { code: 'TOTAL_TOO_LARGE', limit: limits.maxTotalBytes };
-      } else if (
+      failure = countBytes(ctx, kind, bytes, data.length, file, shown);
+      if (
+        !failure &&
         bytes >= limits.ratioCheckMinBytes &&
         ((declaredSize !== undefined && bytes > declaredSize * limits.maxCompressionRatio) ||
           inflated > consumed * limits.maxCompressionRatio)
       ) {
-        failure = {
-          code: 'COMPRESSION_RATIO',
-          file,
-          entry: shown,
-          limit: limits.maxCompressionRatio,
-        };
+        failure = badRatio(kind, file, shown, limits.maxCompressionRatio);
       }
       if (failure) {
         chunks.length = 0;
@@ -183,7 +254,7 @@ export async function* readZipEntries(
       chunks.push(data);
       if (final) {
         pending--;
-        ready.push({ name, bytes: concat(chunks, bytes) });
+        ready.push({ kind, name, bytes: concat(chunks, bytes) });
         chunks.length = 0;
       }
     };
@@ -238,13 +309,19 @@ export async function* readZipEntries(
   }
 }
 
-/** Lê um JSON solto (sem zip) respeitando os mesmos limites de tamanho e o cancelamento. */
-export async function readLooseFile(input: HistoryInput, ctx: ReadContext): Promise<HistoryEntry> {
-  const { limits } = ctx;
+/**
+ * Lê um JSON solto (sem zip) do tipo `kind`, com os mesmos limites de tamanho e o
+ * cancelamento. Quem chama decide o tipo pelo nome e nunca chama isto para os demais arquivos
+ * do export "Dados da conta".
+ */
+export async function readLooseFile(
+  input: HistoryInput,
+  ctx: ReadContext,
+  kind: EntryKind = 'history',
+): Promise<HistoryEntry> {
   const file = displayName(input.name);
-  if (input.size > limits.maxEntryBytes) {
-    fail({ code: 'ENTRY_TOO_LARGE', file, entry: file, limit: limits.maxEntryBytes });
-  }
+  const limit = entryLimit(kind, ctx.limits);
+  if (input.size > limit) fail(tooLarge(kind, file, file, limit));
   const chunks: Uint8Array[] = [];
   let bytes = 0;
   const reader = input.stream().getReader();
@@ -255,18 +332,13 @@ export async function readLooseFile(input: HistoryInput, ctx: ReadContext): Prom
       if (done) break;
       bytes += value.length;
       ctx.bytesRead += value.length;
-      ctx.historyBytes += value.length;
-      if (bytes > limits.maxEntryBytes) {
-        fail({ code: 'ENTRY_TOO_LARGE', file, entry: file, limit: limits.maxEntryBytes });
-      }
-      if (ctx.historyBytes > limits.maxTotalBytes) {
-        fail({ code: 'TOTAL_TOO_LARGE', limit: limits.maxTotalBytes });
-      }
+      const failure = countBytes(ctx, kind, bytes, value.length, file, file);
+      if (failure) fail(failure);
       chunks.push(value);
       ctx.onChunk?.();
     }
   } finally {
     reader.cancel().catch(() => undefined);
   }
-  return { name: input.name, bytes: concat(chunks, bytes) };
+  return { kind, name: input.name, bytes: concat(chunks, bytes) };
 }

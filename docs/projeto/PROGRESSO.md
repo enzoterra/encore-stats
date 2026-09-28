@@ -3,12 +3,12 @@
 ## Estado atual
 - Perfil: padrão-leve (web fullstack leve, sem banco, sem Docker, sem IA, Vercel)
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
-- Sprint em andamento: Sprint 8. Iteração 8b ✅ (cards Top músicas e Mix, logo Bis, textos simples, espaçamento, atalhos de período no Conectar, README com screenshots) publicada em produção em 2026-09-28
+- Sprint em andamento: Sprint 8. Iterações 8b e 8c ✅ publicadas em produção em 2026-09-28 (8c: logo com o "e" girado −12°, contatos do autor no rodapé, curtidas por artista no Upload via export "Dados da conta")
 - Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
 - Próximo passo ao retomar: produção no ar em `https://encore-stats.vercel.app` (Upload + Demo, 2026-09-28). Em 30/09: Next 16.3.7 → ligar o Conectar (S8.3.2) e o staging (S8.3.3) → ZAP → S8.1/S8.2 → go-live e UAT. Pendente com o cliente: aceite das Sprints 5 e 6 e o teste do login real
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-28 pelo orquestrador (fim da Iteração 8b)
+- Última atualização: 2026-09-28 pelo orquestrador (fim da Iteração 8c)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -528,6 +528,34 @@
   - `not-found` localizado (o 404 estático sai com o JS bloqueado pela CSP: falha fechada);
   - mensagem do 403 citando o Premium do dono
 - Próxima sprint: Sprint 8 (orquestrador + analista-de-infra), depois das decisões do cliente
+
+### Iteração 8c — Logo girada, contatos do autor e curtidas no Upload (2026-09-28) — ✅ · designer + dev-frontend
+- Pedido do cliente (2026-09-28): girar um pouco para a esquerda (anti-horário) o "e" com seta da logo Bis (variação 3), para ficar mais dinâmico. O resto do wordmark continua reto; e garantir que o "e" com seta esteja visualmente correto (seta e larguras com proporções boas)
+- Pedido do cliente (2026-09-28): contatos do autor no site, como portfólio: e-mail enzoterra18@gmail.com, GitHub `enzoterra` e site `enzoterra.dev.br`
+- Pedido do cliente (2026-09-28): no modo Upload, um card com o artista com mais músicas curtidas. Limite: o histórico completo não traz curtidas (elas vêm no export "Dados da conta", `YourLibrary.json`, hoje recusado com `WRONG_EXPORT`); decisão pedida ao cliente
+- [x] 8c.1 Prancha com 3 ângulos (lockup, símbolo, favicon, ícone de app) e recomendação; SVGs finais do recomendado — designer
+  - Ajuste 3 reprovado (distorceu o "e"); ajuste 4 = variação 3 só girada, em `design/logo/pranchas/conceito-2-ajuste-4.png`. Recomendado: −12°. Os `conceito-2*.svg` já estão a −12°; ficaram como registro `-v3` (a variação 3) e `-ajuste3` (o ajuste 3). Para outro ângulo, trocar `GIRO` no `build-logo.mjs`. Mudanças no app: `LOGO.md`, "Depois da escolha do ângulo (8c.3)"
+- [x] 8c.2 Escolha do ângulo pelo cliente: **−12°** (2026-09-28), sobre o ajuste 4 (variação 3 só girada)
+- [x] 8c.4 Contatos do autor (rodapé do site + README) — dev-frontend
+  - Entregue (2026-09-28): faixa "Feito por Enzo Terra · Fale comigo" no rodapé de todas as páginas (e-mail `mailto:`, GitHub e site pessoal, pílulas de 44 px com ícones Lucide `Mail`/`CodeXml`/`Globe`, externos com `noopener noreferrer` e "(abre em nova aba)" no nome acessível); dados em `src/config/author.ts`; i18n `Footer.author` pt-BR/en; seção "Autor" no README; sem mudança de CSP (são navegações). Testes: `site-footer.test.tsx` + `e2e/iteration-8c.spec.ts` (axe, 360 px, fora da barra inferior do Demo/Conectar); screenshots em `docs/projeto/screenshots/iteracao-8c/`
+- Decisão do cliente (2026-09-28): o Upload passa a **aceitar também o export "Dados da conta"** (só o `YourLibrary.json`, com as curtidas), como envio **opcional** junto do histórico completo; o resultado é um **quadro no painel** (como "Curtidas por artista" do Conectar), não um card de compartilhar
+- [x] 8c.5a Domínio: leitura do `YourLibrary.json` (só as curtidas; nenhum outro arquivo do export), agregação por artista, erros e testes — dev-backend
+  - Contrato para o frontend:
+    - `processHistory(files, onProgress)` aceita o histórico sozinho ou com o export "Dados da conta" (zips ou `YourLibrary.json` solto, no mesmo envio); o sucesso ganha `library?: LikedByArtist` (ausente = curtidas não enviadas)
+    - `processLibrary(files, onProgress)` (worker, novo): só as curtidas, para o dataset já carregado → `{ ok: true, library } | { ok: false, error: LibraryError }`; `cancel()` vale para os dois (um job por vez)
+    - `LikedByArtist = { total, artists: { name, count }[] }`, ordenado por contagem e nome; `topLikedArtists(library, limit = 10)` → `{ total, artistCount, top }` (em `@/domain/history`)
+    - Demo: `generateDemo().library` (mesmos números de `api.saved`); `demoLibrary(api)`
+    - Traduzir: `NO_LIBRARY_FILE` (só no `processLibrary`) e o campo `source: 'library'` em `WRONG_EXPORT` ("esse arquivo só tem as suas curtidas; envie também o histórico completo"), `INVALID_JSON`/`UNEXPECTED_FORMAT`/`INVALID_RECORDS` (o `YourLibrary.json` está quebrado) e `ENTRY_TOO_LARGE`/`COMPRESSION_RATIO` (limite das curtidas: 32 MiB)
+  - Decisões:
+    - Sem código novo no `HistoryError`: o `ERROR_ACTIONS` da UI é um `Record` de todos os códigos e quebraria o typecheck; o `source: 'library'` é opcional e compatível
+    - Minimização: no zip, só `Streaming_History_Audio_*.json` e `YourLibrary.json` são descompactados (os demais nunca recebem `start()`); soltos, os nomes conhecidos do export (`Userdata`, `Identity`, `Payments`, `Follow`, `Inferences`, `SearchQueries`, `StreamingHistory_*`, `Playlist*`, `Marquee`…) nem são abertos. Do `YourLibrary.json`, só `tracks[]` (Zod strip), reduzida ao nome do artista
+    - Agrupamento pelo nome exato (NFC + espaços colapsados), sem ignorar caixa nem acentos; homônimos exatos se juntam (mesma regra do top do histórico). Dedupe por `uri` (ou artista + álbum + faixa nos exports antigos), também entre dois `YourLibrary.json`
+    - Curtidas **não dependem do período** (o arquivo não tem data). Sem histórico, o `YourLibrary.json` nem é interpretado → `WRONG_EXPORT` + `source: 'library'`. `StreamingHistory_music_*` continua fora
+    - `not-history.zip` (Userdata + Playlist) agora dá `WRONG_EXPORT`, e não `NO_HISTORY_FILES`; `Userdata.json` solto não é mais lido como histórico
+  - Como verificar: `pnpm fixtures` (6 fixtures novas: `account-data-full.zip`, `account-data-poisoned.zip`, `history-and-account-data.zip`, `library-invalid.zip`, `library-too-large.zip`, `loose/YourLibrary.json`) → `pnpm test` (`src/domain/history/{library,account-data}.test.ts`) → `pnpm test:coverage` → `pnpm bench` (caso novo de 100 mil curtidas)
+- [x] 8c.5b UI: envio opcional do segundo arquivo, quadro "Curtidas por artista" no painel do Upload/Demo, onboarding e privacidade atualizados — dev-frontend
+  - Entregue (2026-09-28): dropzone aceita histórico + "Dados da conta" juntos (linha explicativa com link para `/onboarding#dados-da-conta`); sem curtidas, o painel mostra um convite (escolher/arrastar, progresso, cancelar, erros) que usa `processLibrary` e guarda em `upload.library` no store; seção "Suas curtidas" (selo "De qualquer época", legenda de que não muda com o período, nº 1 em destaque, top 10 e total) com as peças de `src/features/liked/liked-artists.tsx`, as mesmas do Conectar (`MediaRowView` sem capa/link); na Visão Upload da demo com `generateDemo().library`; erros `NO_LIBRARY_FILE` e `source: 'library'` traduzidos (`Upload.libraryErrors`); onboarding com o trecho opcional; `/privacy`, selo e rodapé ajustados. Verificar: `pnpm test` (`upload-liked.test.tsx`, `errors.test.ts`) e `pnpm test:e2e e2e/iteration-8c.spec.ts`; screenshots `iteracao-8c/06`–`13`
+- [x] 8c.3 Logo −12° aplicada (2026-09-28): `logo-art.ts` com os paths de `conceito-2.svg`, `app/icon.svg`, `favicon.ico` (16 sem seta, 32, 48), `apple-icon.png`, `docs/readme/logo.svg` e `10-design.md` §16. Verificação: lint, format, typecheck, 684 testes, build, e2e 183/184 com 4 workers (a falha é o teste de tempo da troca de período sob carga; isolado, 6/6). Dois e2e de cards deixaram de ser instáveis (polling de 20 ms no estado "gerando"; só as capas buscadas pelo card contam). Commit + push em `main`
 
 ### Iteração 8b — Ajustes pedidos pelo cliente após testar a produção (2026-09-28) — ✅ · designer + dev-frontend
 - Decisões do cliente (2026-09-28):

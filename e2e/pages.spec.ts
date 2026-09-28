@@ -43,9 +43,12 @@ test.describe('onboarding (RF-02, US-02)', () => {
     ).toBeVisible();
     await expect(page.getByRole('heading', { level: 3 })).toHaveCount(6);
     await expect(page.getByText('Histórico de streaming estendido', { exact: true })).toBeVisible();
-    await expect(
-      page.getByRole('link', { name: /spotify\.com\/account\/privacy/ }),
-    ).toHaveAttribute('href', 'https://www.spotify.com/account/privacy/');
+    // Dois links para a mesma página: o do passo 1 e o do trecho opcional "Dados da conta".
+    const privacyLinks = page.getByRole('link', { name: /spotify\.com\/account\/privacy/ });
+    await expect(privacyLinks).toHaveCount(2);
+    for (const link of await privacyLinks.all()) {
+      await expect(link).toHaveAttribute('href', 'https://www.spotify.com/account/privacy/');
+    }
     await expect(page.getByRole('link', { name: 'Ver demo' })).toHaveAttribute(
       'href',
       /\/pt-BR\/demo$/,

@@ -11,6 +11,8 @@
 | Dado | Classe | Onde vive | Retenção |
 |---|---|---|---|
 | Histórico enviado | Sensível (PII) | Só na memória do navegador (worker → Zustand) | Até fechar ou recarregar a aba |
+| Curtidas do upload (`YourLibrary.json`, opcional) | Pessoal | Só na memória do navegador, reduzidas a `{ name, count }` por artista | Até fechar ou recarregar a aba |
+| Demais arquivos do export "Dados da conta" (perfil, identidade, pagamento, buscas, inferências…) | Sensível | **Nunca lidos**: não são descompactados nem abertos | — |
 | Respostas da API | Pessoal | Memória / sessionStorage do navegador; trânsito pelo BFF sem persistência | TTL (≤ 12 h) ou fim da aba; limpas no logout |
 | Tokens | Segredo do usuário | Cookie JWE HttpOnly | ≤ 30 dias (refresh ≤ 6 meses pela regra do Spotify) |
 | Segredos do app | Segredo | Env vars da Vercel (por ambiente) | Rotação manual; `SESSION_SECRET_PREVIOUS` |
@@ -29,7 +31,8 @@
 | Vazamento do upload | Envio acidental do arquivo | Worker sem rede pela própria CSP (`connect-src data:`); lint anti-rede em `src/domain`, `src/workers`, pipeline dos cards e telas do upload/dashboard/demo (inclui `window.fetch`); `connect-src` das páginas só `'self'` e `https://i.scdn.co`; teste e2e de rede |
 | Vazamento por Referer | Links externos | `Referrer-Policy: no-referrer`; `rel="noopener noreferrer"` |
 | XSS por metadados | Nome de música ou artista malicioso no JSON ou na API | Render só via React (escapado); satori recebe texto puro; nomes de arquivo nunca viram HTML |
-| **D**oS local | Zip bomb, JSON gigante | Limites (entradas, tamanho, razão de compressão), streaming, cancelamento |
+| **D**oS local | Zip bomb, JSON gigante | Limites (entradas, tamanho, razão de compressão), streaming, cancelamento. O `YourLibrary.json` tem limite próprio (32 MiB somando todos) |
+| Coleta excessiva | O export "Dados da conta" traz e-mail, data de nascimento, pagamento, buscas e inferências de anúncios | Minimização por arquitetura (seção "Export Dados da conta"): só o `YourLibrary.json` é descompactado, e dele só o nome do artista de cada curtida sobrevive |
 | Esgotar a quota | Varredura abusiva | Só usuários da allowlist; concorrência limitada; TTLs; pausa em `QUOTA` |
 | **E**levação | Proxy aberto (SSRF) | O BFF só chama URLs fixas do Spotify; `id` validado por regex; sem URL vinda do cliente |
 | Clickjacking | iframe | `frame-ancestors 'none'` + `X-Frame-Options: DENY` (páginas, API e assets) |
@@ -38,6 +41,14 @@
 | Resposta anômala do Spotify | Corpo gigante sem `Content-Length` | Leitura em streaming com teto de 2 MiB (`upstream.ts`, S7) |
 | Segredo de teste em produção | Copiar o `SESSION_SECRET` público dos e2e | `env.ts` recusa esse valor em qualquer deploy da Vercel (S7) |
 | Supply chain | Dependência maliciosa | pnpm 10 (scripts bloqueados com `strictDepBuilds`, `minimumReleaseAge` estrito, `blockExoticSubdeps`), lockfile, Dependabot, audit, dependency-review, actions fixadas por SHA |
+
+## Export "Dados da conta" no upload (Iteração 8c)
+Decisão do cliente (2026-09-28): o Upload aceita, como envio opcional junto do histórico completo (ou depois), o export "Dados da conta", só para o quadro "Curtidas por artista". Esse export traz muito mais do que o Encore precisa, então a minimização é obrigatória e testada:
+- **Só o `YourLibrary.json` é descompactado.** A decisão é pelo nome da entrada, no cabeçalho do zip, durante o streaming do fflate: as demais entradas nunca recebem `start()` e os bytes são descartados sem inflar. Arquivos nunca lidos: `Userdata.json`, `Identity.json`, `Identifiers.json`, `Payments.json`, `Follow.json`, `Inferences.json`, `SearchQueries.json`, `StreamingHistory_music_*`/`_podcast_*`/`_audiobook_*`/`_video_*`, `Playlist*.json`, `Marquee.json`, `Wrapped*.json`, `YourSoundCapsule.json`, `FamilyPlan.json`, `DuoNewFamily.json`, `CustomerServiceHistory.json`, `MessageData.json`, `Messages.json`, `VoiceInput.json`, `YourVoiceInput.json`, `PreciseLocation.json`, `ConnectedDevices.json`, `PodcastInteractivity*.json`, PDFs e qualquer outro nome desconhecido dentro do zip. Soltos, os nomes conhecidos acima nem são abertos (`src/domain/history/constants.ts`).
+- **Do `YourLibrary.json`, só `tracks[]`.** Schema Zod em strip (`artist`, `album`, `track`, `uri`, todos com teto de tamanho). O resultado guarda só `{ name, count }` por artista e o total; álbum, faixa e `uri` servem só para deduplicar e são descartados. Álbuns salvos, artistas seguidos, podcasts, episódios, banidos e `other` não são validados nem guardados.
+- **Mesmos limites do histórico:** caminho seguro, razão de compressão, 32 MiB somando os `YourLibrary.json`, limite total de 1 GiB, ≤ 5% de itens inválidos. Sem histórico, o `YourLibrary.json` nem é interpretado (`WRONG_EXPORT`).
+- **Provas automatizadas** (`src/domain/history/account-data.test.ts`): um export fictício com os dados DEFLATE de todas as entradas sensíveis corrompidos processa sem erro (inflar qualquer uma daria `INVALID_ZIP`); JSONs sensíveis soltos que lançam ao serem abertos nunca são abertos; uma marca posta em todo dado sensível nunca aparece no resultado.
+- Nada sai do navegador: mesmo worker, mesma CSP sem rede, mesma regra de lint.
 
 ## Autenticação e autorização
 - OAuth 2.0 Authorization Code + PKCE (S256), escopos mínimos:

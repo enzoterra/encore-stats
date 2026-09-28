@@ -32,7 +32,14 @@
     "privacy": "Privacidade",
     "howTo": "Como pedir o histórico",
     "code": "Código do site",
-    "tagline": "Suas estatísticas do Spotify, calculadas no seu aparelho."
+    "tagline": "Suas estatísticas do Spotify, calculadas no seu aparelho.",
+    "author": {
+      "madeBy": "Feito por <b>{name}</b>",
+      "contact": "Fale comigo",
+      "email": "E-mail",
+      "github": "GitHub",
+      "site": "Site pessoal"
+    }
   },
   "Seal": {
     "compact": {
@@ -42,11 +49,11 @@
     },
     "openLabel": "{label}. Ver como cuidamos dos seus dados",
     "title": "Seus dados ficam com você",
-    "local": "Seu arquivo é lido aqui, no seu aparelho, e não é enviado para lugar nenhum.",
+    "local": "Os arquivos que você envia são lidos aqui, no seu aparelho, e não vão para lugar nenhum.",
     "localConnect": "Sua conexão com o Spotify fica salva neste aparelho, trancada de um jeito que só o Encore abre. O que vem da sua conta fica só nesta aba.",
     "localDemo": "A demo usa um histórico inventado, criado aqui mesmo, no seu aparelho.",
     "noDatabase": "Sem cadastro, sem rastreamento e sem guardar suas músicas com a gente.",
-    "offline": "O arquivo do seu histórico não passa pela internet: a conta toda é feita no seu aparelho.",
+    "offline": "Seu histórico e suas curtidas não passam pela internet: a conta toda é feita no seu aparelho.",
     "openSource": "O código do site é público:",
     "openSourceLink": "confira você mesmo",
     "openSourceSoon": "O código do site vai ser público. O link aparece aqui quando for publicado.",
@@ -116,7 +123,7 @@
     "updated": "Atualizada em 28 de setembro de 2026.",
     "summaryTitle": "Em poucas palavras",
     "summary": [
-      "O histórico que você envia é lido no seu aparelho e não é mandado para nós nem para ninguém.",
+      "Os arquivos que você envia (o histórico e, se quiser, suas curtidas) são lidos no seu aparelho e não são mandados para nós nem para ninguém.",
       "Não pedimos cadastro, não guardamos suas músicas com a gente e não usamos ferramentas que rastreiam suas visitas.",
       "No modo Conectar, o que vem do Spotify fica só nesta aba, e a sua conexão com o Spotify fica salva neste aparelho, protegida para que só o Encore consiga ler."
     ],
@@ -133,6 +140,9 @@
       "uploadTitle": "Modo Upload: o arquivo que você envia",
       "upload": "Do seu histórico, lemos só: o dia e a hora em que cada música tocou, por quanto tempo tocou, o nome da música, do artista e do álbum, o código da música no Spotify, onde você ouviu (celular, computador…) e se você pulou a música ou ouviu no aleatório.",
       "uploadDiscarded": "O endereço de internet (IP), o país de onde você estava conectado e as outras informações do arquivo são deixados de lado durante a leitura e nunca são usados.",
+      "uploadLikedTitle": "Modo Upload: o arquivo \"Dados da conta\" (opcional)",
+      "uploadLiked": "Se você enviar também o arquivo \"Dados da conta\", lemos dele só a lista das suas músicas curtidas: o nome da música, do artista e do álbum, e o código da música no Spotify, que serve só para não contar a mesma música duas vezes. Do resultado, fica só quantas músicas curtidas cada artista tem.",
+      "uploadLikedClosed": "Os outros arquivos desse pacote, como e-mail, dados pessoais, pagamentos, buscas e playlists, nem são abertos. Tudo continua acontecendo só no seu aparelho.",
       "connectTitle": "Modo Conectar: sua conta do Spotify",
       "connect": "Com a sua autorização, vemos o seu perfil básico (código da conta, nome e foto), seus tops, o que você ouviu por último e suas músicas curtidas. O Encore só pede permissão para ver: ele não consegue mudar nada na sua conta.",
       "demoTitle": "Modo Demo",
@@ -145,7 +155,7 @@
     "howLong": {
       "title": "Por quanto tempo",
       "items": [
-        "Histórico enviado: fica só na memória desta aba, até você recarregar ou fechar a página.",
+        "Histórico e curtidas enviados: ficam só na memória desta aba, até você recarregar ou fechar a página.",
         "O que vem do Spotify (modo Conectar): fica só nesta aba do navegador, por no máximo 12 horas, e é apagado quando você clica em Sair.",
         "Sua conexão com o Spotify (modo Conectar): fica salva neste navegador num cookie protegido, dura no máximo 30 dias e é apagada quando você clica em Sair.",
         "Registros de funcionamento: o Encore só anota qual parte do site foi usada, se deu certo e quanto tempo levou, sem nada das suas músicas ou da sua conta. A Vercel, que hospeda o site, também anota dados de cada acesso (como o endereço de internet, o IP, e a página aberta) e os guarda por pouco tempo (cerca de 1 hora no plano usado), conforme a política de privacidade dela."
@@ -162,7 +172,7 @@
     "rights": {
       "title": "Seus direitos e como cancelar o acesso",
       "items": [
-        "Apagar o histórico enviado: feche ou recarregue a aba.",
+        "Apagar o histórico e as curtidas enviados: feche ou recarregue a aba.",
         "Sair do modo Conectar: clique em Sair. Isso apaga a sua conexão salva e o que veio do Spotify nesta aba.",
         "Pela LGPD (art. 18), você pode pedir para confirmar se usamos seus dados, ver quais são, corrigir, levar para outro serviço, apagar e saber com quem foram compartilhados. Como não guardamos seus dados com a gente, não existe uma cópia nossa para consultar ou exportar. Mesmo assim, você pode fazer qualquer pedido pelo contato acima.",
         "Você também pode reclamar na Autoridade Nacional de Proteção de Dados (ANPD), o órgão do governo que fiscaliza a LGPD.",
@@ -192,7 +202,7 @@
         "title": "Marque o histórico de streaming estendido",
         "bodyBefore": "Selecione",
         "bodyStrong": "Histórico de streaming estendido",
-        "bodyAfter": "e desmarque o resto. É o seu histórico completo, e é só dele que precisamos."
+        "bodyAfter": "e desmarque o resto. É o seu histórico completo, o único arquivo de que o Encore precisa."
       },
       "confirm": {
         "title": "Confirme pelo e-mail que o Spotify mandar",
@@ -220,6 +230,18 @@
       "connectBody": "Seus tops recentes, direto do Spotify.",
       "connectCta": "Conectar com Spotify",
       "connectDisabled": "Ainda não disponível neste site."
+    },
+    "liked": {
+      "overline": "Opcional",
+      "title": "Quer ver suas curtidas também?",
+      "lead": "Peça também o pacote \"Dados da conta\". Dele, o Encore usa só a lista de músicas curtidas, para mostrar de quem você tem mais músicas curtidas. O resto do pacote nem é aberto.",
+      "stepsLabel": "Como pedir o \"Dados da conta\"",
+      "steps": [
+        "Na mesma página de privacidade, em \"Baixar seus dados\", marque também \"Dados da conta\". Dá para pedir junto com o histórico completo.",
+        "Confirme pelo e-mail que o Spotify mandar, como no pedido do histórico.",
+        "Ele chega num arquivo à parte e costuma ficar pronto em poucos dias, antes do histórico completo.",
+        "Envie os dois arquivos juntos na página de envio. Se o histórico já estiver aberto, mande só o \"Dados da conta\" pelo painel."
+      ]
     }
   },
   "Upload": {
@@ -234,6 +256,10 @@
       "dragValid": "Pode soltar",
       "dragInvalid": "Só o arquivo do Spotify (.zip ou .json)",
       "inputLabel": "Escolher o arquivo do Spotify (.zip ou .json)"
+    },
+    "liked": {
+      "hint": "Quer ver de quem você tem mais músicas curtidas? Envie junto o arquivo \"Dados da conta\" do Spotify (opcional). Dá para escolher os dois arquivos de uma vez.",
+      "hintLink": "Como pedir esse arquivo"
     },
     "noFile": "Ainda não tem o arquivo?",
     "noFileLink": "Veja como pedir ao Spotify",
@@ -256,6 +282,7 @@
       "cancelled": "Cancelado. Nada foi guardado."
     },
     "done": "Pronto! {music, plural, one {# música lida} other {# músicas lidas}} em {seconds} s, sem sair do seu aparelho.",
+    "doneLiked": "Pronto! {music, plural, one {# música lida} other {# músicas lidas}} e {liked, plural, one {# curtida} other {# curtidas}} em {seconds} s, sem sair do seu aparelho.",
     "reset": "Enviar outro arquivo",
     "errors": {
       "UNSUPPORTED_FILE": {
@@ -313,13 +340,45 @@
       "OFFLINE": {
         "title": "Sem internet",
         "body": "Parece que você está sem internet. Conecte-se e tente de novo: seu arquivo continua sem sair do aparelho."
+      },
+      "NO_LIBRARY_FILE": {
+        "title": "Não achamos suas curtidas nesse arquivo",
+        "body": "Procuramos a lista de músicas curtidas (o \"YourLibrary.json\") e ela não veio. Envie o arquivo \"Dados da conta\" que o Spotify mandou por e-mail, do jeito que ele chegou."
       }
+    },
+    "libraryErrors": {
+      "WRONG_EXPORT": {
+        "title": "Esse arquivo só tem suas curtidas",
+        "body": "Ele é o pacote \"Dados da conta\", que o Encore usa só para as curtidas. Envie também o seu histórico completo (o \"Histórico de streaming estendido\"): os dois podem ir juntos."
+      },
+      "INVALID_JSON": {
+        "title": "O arquivo de curtidas está danificado",
+        "body": "Não deu para ler \"{entry}\", do pacote \"Dados da conta\". Baixe esse pacote de novo pelo link do e-mail do Spotify."
+      },
+      "UNEXPECTED_FORMAT": {
+        "title": "Não reconhecemos o arquivo de curtidas",
+        "body": "\"{entry}\" não tem a lista de músicas curtidas do jeito que o Spotify costuma mandar. Pode ser outro arquivo, ou o Spotify mudou o formato."
+      },
+      "INVALID_RECORDS": {
+        "title": "Parte das curtidas não dá para ler",
+        "body": "Mais de 5% das músicas curtidas de \"{entry}\" ({invalid} de {total}) vieram num formato que não reconhecemos. O arquivo pode estar danificado, ou o Spotify mudou o formato."
+      },
+      "ENTRY_TOO_LARGE": {
+        "title": "Arquivo de curtidas grande demais",
+        "body": "\"{entry}\" fica com mais de {limit} MB depois de aberto. Por segurança, não lemos listas de curtidas desse tamanho."
+      },
+      "COMPRESSION_RATIO": {
+        "title": "O arquivo de curtidas é diferente do esperado",
+        "body": "\"{entry}\" cresce mais de {limit} vezes ao ser aberto, muito mais que uma lista de curtidas normal. Por segurança, paramos a leitura."
+      },
+      "optionalHint": "As curtidas são opcionais: se preferir, envie só o histórico completo."
     },
     "actions": {
       "tryAnother": "Tentar outro arquivo",
       "tryAgain": "Tentar de novo",
       "howTo": "Como pedir o histórico completo",
-      "report": "Avisar do problema no GitHub"
+      "report": "Avisar do problema no GitHub",
+      "howToLibrary": "Como pedir o \"Dados da conta\""
     }
   },
   "Dashboard": {
@@ -465,9 +524,36 @@
     "footer": {
       "upload": "Do seu histórico do Spotify, lido no seu aparelho.",
       "demo": "Modo demo · artistas e músicas fictícios.",
-      "report": "{music, plural, one {# registro de música} other {# registros de música}} de {files, plural, one {# arquivo} other {# arquivos}}, lidos em {seconds} s. {nonMusic, plural, =0 {Nenhum podcast ou audiolivro} one {# podcast, audiolivro ou música do aparelho deixado de fora} other {# podcasts, audiolivros e músicas do aparelho deixados de fora}}."
+      "report": "{music, plural, one {# registro de música} other {# registros de música}} de {files, plural, one {# arquivo} other {# arquivos}}, lidos em {seconds} s. {nonMusic, plural, =0 {Nenhum podcast ou audiolivro} one {# podcast, audiolivro ou música do aparelho deixado de fora} other {# podcasts, audiolivros e músicas do aparelho deixados de fora}}.",
+      "uploadLiked": "Do seu histórico e das suas curtidas do Spotify, lidos no seu aparelho."
     },
-    "demoLoading": "Montando o histórico fictício…"
+    "demoLoading": "Montando o histórico fictício…",
+    "liked": {
+      "title": "Suas curtidas",
+      "badge": "De qualquer época",
+      "lead": "Todas as suas curtidas, de qualquer época. Este quadro não muda com o período, porque o Spotify não informa quando você curtiu cada música.",
+      "total": "{total, plural, one {# música curtida} other {# músicas curtidas}} de {artists, plural, one {# artista} other {# artistas}}, no total.",
+      "empty": "Não encontramos músicas curtidas nesse arquivo.",
+      "invite": {
+        "title": "De quem você tem mais músicas curtidas?",
+        "body": "Envie o arquivo \"Dados da conta\" do Spotify para ver seus artistas mais curtidos. Seu histórico continua aqui: só as curtidas são lidas, e nada sai do seu aparelho.",
+        "choose": "Enviar \"Dados da conta\"",
+        "inputLabel": "Escolher o arquivo \"Dados da conta\" do Spotify (.zip ou .json)",
+        "help": "Pode ser o .zip do jeito que chegou ou o \"YourLibrary.json\" que vem dentro dele.",
+        "dragValid": "Pode soltar",
+        "dragInvalid": "Só o arquivo do Spotify (.zip ou .json)",
+        "howTo": "Como pedir esse arquivo"
+      },
+      "progress": {
+        "title": "Lendo suas curtidas…",
+        "label": "Leitura das curtidas",
+        "records": "{records, plural, =0 {Abrindo o arquivo} one {# curtida lida} other {# curtidas lidas}}",
+        "announce": "Leitura das curtidas: {percent}%",
+        "cancel": "Cancelar",
+        "cancelled": "Leitura das curtidas cancelada. Seu histórico continua aqui."
+      },
+      "done": "Pronto! {count, plural, one {# música curtida lida} other {# músicas curtidas lidas}}, sem sair do seu aparelho."
+    }
   },
   "Connect": {
     "title": "Conectar com o Spotify",

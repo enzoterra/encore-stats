@@ -1,7 +1,8 @@
 import type { UploadError } from './use-history-upload';
 
 export type ShownErrorCode = Exclude<UploadError['code'], 'CANCELLED'>;
-export type UploadAction = 'tryAnother' | 'tryAgain' | 'howTo' | 'report';
+/** `howTo`: como pedir o histórico completo; `howToLibrary`: como pedir o "Dados da conta". */
+export type UploadAction = 'tryAnother' | 'tryAgain' | 'howTo' | 'howToLibrary' | 'report';
 
 /**
  * Ações de cada erro do worker (10-design.md §8.10). O `Record` obriga a cobrir todo código:
@@ -17,12 +18,44 @@ export const ERROR_ACTIONS: Readonly<Record<ShownErrorCode, readonly UploadActio
   COMPRESSION_RATIO: ['tryAnother'],
   NO_HISTORY_FILES: ['howTo', 'tryAnother'],
   WRONG_EXPORT: ['howTo', 'tryAnother'],
+  NO_LIBRARY_FILE: ['howToLibrary', 'tryAnother'],
   INVALID_JSON: ['tryAnother'],
   UNEXPECTED_FORMAT: ['tryAnother', 'report'],
   INVALID_RECORDS: ['tryAnother', 'report'],
   INTERNAL: ['tryAgain'],
   OFFLINE: ['tryAgain'],
 };
+
+/**
+ * Códigos com recado próprio quando o problema está no arquivo de curtidas (`source: 'library'`,
+ * o `YourLibrary.json` do export "Dados da conta"). Os demais usam a mensagem geral.
+ */
+export const LIBRARY_ERROR_CODES = [
+  'WRONG_EXPORT',
+  'INVALID_JSON',
+  'UNEXPECTED_FORMAT',
+  'INVALID_RECORDS',
+  'ENTRY_TOO_LARGE',
+  'COMPRESSION_RATIO',
+] as const satisfies readonly ShownErrorCode[];
+
+export type LibraryErrorCode = (typeof LIBRARY_ERROR_CODES)[number];
+
+/** O erro é do arquivo de curtidas e tem mensagem própria? */
+export function libraryErrorCode(error: UploadError): LibraryErrorCode | undefined {
+  if (!('source' in error) || error.source !== 'library') return undefined;
+  return (LIBRARY_ERROR_CODES as readonly string[]).includes(error.code)
+    ? (error.code as LibraryErrorCode)
+    : undefined;
+}
+
+/** Chave da mensagem (título/corpo) em `Upload`: `libraryErrors.X` ou `errors.X`. */
+export function errorMessageKey(
+  error: Exclude<UploadError, { code: 'CANCELLED' }>,
+): `errors.${ShownErrorCode}` | `libraryErrors.${LibraryErrorCode}` {
+  const library = libraryErrorCode(error);
+  return library ? `libraryErrors.${library}` : `errors.${error.code}`;
+}
 
 const MB = 1024 * 1024;
 

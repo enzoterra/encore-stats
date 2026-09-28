@@ -99,6 +99,7 @@ A página ficou em linguagem simples, com a referência da lei curta entre parê
 - [x] **Quem cuida dos dados:** seção "Quem cuida dos seus dados". Nome do controlador e e-mail (`mailto:`) vêm de `NEXT_PUBLIC_PRIVACY_CONTROLLER` e `NEXT_PUBLIC_PRIVACY_CONTACT`. Sem e-mail, o contato cai para a página do projeto.
 - [x] **Dados de cada modo:** seção "Quais dados usamos".
   - Upload: campos lidos e descartados (IP e país), tudo no aparelho.
+  - Upload com o "Dados da conta" (Iteração 8c, opcional): só a lista de músicas curtidas é lida (música, artista, álbum e código, só para não contar duas vezes); fica só quantas curtidas cada artista tem; e-mail, dados pessoais, pagamentos, buscas e playlists nem são abertos.
   - Conectar: perfil básico, tops, tocadas recentemente e curtidas, só para ver.
   - Demo: nenhum dado pessoal.
   - Onde cada coisa fica: seções "Onde os dados ficam" e "Por quanto tempo".

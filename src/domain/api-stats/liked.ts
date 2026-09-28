@@ -3,6 +3,17 @@ import type { ArtistRef, SavedPage } from '../spotify-types';
 export type LikedArtistCount = { id: string; name: string; count: number };
 
 /**
+ * Ordem dos quadros "Curtidas por artista" (Conectar e Upload): mais curtidas primeiro e, no
+ * empate, nome em ordem alfabética (`localeCompare` em inglês, independente do idioma da UI).
+ */
+export function compareLikedCounts(
+  a: { name: string; count: number },
+  b: { name: string; count: number },
+): number {
+  return b.count - a.count || a.name.localeCompare(b.name, 'en');
+}
+
+/**
  * Agregador incremental da varredura de curtidas (RF-18): recebe as páginas de `/me/tracks`
  * em qualquer ordem (a varredura roda com concorrência 3) e mantém só
  * `Map<artistId, {name, count}>`, sem guardar as faixas. Cada faixa conta uma vez para cada
@@ -68,9 +79,7 @@ export class LikedArtistsCounter {
   /** Artistas com mais faixas curtidas (empate: nome, depois id). */
   top(limit = 10): LikedArtistCount[] {
     return [...this.counts.values()]
-      .sort(
-        (a, b) => b.count - a.count || a.name.localeCompare(b.name, 'en') || (a.id < b.id ? -1 : 1),
-      )
+      .sort((a, b) => compareLikedCounts(a, b) || (a.id < b.id ? -1 : 1))
       .slice(0, limit)
       .map((entry) => ({ ...entry }));
   }

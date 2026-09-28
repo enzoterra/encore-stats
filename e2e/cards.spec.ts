@@ -203,7 +203,11 @@ test.describe('cards (US-11)', () => {
     await expect(field).toHaveAttribute('aria-invalid', 'true');
     await field.fill('Encore do Enzo');
     await expect(field).not.toHaveAttribute('aria-invalid');
-    await expect(page.getByTestId('share-preview')).toHaveAttribute('data-state', 'generating');
+    // O card novo sai em ~250 ms: consulta a cada 20 ms para não perder o estado "gerando".
+    const preview = page.getByTestId('share-preview');
+    await expect
+      .poll(() => preview.getAttribute('data-state'), { intervals: [20], timeout: 5000 })
+      .toBe('generating');
     await waitReady(page);
     expect(pngSize((await download(page)).png)).toEqual({ width: 1080, height: 1920 });
   });
@@ -310,7 +314,9 @@ test.describe('card do Conectar (mock do Spotify)', () => {
     const csp = collectCspViolations(page);
     const covers: string[] = [];
     await page.context().route('https://i.scdn.co/**', (route) => {
-      covers.push(route.request().url());
+      // Só conta a capa buscada pelo gerador do card (fetch); as `<img>` do painel seguem
+      // carregando em segundo plano e não entram na conta.
+      if (route.request().resourceType() !== 'image') covers.push(route.request().url());
       return route.fulfill({
         status: 200,
         contentType: 'image/png',

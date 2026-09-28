@@ -1100,7 +1100,7 @@ Uso de títulos responsivos: `text-h1 lg:text-h1-lg`, `text-h2 lg:text-h2-lg`, `
    - a limpeza de "feat./remaster" nos nomes das músicas dentro do card.
 
 ## 16. Logo (Iteração 8b, passo 8b.9)
-Escolhida pelo cliente em 2026-09-28: **conceito 2 "Bis", variação 3**. O último "e" de "encore" é um traço que dá a volta e fecha de novo na barra, com uma seta: o "de novo!" do fim do show, em degradê magenta → laranja → amarelo. Arquivos, medidas e o porquê em [`design/logo/LOGO.md`](design/logo/LOGO.md).
+Escolhida pelo cliente em 2026-09-28: **conceito 2 "Bis", variação 3, com o "e" final girado −12°** (Iteração 8c, ajuste 4: giro rígido, a forma do "e" é idêntica à da variação 3; o "encor" fica reto). O último "e" de "encore" é um traço que dá a volta e fecha de novo na barra, com uma seta: o "de novo!" do fim do show, em degradê magenta → laranja → amarelo. Arquivos, medidas e o porquê em [`design/logo/LOGO.md`](design/logo/LOGO.md).
 
 - **Fonte única no código:** `src/components/brand/logo-art.ts` (os paths de `design/logo/conceito-2.svg`; um teste confere que são os mesmos). O site usa `Logo` (`logo.tsx`, SVG inline só com atributos, sem `style`, por causa da CSP) e os cards usam `brandMark` (`src/features/cards/brand.ts`, `<img>` com o SVG em data URL, sem rede).
 - **Onde entra:**
@@ -1112,6 +1112,6 @@ Escolhida pelo cliente em 2026-09-28: **conceito 2 "Bis", variação 3**. O últ
   - fundo sempre escuro (`background`, `surface`, `surface-2` ou os fundos dos cards);
   - respiro mínimo de 1 x em volta (x = altura do "e");
   - lockup com 64 px de largura no mínimo (abaixo disso, só o símbolo, que vai até 16 px);
-  - nunca recolorir fora da paleta, esticar, girar, pôr sombra ou brilho, nem usar sobre foto ou capa;
+  - nunca recolorir fora da paleta, esticar, girar o logo inteiro (o giro de −12° é só do "e" final e já vem no desenho), pôr sombra ou brilho, nem usar sobre foto ou capa;
   - nunca em lockup com o logo do Spotify, que fica sempre na área própria dele (§10, regra 3).
 - **Acessibilidade:** o SVG é decorativo (`aria-hidden`). O nome vem do link ("Encore, página inicial") ou de um texto `sr-only` "Encore" ao lado.
