@@ -5,7 +5,7 @@
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
 - Sprint em andamento: Sprint 8. **S8.0 ✅ concluído** (analista-de-infra, 2026-09-25): pnpm 10.34.5, Node 24.x, README "Deploy na Vercel", 404 localizado, 403 com Premium e validação do ambiente no `next build`. Próximo: Next 16.3.7 (após 30/09) e S8.1. Sprint 7 ✅ concluída e commitada (31d45e3): sem alta/crítica aberta no código; relatório em `docs/projeto/relatorio-seguranca.md`. Decisões do cliente de 2026-09-25: Developer Policy (risco aceito no MVP) e dados de privacidade (controlador e contato; vão só nas variáveis da Vercel)
 - Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
-- Próximo passo ao retomar: commit do S8.0 pelo orquestrador; o dono prepara Vercel/Spotify/GitHub (README, "Deploy na Vercel"). Depois: atualizar para o Next 16.3.7 (sai em 30/09; gate do go-live), S8.1–S8.5. Pendentes com o cliente: aceite das Sprints 5 e 6 (screenshots em `docs/projeto/screenshots/sprint5/` e `sprint6/`), testar o login real em 127.0.0.1 (passo a passo no README). Compartilhar um card de um iPhone real fica para a S8
+- Próximo passo ao retomar: produção no ar em `https://encore-stats.vercel.app` (Upload + Demo, 2026-09-28). Em 30/09: Next 16.3.7 → ligar o Conectar (S8.3.2) e o staging (S8.3.3) → ZAP → S8.1/S8.2 → go-live e UAT. Pendente com o cliente: aceite das Sprints 5 e 6 e o teste do login real
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
 - Última atualização: 2026-09-25 por analista-de-infra (S8.0 concluído)
@@ -569,8 +569,12 @@
   - Como verificar: `corepack enable` → `pnpm install --frozen-lockfile` → `pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build` → `pnpm audit --audit-level=high --registry=https://registry.npmjs.org/` → `pnpm exec playwright install chromium webkit && pnpm exec playwright test --workers=4`. Env: `VERCEL_ENV=production pnpm build` tem de falhar listando as 3 variáveis; com elas preenchidas (HTTPS), passa. 404: `curl -i http://127.0.0.1:3000/pt-BR/nao-existe` → 404 com CSP com nonce e os `<script>` com `nonce`
   - Pendências para o dono (painéis): importar na Vercel, criar o branch `staging`, Deployment Protection, variáveis por escopo (valores de privacidade do cliente), redirect URIs de produção/staging no Spotify, Premium na conta dona, confirmar no log do build o pnpm 10.x (e, se < 10.34.5, `ENABLE_EXPERIMENTAL_COREPACK=1`), conferir no GitHub (Insights → Dependency graph) se o grafo lista as dependências
   - Próximo: Next 16.3.7 (após 30/09; a Vercel também bloqueia por padrão novos deploys de Next vulnerável), depois S8.1
+- Ajustes pedidos pelo cliente (2026-09-28): título da home sem travessão (`Encore - suas estatísticas do Spotify` / `Encore - your Spotify stats`); favicon da marca ("e" magenta `#FF3D8B` sobre `#0E0B1A`) em `app/icon.svg`, `app/favicon.ico` (16/32/48) e `app/apple-icon.png` (180, sem cantos: o iOS arredonda)
 - [ ] S8.1 Validação de rotas e fluxos vs. user stories
 - [ ] S8.2 Medições (Lighthouse, benchmark, memória)
 - [ ] S8.3 Vercel + redirect URIs + allowlist
+  - [x] S8.3.1 Produção no ar em modo Upload + Demo (2026-09-28): `https://encore-stats.vercel.app`, projeto importado do GitHub, só `NEXT_PUBLIC_SITE_URL` e as duas de privacidade em Production. Conferido por `curl`: health ok, `/` → 307 `/pt-BR`, CSP com nonce + HSTS preload + nosniff + COOP + Referrer/Permissions-Policy + XFO, `/api/spotify/me` → 404 `CONNECT_DISABLED` com CSP da API e CORP, 404 localizado, `/privacy` com controlador e contato
+  - [ ] S8.3.2 Conectar: depois do Next 16.3.7 (30/09). App no Spotify Dashboard só com **Web API**; redirect URI `https://encore-stats.vercel.app/api/auth/callback`; `SPOTIFY_*` + `SESSION_SECRET` (Sensitive) só em Production; allowlist + Premium do dono
+  - [ ] S8.3.3 Branch `staging` + Deployment Protection + variáveis do Preview do `staging`
 - [ ] S8.4 Go-live
 - [ ] S8.5 UAT com o cliente
