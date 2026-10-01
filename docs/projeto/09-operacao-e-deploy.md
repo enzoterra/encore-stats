@@ -39,7 +39,7 @@ Credenciais demo: **não se aplicam**, porque o Demo não exige login. Para test
 
 ## Checklist de go-live
 Passo a passo completo no README, seção "Deploy na Vercel".
-- [ ] Next.js ≥ 16.3.7 (security release de 30/09; gate do relatório de segurança). A Vercel também bloqueia por padrão novos deploys de versões vulneráveis do Next
+- [x] Next.js ≥ 16.3.8 (security release de 30/09; aplicado em 2026-10-01). A Vercel também bloqueia por padrão novos deploys de versões vulneráveis do Next
 - [ ] Projeto importado na Vercel sem `vercel.json` nem _Override_; log do build com pnpm 10.x e Node 24.x
 - [ ] Branch `staging` criado; URL fixa do branch anotada; Deployment Protection (Vercel Authentication, _Standard Protection_) ligada
 - [ ] App criado no Spotify Developer Dashboard, com nome "Encore" e redirect URIs de produção, staging (URL fixa do branch) e 127.0.0.1

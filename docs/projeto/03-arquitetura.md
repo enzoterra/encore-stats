@@ -48,7 +48,7 @@ flowchart LR
 |---|---|---|---|
 | Runtime | Node.js | **24 LTS** (Active LTS) | LTS ativo. O 22 está em manutenção. Migrar para o 26 depois que ele virar LTS (out/2026) |
 | Gerenciador | pnpm | **10.34.5** (fixado em `packageManager`; ADR 10) | Dependências estritas, scripts de install bloqueados (`strictDepBuilds`), `minimumReleaseAge` estrito contra supply-chain |
-| Framework | Next.js (App Router, Turbopack) | **16.3.6** (aplicar 16.3.7+ assim que sair: security release em 30/set) | BFF e UI no mesmo deploy; `proxy.ts`; integração com next-intl |
+| Framework | Next.js (App Router, Turbopack) | **16.3.8** (security release de 30/09, aplicado em 2026-10-01) | BFF e UI no mesmo deploy; `proxy.ts`; integração com next-intl |
 | UI | React / React DOM | **19.3.0** | Versão atual suportada pelo Next 16 |
 | Linguagem | TypeScript | **6.0.3** | TS 7 (nativo em Go) não tem JS API: o `next build` exige flag experimental e o typescript-eslint só suporta `<6.1`. Reavaliar TS 7 quando o ecossistema acompanhar |
 | Estilo | Tailwind CSS | **4.3.3** | Tokens via CSS variables (`@theme`), zero runtime |
@@ -62,7 +62,7 @@ flowchart LR
 | Sessão | jose | **6.2.12** | JWE para o cookie de sessão sem banco (mantido; roda em Node e Edge) |
 | Cards | satori + @resvg/resvg-wasm | **0.33.5** + **2.6.2** | Render determinístico, sem `foreignObject` (evita bugs do Safari no iOS). Carregados sob demanda |
 | Gráficos | SVG próprio | — | Heatmap 7×24 e barras: bundle mínimo, acessível |
-| Lint | ESLint + typescript-eslint + eslint-config-next | **10.11.0** + **8.70.1** + **16.3.6** | Flat config |
+| Lint | ESLint + typescript-eslint + eslint-config-next | **10.11.0** + **8.70.1** + **16.3.8** | Flat config |
 | Testes unit/int | Vitest (+ @vitest/browser) + Testing Library | **5.0.1** + **16.3.3** | Rápido; Browser Mode para cards |
 | E2E / a11y | Playwright + @axe-core/playwright | **1.63.0** + **4.13.0** | Fluxos demo e upload, verificação de acessibilidade |
 | Hospedagem | Vercel Hobby | — | Custo zero, deploy por push, TLS |

@@ -73,7 +73,7 @@ Severidade no estilo CVSS 3.1, com o vetor quando se aplica. Os de conformidade 
 | S7-01 | Página de privacidade sem identificação do controlador e sem canal de contato garantido | **Médio** (conformidade LGPD) | Corrigido. O dono define os valores |
 | S7-02 | SCA sem visibilidade no GitHub: o grafo do Dependabot não lê o lockfile do pnpm 12, e o dependency-review falha em repositório privado | **Médio** | Mitigado. Falta ação do dono |
 | S7-03 | Developer Policy do Spotify proíbe "métricas derivadas" com dados da API | **Médio** (conformidade Spotify) | Decisão do cliente |
-| S7-04 | Next.js 16.3.7: security release anunciado (1 crítica, 2 altas), sem detalhes até 30/09 | Não classificável ainda | Aberto (externo). Bloqueia o go-live |
+| S7-04 | Next.js: security release anunciado para 30/09 | Alta (a maior delas: SSRF na otimização de imagens, GHSA-cjq9-62q9-8jv4) | **Corrigido em 2026-10-01**: atualizado para a 16.3.8 |
 | S7-05 | Rotas `/api/*` sem CSP nem CORP | Baixo, 3.1 (AV:N/AC:H/PR:N/UI:R/S:U/C:L/I:N/A:N) | Corrigido |
 | S7-06 | Corpo do upstream lido inteiro antes de checar o limite (resposta sem `Content-Length`) | Baixo, 2.2 (AV:N/AC:H/PR:H/UI:N/S:U/C:N/I:N/A:L) | Corrigido |
 | S7-07 | Violações de CSP silenciosas: sonda `new Function` do Zod 4; o e2e não as via | Baixo (monitoramento da CSP) | Corrigido |
@@ -165,7 +165,16 @@ O modo Conectar calcula, **no navegador do próprio usuário**:
 
 Recomendação: (a) enquanto o app for pessoal e em Development Mode, reavaliando antes de qualquer pedido de Extended Quota.
 
-### S7-04 — Next.js 16.3.7 (externo) — aberto, bloqueia o go-live
+### S7-04 — Next.js (externo) — corrigido em 2026-10-01 (16.3.8)
+
+**Atualização (2026-10-01):** a 16.3.7 (29/09) só trouxe uma correção de bug do Turbopack. As correções de segurança saíram na **16.3.8** (30/09):
+- alta: SSRF na otimização de imagens (GHSA-cjq9-62q9-8jv4);
+- médias: vazamento em rotas de imagem de metadados com `dynamicParams` (GHSA-f87g-xv8r-7p7x), envenenamento de cache SSG/ISR em self-hosting (GHSA-4jqv-mc3x-m676, GHSA-mcj8-r9mp-w47p), vazamento do Draft Mode e de cache com `"use cache"` (GHSA-3w37-wq28-93x7, GHSA-h694-7cp9-m8p3);
+- baixa: endpoint MCP do servidor de desenvolvimento (GHSA-39w2-rjm5-chcv).
+
+Exposição do Encore: não usa `next/image` (a rota `/_next/image` existe por padrão, mas sem `remotePatterns`), ISR, Draft Mode nem `"use cache"`. Mesmo assim, a atualização fecha a pendência. `next` e `eslint-config-next` foram para a 16.3.8 sem exceção no `minimumReleaseAge` (publicada há mais de 24 h). `pnpm audit --audit-level=high`: sem vulnerabilidades.
+
+**Registro original:**
 
 **Evidências:**
 - O [aviso prévio](https://nextjs.org/blog/upcoming-nextjs-security-release-september-2026) (23/09) anuncia para **30/09/2026** a 16.3.7 e a 15.5.27.
@@ -436,7 +445,7 @@ Conferido contra as [Design Guidelines](https://developer.spotify.com/documentat
 4. Se o plano permitir, uma regra de rate limit no Firewall para `/api/*` (S7-13).
 5. Domínio próprio: revisar o impacto do HSTS `includeSubDomains; preload` antes de submeter à lista de preload.
 
-**Next.js 16.3.7:** atualizar em 30/09, seguindo os passos de S7-04. O go-live exige ≥ 16.3.7.
+**Next.js:** ✅ atualizado para a 16.3.8 em 2026-10-01 (S7-04).
 
 **Spotify:** confirmar que a conta dona do app tem Premium. Desde fev/2026, sem Premium o Development Mode para, e tudo vira 403 → "fora da allowlist".
 

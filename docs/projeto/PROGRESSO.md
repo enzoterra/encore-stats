@@ -5,10 +5,10 @@
 - Fase: 3 — Implementação (plano aprovado pelo cliente em 2026-09-24; commit 4c4d5a8 em main)
 - Sprint em andamento: Sprint 8. Iterações 8b e 8c ✅ publicadas em produção em 2026-09-28 (8c: logo com o "e" girado −12°, contatos do autor no rodapé, curtidas por artista no Upload via export "Dados da conta")
 - Vertical slice (Sprint 4, commit dfdc240): **aprovado pelo cliente em 2026-09-24**. O intervalo de datas fica inline, com botão "Aplicar", sem bottom sheet (mantido como entregue)
-- Próximo passo ao retomar: produção no ar em `https://encore-stats.vercel.app` (Upload + Demo, 2026-09-28). Em 30/09: Next 16.3.7 → ligar o Conectar (S8.3.2) e o staging (S8.3.3) → ZAP → S8.1/S8.2 → go-live e UAT. Pendente com o cliente: aceite das Sprints 5 e 6 e o teste do login real
+- Próximo passo ao retomar: Next 16.3.8 aplicado (2026-10-01). Falta ligar o Conectar em produção (S8.3.2: variáveis do Spotify + `SESSION_SECRET` na Vercel), decidir sobre o staging (sugestão: dispensar no porte atual), ZAP baseline contra produção, S8.1/S8.2 e o UAT
 - Sprint 3 (designer): ✅ **design aprovado pelo cliente em 2026-09-24** (commit df9610c). Liberado para a Sprint 4 após a Sprint 1
 - Commits: o orquestrador faz 1 commit por sprint em main, **sem menção a IA/Claude** (pedido do cliente); subagentes não commitam
-- Última atualização: 2026-09-28 pelo orquestrador (fim da Iteração 8c)
+- Última atualização: 2026-10-01 pelo orquestrador (Next 16.3.8)
 
 ## Fases
 - [x] Fase 0: preparação (repositório greenfield; `docs/projeto/` criado)
@@ -645,6 +645,7 @@
   - Pendências para o dono (painéis): importar na Vercel, criar o branch `staging`, Deployment Protection, variáveis por escopo (valores de privacidade do cliente), redirect URIs de produção/staging no Spotify, Premium na conta dona, confirmar no log do build o pnpm 10.x (e, se < 10.34.5, `ENABLE_EXPERIMENTAL_COREPACK=1`), conferir no GitHub (Insights → Dependency graph) se o grafo lista as dependências
   - Próximo: Next 16.3.7 (após 30/09; a Vercel também bloqueia por padrão novos deploys de Next vulnerável), depois S8.1
 - Ajustes pedidos pelo cliente (2026-09-28): título da home sem travessão (`Encore - suas estatísticas do Spotify` / `Encore - your Spotify stats`); favicon da marca ("e" magenta `#FF3D8B` sobre `#0E0B1A`) em `app/icon.svg`, `app/favicon.ico` (16/32/48) e `app/apple-icon.png` (180, sem cantos: o iOS arredonda)
+- [x] S8.0b Next.js 16.3.8 (2026-10-01): a 16.3.7 (29/09) só corrigiu um bug do Turbopack; o security release saiu na 16.3.8 (30/09: 1 alta SSRF em image optimization, 5 médias, 1 baixa). `next` + `eslint-config-next` 16.3.8, sem exceção no `minimumReleaseAge`. S7-04 fechado no relatório de segurança; `03-arquitetura.md` e checklist de go-live atualizados
 - [ ] S8.1 Validação de rotas e fluxos vs. user stories
 - [ ] S8.2 Medições (Lighthouse, benchmark, memória)
 - [ ] S8.3 Vercel + redirect URIs + allowlist
